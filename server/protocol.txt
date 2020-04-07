@@ -1,0 +1,47 @@
+1. Запуск, соединение установлено.
+2. Сверка версий. В случае отличия загрузка ресурсов с сервера.
+Server  ---(VERSION)-->  Client
+Client  ---(OK | UPDATE)-->  Server
+
+	Case UPDATE:
+	Server  ---(LINK_TO_ARCHIVE)-->  Client
+	Client  ---(UPDATE_OK | UPDATE_FAILED)-->  Server
+
+		Case UPDATE_FAILED:
+		DISCONNECT
+
+Server  ---(MASTER | PLAYER)-->  Client
+
+3. Начало игры.
+Client1  ---(START_GAME)-->  Server
+Server  ---(BEGIN; CARD_NUMBERS)-->  Clients
+Clients  ---(READY)-->  Server
+
+4. Ход.
+Server  ---(TURN | VOTE)-->  Clients
+
+	Case TURN:
+	Client  ---(CARD_NUMBER_ASSOC)--> Server
+	Server  ---(ASSOC)-->  Clients
+
+	Case VOTE:
+	Clients  ---(CARD_NUMBER)-->  Server
+
+Server  ---(CARD_NUMBERS)-->  Clients
+Clients  ---(CARD_NUMBER)-->  Server
+Server  ---(RESULT)-->  Clients
+Clients  ---(NEXT_TURN)-->  Server
+
+5. Перед следующим ходом.
+Server   ---(CARD_NUMBER)-->  Clients
+Step 4
+
+5. Конец игры.
+Server  ---(END_GAME; RESULT)-->  Clients
+Client1  ---(NEW_GAME | EXIT)-->  Server
+
+	Case NEW_GAME:
+	Step 3
+
+	Case EXIT:
+	DISCONNECT
