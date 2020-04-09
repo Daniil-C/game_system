@@ -41,25 +41,52 @@ class App(tk.Frame):
         self.rowconfigure(4, weight=1)
         self.rowconfigure(5, weight=1)
         self.rowconfigure(6, weight=1)
+
         server_ip_label = tk.Label(master=self, text="Server IP")
         server_ip_label.grid(sticky="NEWS", column=1, row=1)
         self.widgets.append(server_ip_label)
+
         server_ip_entry = tk.Entry(master=self)
         server_ip_entry.grid(sticky="NEW", column=1, row=2)
         self.widgets.append(server_ip_entry)
+
         server_port_label = tk.Label(master=self, text="Server port")
         server_port_label.grid(sticky="NEWS", column=1, row=4)
         self.widgets.append(server_port_label)
+
         server_port_entry = tk.Entry(master=self)
         server_port_entry.grid(sticky="NEW", column=1, row=5)
         self.widgets.append(server_port_entry) 
+
         self.back = tk.PhotoImage(file="back.png")
-        settings_button = tk.Button(master=self, image=self.back, command=self.main_menu)
-        settings_button.grid(sticky="W", column=0, row=6)
-        self.widgets.append(settings_button)	
+        back_button = tk.Button(master=self, image=self.back, command=self.main_menu)
+        back_button.grid(sticky="W", column=0, row=6)
+        self.widgets.append(back_button)	
+
         save_button = tk.Button(master=self, text="Save", height=3, width=10, command=save)
         save_button.grid(sticky="N", column=1, row=6)
         self.widgets.append(save_button)
+
+    def rule_menu(self):
+        """RULES"""
+        for i in self.widgets:
+            i.grid_forget()
+        self.widgets.clear()
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+        self.columnconfigure(2, weight=1)
+
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)
+
+        rule_lable = tk.Label(master=self, text="RULE")
+        rule_lable.grid(sticky="NEWS", column=1, row=0)
+        self.widgets.append(rule_label)
+
+        rules = tk.Label(master=self, text="")
+        rules.grid(sticky="NEWS", column=1, row=0)
+        self.widgets.append(rules)
+
 
     def main_menu(self):
         """Main menu interface loader"""
@@ -82,7 +109,7 @@ class App(tk.Frame):
         game_name.grid(sticky="NEWS", column=1, row=0)
         self.widgets.append(game_name)
 
-        play_button = tk.Button(master=self, text="Play", command=self.play_menu)
+        play_button = tk.Button(master=self, text="Play")#, command=self.play_menu)
         play_button.grid(sticky="NEWS", column=1, row=2)
         self.widgets.append(play_button)
 
@@ -94,6 +121,12 @@ class App(tk.Frame):
         settings_button = tk.Button(master=self, image=self.gear, command=self.settings_menu)
         settings_button.grid(sticky="W", column=0, row=6)
         self.widgets.append(settings_button)
+
+        self.rule = tk.PhotoImage(file="rule.png")
+        rule_button = tk.Button(master=self, image=self.rule)
+        rule_button.grid(sticky="E", column=2, row=6)
+        self.widgets.append(rule_button)
+
 
 
 APP = App()
