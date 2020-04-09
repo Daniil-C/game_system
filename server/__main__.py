@@ -1,11 +1,14 @@
+"""
+Server for Imaginarium game
+"""
 import socket
 import os
-import work_cycle
+import server_main
 
 
 if __name__ == "__main__":
     LISTENING_SOCKET = socket.socket()
-    IP_ADDRESS = os.getenv("HOST_IP", "0.0.0.0")
+    IP_ADDRESS = os.getenv("HOST_IP", "127.0.0.1")
     PORT = socket.htons(int(os.getenv("PORT", "7840")))
     print("Starting game server.")
     print("IP = ", IP_ADDRESS)
@@ -15,3 +18,5 @@ if __name__ == "__main__":
         exit(1)
     LISTENING_SOCKET.bind((IP_ADDRESS, PORT))
     LISTENING_SOCKET.listen()
+    server_main.start(LISTENING_SOCKET)
+    LISTENING_SOCKET.close()
