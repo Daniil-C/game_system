@@ -1,35 +1,100 @@
 """ Interface for main menu """
 import tkinter as tk
+PLAERS = 0
+SERVER_IP = ""
+SERVER_PORT = 0
+GOD_MODE = False
 
-F = tk.Frame(borderwidth = 2, relief ="ridge", cursor = "dot", height = 1080, width = 1920)
-F.master.columnconfigure(0, weight = 1)
-F.master.rowconfigure(0, weight = 1)
-F.master.title("IMAGINARIUM")
-F.grid_propagate(0)
-F.grid(sticky = "NEWS")
+class App(tk.Frame):
+    """ App Class"""
+    def __init__(self, master=None):
+        tk.Frame.__init__(self, master, borderwidth=2, relief="ridge",
+                          cursor="dot", height=1080, width=1920)
+        self.master.columnconfigure(0, weight=1)
+        self.master.rowconfigure(0, weight=1)
+        self.master.title("IMAGINARIUM")
+        self.grid_propagate(0)
+        self.grid(sticky="NEWS")
+        self.widgets = [ ]
+        self.main_menu()
 
-F.columnconfigure(0, weight = 1)
-F.columnconfigure(1, weight = 1)
-F.columnconfigure(2, weight = 1)
-F.rowconfigure(0, weight = 1)
-F.rowconfigure(1, weight = 1)
-F.rowconfigure(2, weight = 1)
-F.rowconfigure(3, weight = 1)
-F.rowconfigure(4, weight = 1)
-F.rowconfigure(5, weight = 1)
-F.rowconfigure(6, weight = 1)
+    def settings_menu(self):
+        """game settings"""
+        def save(*arg):
+            """Save ip and port"""
+            SERVER_IP = server_ip_entry.get()
+            SERVER_PORT = server_port_entry.get()
+            server_port_entry.delete(0, tk.END)
+            server_ip_entry.delete(0, tk.END)
 
-Game_name = tk.Label(master = F, text = "IMAGINARIUM")
-Game_name.grid(sticky = "NEWS", column = 1, row = 0)
+        for i in self.widgets:
+            i.grid_forget()
+        self.widgets.clear()
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+        self.columnconfigure(2, weight=1)
 
-Play_button = tk.Button(master = F, text = "Play")
-Play_button.grid(sticky = "NEWS", column = 1, row = 2)
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)
+        self.rowconfigure(2, weight=1)
+        self.rowconfigure(3, weight=1)
+        self.rowconfigure(4, weight=1)
+        self.rowconfigure(5, weight=1)
+        self.rowconfigure(6, weight=1)
+        server_ip_label = tk.Label(master=self, text="Server IP")
+        server_ip_label.grid(sticky="NEWS", column=1, row=1)
+        self.widgets.append(server_ip_label)
+        server_ip_entry = tk.Entry(master=self)
+        server_ip_entry.grid(sticky="NEW", column=1, row=2)
+        self.widgets.append(server_ip_entry)
+        server_port_label = tk.Label(master=self, text="Server port")
+        server_port_label.grid(sticky="NEWS", column=1, row=4)
+        self.widgets.append(server_port_label)
+        server_port_entry = tk.Entry(master=self)
+        server_port_entry.grid(sticky="NEW", column=1, row=5)
+        self.widgets.append(server_port_entry) 
+        self.back = tk.PhotoImage(file="back.png")
+        settings_button = tk.Button(master=self, image=self.back, command=self.main_menu)
+        settings_button.grid(sticky="W", column=0, row=6)
+        self.widgets.append(settings_button)	
+        save_button = tk.Button(master=self, text="Save", height=3, width=10, command=save)
+        save_button.grid(sticky="N", column=1, row=6)
+        self.widgets.append(save_button)
 
-Exit_button = tk.Button(F, text = "Exit", command = F.quit)
-Exit_button.grid(sticky = "NEWS", column = 1, row = 4)
+    def main_menu(self):
+        """Main menu interface loader"""
+        for i in self.widgets:
+            i.grid_forget()
+        self.widgets.clear()
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+        self.columnconfigure(2, weight=1)
 
-Gear = tk.PhotoImage(file="settings.png")
-Settings_button = tk.Button(master = F, image = Gear)
-Settings_button.grid(sticky = "W", column = 0, row = 6)
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)
+        self.rowconfigure(2, weight=1)
+        self.rowconfigure(3, weight=1)
+        self.rowconfigure(4, weight=1)
+        self.rowconfigure(5, weight=1)
+        self.rowconfigure(6, weight=1)
 
-tk.mainloop()
+        game_name = tk.Label(master=self, text="IMAGINARIUM")
+        game_name.grid(sticky="NEWS", column=1, row=0)
+        self.widgets.append(game_name)
+
+        play_button = tk.Button(master=self, text="Play", command=self.play_menu)
+        play_button.grid(sticky="NEWS", column=1, row=2)
+        self.widgets.append(play_button)
+
+        exit_button = tk.Button(self, text="Exit", command=self.quit)
+        exit_button.grid(sticky="NEWS", column=1, row=4)
+        self.widgets.append(exit_button)
+
+        self.gear = tk.PhotoImage(file="settings.png")
+        settings_button = tk.Button(master=self, image=self.gear, command=self.settings_menu)
+        settings_button.grid(sticky="W", column=0, row=6)
+        self.widgets.append(settings_button)
+
+
+APP = App()
+APP.mainloop()
