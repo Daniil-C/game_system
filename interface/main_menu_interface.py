@@ -29,12 +29,16 @@ class App(tk.Frame):
     """ App Class"""
     def __init__(self, master=None):
         tk.Frame.__init__(self, master, borderwidth=2, relief="ridge",
-                          cursor="dot", height=1080, width=1920)
+                          cursor="dot") #, height=master.winfo_screenheight(), width=master.winfo_screenwidth())
+        self["height"] = self.master.winfo_screenheight()
+        self["width"] = self.master.winfo_screenwidth()
+        self.master.attributes("-fullscreen", True)
         self.master.columnconfigure(0, weight=1)
         self.master.rowconfigure(0, weight=1)
         self.master.title("IMAGINARIUM")
         self.grid_propagate(0)
         self.grid(sticky="NEWS")
+        self.master.resizable(False, False)
         self.widgets = [ ]
         self.main_menu()
 
@@ -45,13 +49,15 @@ class App(tk.Frame):
             if checker(server_ip_entry.get(), server_port_entry.get()):
                 SERVER_IP = server_ip_entry.get()
                 SERVER_PORT = server_port_entry.get()
-                message["text"] = "SAVED!"
-                message.grid(sticky="NEWS", column=1, row=3)
+                self.BG_settings = tk.PhotoImage(file="BG_settings_saved.png")
+                bg_settings["image"] = self.BG_settings
+                bg_settings.grid(sticky="NEWS", column=0, row=0, columnspan = 3, rowspan = 7)
                 server_port_entry.delete(0, tk.END)
                 server_ip_entry.delete(0, tk.END)
             else:
-                message["text"] = "Incorrect data. Try again."
-                message.grid(sticky="NEWS", column=1, row=3)
+                self.BG_settings = tk.PhotoImage(file="BG_settings_not_saved.png")
+                bg_settings["image"] = self.BG_settings
+                bg_settings.grid(sticky="NEWS", column=0, row=0, columnspan = 3, rowspan = 7)
 
         for i in self.widgets:
             i.grid_forget()
@@ -68,34 +74,28 @@ class App(tk.Frame):
         self.rowconfigure(5, weight=1)
         self.rowconfigure(6, weight=1)
 
-        server_ip_label = tk.Label(master=self, text="Server IP")
-        server_ip_label.grid(sticky="NEWS", column=1, row=1)
-        self.widgets.append(server_ip_label)
+        self.BG_settings = tk.PhotoImage(file="BG_settings.png")
+        bg_settings = tk.Label(master=self, image=self.BG_settings)
+        bg_settings.grid(sticky="NEWS", column=0, row=0, columnspan = 3, rowspan = 7)
+        self.widgets.append(bg_settings)
 
         server_ip_entry = tk.Entry(master=self)
         server_ip_entry.grid(sticky="NEW", column=1, row=2)
         self.widgets.append(server_ip_entry)
-
-        server_port_label = tk.Label(master=self, text="Server port")
-        server_port_label.grid(sticky="NEWS", column=1, row=4)
-        self.widgets.append(server_port_label)
 
         server_port_entry = tk.Entry(master=self)
         server_port_entry.grid(sticky="NEW", column=1, row=5)
         self.widgets.append(server_port_entry) 
 
         self.back = tk.PhotoImage(file="back.png")
-        back_button = tk.Button(master=self, image=self.back, command=self.main_menu)
+        back_button = tk.Button(master=self, image=self.back, command=self.main_menu, borderwidth=0, relief=tk.FLAT)
         back_button.grid(sticky="W", column=0, row=6)
         self.widgets.append(back_button)	
 
-        save_button = tk.Button(master=self, text="Save", height=3, width=10, command=save)
+        self.save = tk.PhotoImage(file="save.png")
+        save_button = tk.Button(master=self, image=self.save, command=save, borderwidth=0, relief=tk.FLAT)
         save_button.grid(sticky="N", column=1, row=6)
         self.widgets.append(save_button)
-
-        message = tk.Label(master=self, text="")
-        message.grid(sticky="NEWS", column=1, row=3)
-        self.widgets.append(message)
 
     def rule_menu(self):
         """RULES"""
@@ -135,28 +135,30 @@ class App(tk.Frame):
         self.rowconfigure(5, weight=1)
         self.rowconfigure(6, weight=1)
 
-        game_name = tk.Label(master=self, text="IMAGINARIUM")
-        game_name.grid(sticky="NEWS", column=1, row=0)
-        self.widgets.append(game_name)
+        self.bg = tk.PhotoImage(file="BG.png")
+        bg = tk.Label(master=self, image=self.bg)
+        bg.grid(sticky="NEWS", column=0, row=0, columnspan = 3, rowspan = 7)
+        self.widgets.append(bg)
 
-        play_button = tk.Button(master=self, text="Play")#, command=self.play_menu)
-        play_button.grid(sticky="NEWS", column=1, row=2)
+        self.play = tk.PhotoImage(file="play.png")
+        play_button = tk.Button(master=self, image=self.play, borderwidth=0, relief=tk.FLAT)#, command=self.play_menu)
+        play_button.grid(column=1, row=3)
         self.widgets.append(play_button)
 
-        exit_button = tk.Button(self, text="Exit", command=self.quit)
-        exit_button.grid(sticky="NEWS", column=1, row=4)
+        self.exit = tk.PhotoImage(file="exit.png")
+        exit_button = tk.Button(self, image=self.exit, command=self.quit, borderwidth=0, relief=tk.FLAT)
+        exit_button.grid(column=1, row=5)
         self.widgets.append(exit_button)
 
         self.gear = tk.PhotoImage(file="settings.png")
-        settings_button = tk.Button(master=self, image=self.gear, command=self.settings_menu)
+        settings_button = tk.Button(master=self, image=self.gear, command=self.settings_menu, borderwidth=0, relief=tk.FLAT)
         settings_button.grid(sticky="W", column=0, row=6)
         self.widgets.append(settings_button)
 
         self.rule = tk.PhotoImage(file="rule.png")
-        rule_button = tk.Button(master=self, image=self.rule)
+        rule_button = tk.Button(master=self, image=self.rule, borderwidth=0, relief=tk.FLAT)
         rule_button.grid(sticky="E", column=2, row=6)
         self.widgets.append(rule_button)
-
 
 
 APP = App()
