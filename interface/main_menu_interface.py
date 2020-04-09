@@ -1,9 +1,29 @@
 """ Interface for main menu """
 import tkinter as tk
-PLAERS = 0
+PLAYERS = 0
 SERVER_IP = ""
 SERVER_PORT = 0
-GOD_MODE = False
+
+def checker(IP, PORT):
+    """Check data in settings fields"""
+    ip_pars = IP.split(".")
+    ip_flg = False
+    port_flg = False
+    if len(ip_pars) == 4:
+        for i in ip_pars:
+            if i.isnumeric():
+                if int(i) <= 255 and int(i) >= 0:
+                    continue
+                else:
+                    break
+            else:
+                break
+        else:
+            ip_flg = True
+    if PORT.isnumeric():
+        if int(PORT) >= 1024 and int(PORT) <= 65535:
+            port_flg = True
+    return (ip_flg and port_flg)
 
 class App(tk.Frame):
     """ App Class"""
@@ -22,10 +42,16 @@ class App(tk.Frame):
         """game settings"""
         def save(*arg):
             """Save ip and port"""
-            SERVER_IP = server_ip_entry.get()
-            SERVER_PORT = server_port_entry.get()
-            server_port_entry.delete(0, tk.END)
-            server_ip_entry.delete(0, tk.END)
+            if checker(server_ip_entry.get(), server_port_entry.get()):
+                SERVER_IP = server_ip_entry.get()
+                SERVER_PORT = server_port_entry.get()
+                message["text"] = "SAVED!"
+                message.grid(sticky="NEWS", column=1, row=3)
+                server_port_entry.delete(0, tk.END)
+                server_ip_entry.delete(0, tk.END)
+            else:
+                message["text"] = "Incorrect data. Try again."
+                message.grid(sticky="NEWS", column=1, row=3)
 
         for i in self.widgets:
             i.grid_forget()
@@ -66,6 +92,10 @@ class App(tk.Frame):
         save_button = tk.Button(master=self, text="Save", height=3, width=10, command=save)
         save_button.grid(sticky="N", column=1, row=6)
         self.widgets.append(save_button)
+
+        message = tk.Label(master=self, text="")
+        message.grid(sticky="NEWS", column=1, row=3)
+        self.widgets.append(message)
 
     def rule_menu(self):
         """RULES"""
