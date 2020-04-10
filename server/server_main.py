@@ -1,6 +1,7 @@
 import socket
 import connection
 import threading
+import readline
 
 
 class game_state:
@@ -38,6 +39,9 @@ class CLI:
     def __init__(self, players, game_st):
         self.players = players
         self.game_st = game_st
+        readline.set_completer(self.completer)
+        readline.set_completer_delims("")
+        readline.parse_and_bind("tab: complete")
 
     def start(self):
         work = True
@@ -72,6 +76,16 @@ class CLI:
                 print(self.game_st.state)
                 self.game_st.sem.release()
 
+    def completer(self, text, state):
+        commands = ["help", "players", "start", "status", "stop"]
+        for i in commands:
+            if i.startswith(text):
+                if state == 0:
+                    return i
+                else:
+                    state = state - 1
+        return None
+
 
 def start(listening_socket):
     print("Starting")
@@ -96,10 +110,11 @@ def start(listening_socket):
         except:
             continue
 
-        new_player = Player(sock_info[0],
-                    "PLAYER" if first_player else "MASTER", control_sem)
         control_sem = threading.Semaphore()
         control_sem.acquire()
+
+        new_player = player(sock_info[0],
+                    "PLAYER" if first_player else "MASTER", control_sem)
         players.append(new_player)
         semaphores.append(control_sem)
 
