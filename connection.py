@@ -23,7 +23,7 @@ class connection:
         """
         buff = bytes()
         elem = bytes(self.connection_socket.recv(1))
-        while elem != bytes((0)) and elem != bytes():
+        while elem != bytes((0,)) and elem != bytes():
             buff = buff + elem
             elem = bytes(self.connection_socket.recv(1))
         return buff.decode()
@@ -32,7 +32,7 @@ class connection:
         """
         Send string
         """
-        data = bytes(data.encode()) + bytes((0))
+        data = bytes(data.encode()) + bytes((0,))
         not_sent = len(data)
         not_sent_data = data
         while not_sent > 0:
