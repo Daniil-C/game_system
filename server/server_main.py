@@ -1,20 +1,37 @@
 import socket
-import connection
+from connection import connection
 import threading
 import readline
 
-
-class game_state:
+class monitor:
     def __init__(self):
-        self.state = "PLAYER_CONN"
-        self.sem = threading.Semaphore()
+        object.__setattr__(self, "_monitor_sem", threading.Semaphore(1))
+
+    def __setattr__(self, name, value):
+        object.__getattribute__(self, "_monitor_sem").acquire()
+        object.__setattr__(self, name, value)
+        object.__getattribute__(self, "_monitor_sem").release()
+
+    def __getattribute__(self, name):
+        object.__getattribute__(self, "_monitor_sem").acquire()
+        val = object.__getattribute__(self, name)
+        object.__getattribute__(self, "_monitor_sem").release()
+        return val
 
 
-class player:
-    def __init__(self, sock, status, semaphore):
+class game_state(monitor):
+    def __init__(self, initial_state):
+        monitor.__init__(self)
+        self.state = initial_state
+
+
+class player(monitor):
+    def __init__(self, sock, status, sem):
+        monitor.__init__(self)
         self.player_socket = sock
         self.status = status
-        self.semaphore = semaphore
+        self.control_sem = sem
+        self.conn = connection(self.player_socket)
 
     def main(self):
         pass
@@ -45,36 +62,37 @@ class CLI:
 
     def start(self):
         work = True
-        print("CLI: Welcome")
+        print("CLI started")
         while work:
-            cmdline = input("\x1b[1;32m>\x1b[0m$ ").split()
+            try:
+                cmdline = input("\x1b[1;32m>\x1b[0m$ ").split()
+            except Exception as ex:
+                print("CLI: error:", ex)
+                continue
+
             if len(cmdline) == 0:
                 continue
 
             if cmdline[0] == "help":
-                print("Commands:")
+                print("CLI commands:")
                 print("\thelp")
                 print("\tplayers")
                 print("\tstart")
                 print("\tstatus")
                 print("\tstop")
             elif cmdline[0] == "players":
-                print(len(self.players), "players")
+                print("CLI:", len(self.players), "players")
             elif cmdline[0] == "start":
-                self.game_st.sem.acquire()
                 self.game_st.state = "START_GAME"
-                self.game_st.sem.release()
-                print("Starting game")
+                print("CLI: Starting game")
             elif cmdline[0] == "stop":
-                self.game_st.sem.acquire()
                 self.game_st.state = "STOPPING_SERVER"
-                self.game_st.sem.release()
-                print("Exiting CLI")
+                print("CLI: exit")
                 work = False
             elif cmdline[0] == "status":
-                self.game_st.sem.acquire()
                 print(self.game_st.state)
-                self.game_st.sem.release()
+            else:
+                print("CLI: error: unknown command")
 
     def completer(self, text, state):
         commands = ["help", "players", "start", "status", "stop"]
@@ -87,24 +105,19 @@ class CLI:
         return None
 
 
-def start(listening_socket):
-    print("Starting")
-    game_st = game_state()
+def main(listening_socket):
+    game_st = game_state("PLAYER_CONN")
     players = [ ]
     semaphores = [ ]
     threads = [ ]
 
     cli = CLI(players, game_st)
-    print("CLI init")
 
     threads.append(threading.Thread(target=CLI.start, args=(cli,)))
-    print("CLI start")
     threads[-1].start()
 
     first_player = False
-    game_st.sem.acquire()
     while game_st.state == "PLAYER_CONN":
-        game_st.sem.release()
         try:
             sock_info = listening_socket.accept()
         except:
@@ -121,9 +134,6 @@ def start(listening_socket):
         threads.append(threading.Thread(target=player.main, args=(new_player,)))
         threads[-1].start()
         first_player = True
-        game_st.sem.acquire()
-
-    game_st.sem.release()
 
     print("Exiting")
     for thr in threads:

@@ -19,5 +19,5 @@ if __name__ == "__main__":
         exit(1)
     LISTENING_SOCKET.bind((IP_ADDRESS, PORT))
     LISTENING_SOCKET.listen()
-    server.server_main.start(LISTENING_SOCKET)
+    server.server_main.main(LISTENING_SOCKET)
     LISTENING_SOCKET.close()
