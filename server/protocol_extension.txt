@@ -1,0 +1,53 @@
+VERSION:
+VERSION_REQUEST <X>
+
+OK:
+VERSION_RESPONSE OK
+
+UPDATE:
+VERSION_RESPONSE UPDATE
+
+LINK_TO_ARCHIVE:
+VERSION_LINK <link>
+
+UPDATE_OK
+
+UPDATE_FAILED
+
+DISCONNECT
+
+3:
+START_GAME
+
+BEGIN; CARD_NUMBERS:
+STARTING <list of card numbers, separator=','> <list of players: pairs [number, name], separator=','>
+
+READY
+
+TURN
+
+VOTE
+
+CARD_NUMBER_ASSOC:
+TURN <card number> <accociation: whole string until the end>
+
+ASSOC:
+ASSOC <accociation: whole string until the end>
+
+CARD_NUMBER:
+CARD <card number>
+
+CARD_NUMBERS:
+CARDS <list of card numbers, separator=','>
+
+RESULT:
+RESULT <correct card number> <list of selection: pairs [card, player number]> <score list: pairs [player number, score], separator=','>
+
+NEXT_TURN
+
+END_GAME; RESULT:
+END <score list: pairs [player number, score], separator=','>
+
+NEW_GAME
+
+EXIT
