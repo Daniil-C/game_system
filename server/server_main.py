@@ -19,6 +19,12 @@ class monitor:
         return val
 
 
+class list_thr(list, monitor):
+    def __init__(self, *args, **kwargs):
+        monitor.__init__(self)
+        list.__init__(self, *args, **kwargs)
+
+
 class game_state(monitor):
     def __init__(self, initial_state):
         monitor.__init__(self)
@@ -32,9 +38,12 @@ class player(monitor):
         self.status = status
         self.control_sem = sem
         self.conn = connection(self.player_socket)
+        self.valid = True
+        self.name = "Player"
 
     def main(self):
-        pass
+        self.control_sem.acquire()
+        self.check_version()
 
     def check_version(self):
         pass
@@ -105,11 +114,30 @@ class CLI:
         return None
 
 
+class disconnector(monitor):
+    def __init__(self, sock):
+        monitor.__init__(self)
+        self.sock = sock
+        self.active = False
+
+    def main(self):
+        while self.active:
+            try:
+                new_sock = self.sock.accept()
+            except:
+                continue
+            conn = connection(new_sock[0])
+            conn.send("DISCONNECT")
+            conn.close()
+
+
 def main(listening_socket):
     game_st = game_state("PLAYER_CONN")
-    players = [ ]
+    players = list_thr()
     semaphores = [ ]
     threads = [ ]
+
+    disc = disconnector(listening_socket)
 
     cli = CLI(players, game_st)
 
@@ -123,8 +151,7 @@ def main(listening_socket):
         except:
             continue
 
-        control_sem = threading.Semaphore()
-        control_sem.acquire()
+        control_sem = threading.Semaphore(0)
 
         new_player = player(sock_info[0],
                     "PLAYER" if first_player else "MASTER", control_sem)
@@ -134,6 +161,19 @@ def main(listening_socket):
         threads.append(threading.Thread(target=player.main, args=(new_player,)))
         threads[-1].start()
         first_player = True
+
+    disc.active = True
+    disc_thread = threading.Thread(target=disconnector.main, args=(disc,))
+    disc_thread.start()
+
+    for p in players:
+        p.control_sem.release()
+
+    while game_st.state == "START_GAME":
+        pass
+
+    disc.active = False
+    disc_thread.join()
 
     print("Exiting")
     for thr in threads:
