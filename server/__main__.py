@@ -10,10 +10,10 @@ if __name__ == "__main__":
     LISTENING_SOCKET = socket.socket()
     LISTENING_SOCKET.settimeout(0.5)
     IP_ADDRESS = os.getenv("HOST_IP", "127.0.0.1")
-    PORT = socket.htons(int(os.getenv("PORT", "7840")))
+    PORT = int(os.getenv("PORT", "7840"))
     print("Starting game server.")
     print("IP = ", IP_ADDRESS)
-    print("Port = ", socket.ntohs(PORT))
+    print("Port = ", PORT)
     if socket.inet_aton(IP_ADDRESS) == 0 or PORT < 1024:
         print("Wrong IP address or port")
         exit(1)

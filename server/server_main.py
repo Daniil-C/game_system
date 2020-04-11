@@ -2,6 +2,10 @@ import socket
 from connection import connection
 import threading
 import readline
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+import socketserver
+import os
+
 
 class monitor:
     def __init__(self):
@@ -25,6 +29,33 @@ class list_thr(list, monitor):
         list.__init__(self, *args, **kwargs)
 
 
+class resources(monitor):
+    def __init__(self, res_name):
+        monitor.__init__(self)
+        self.name = res_name
+
+
+class resource_server(monitor):
+    def __init__(self):
+        monitor.__init__(self)
+
+    def main(self):
+        ip = os.getenv("HOST_IP", "127.0.0.1")
+        port = int(os.getenv("PORT", "7840")) + 1
+
+        handler = SimpleHTTPRequestHandler
+        self.server = HTTPServer((ip, port), (lambda *args, **kwargs:
+                    handler(*args, directory="server/resources", **kwargs)))
+        self.server.serve_forever(poll_interval=0.5)
+        self.server.server_close()
+
+    def stop(self):
+        self.server.shutdown()
+
+    def error_handler(self, req, addr):
+        pass
+
+
 class game_state(monitor):
     def __init__(self, initial_state):
         monitor.__init__(self)
@@ -32,7 +63,7 @@ class game_state(monitor):
 
 
 class player(monitor):
-    def __init__(self, sock, status, sem):
+    def __init__(self, sock, status, sem, res):
         monitor.__init__(self)
         self.player_socket = sock
         self.status = status
@@ -40,10 +71,11 @@ class player(monitor):
         self.conn = connection(self.player_socket)
         self.valid = True
         self.name = "Player"
+        self.res = res
 
     def main(self):
-        self.control_sem.acquire()
         self.check_version()
+        self.control_sem.acquire()
 
     def check_version(self):
         pass
@@ -137,6 +169,8 @@ def main(listening_socket):
     semaphores = [ ]
     threads = [ ]
 
+    res = resources("template.zip")
+
     disc = disconnector(listening_socket)
 
     cli = CLI(players, game_st)
@@ -145,6 +179,13 @@ def main(listening_socket):
     threads[-1].start()
 
     first_player = False
+
+    # player connection and version check
+    res_server = resource_server()
+    res_server_thread = threading.Thread(target=resource_server.main,
+                args=(res_server,))
+    res_server_thread.start()
+
     while game_st.state == "PLAYER_CONN":
         try:
             sock_info = listening_socket.accept()
@@ -154,7 +195,7 @@ def main(listening_socket):
         control_sem = threading.Semaphore(0)
 
         new_player = player(sock_info[0],
-                    "PLAYER" if first_player else "MASTER", control_sem)
+                    "PLAYER" if first_player else "MASTER", control_sem, res)
         players.append(new_player)
         semaphores.append(control_sem)
 
@@ -166,9 +207,13 @@ def main(listening_socket):
     disc_thread = threading.Thread(target=disconnector.main, args=(disc,))
     disc_thread.start()
 
+    res_server.stop()
+    res_server_thread.join()
+
     for p in players:
         p.control_sem.release()
 
+    # starting game
     while game_st.state == "START_GAME":
         pass
 
