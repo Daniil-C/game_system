@@ -31,21 +31,29 @@ class resources(monitor):
 
 
 class resource_server(monitor):
-    def __init__(self):
+    def __init__(self, logger):
         monitor.__init__(self)
+        self.logger = logger
 
     def main(self):
         ip = env.get_ip()
         port = env.get_res_port()
 
         handler = SimpleHTTPRequestHandler
+        handler.log_message = lambda s, f, *args: self.logger.info(f % args)
         self.server = HTTPServer((ip, port), (lambda *args, **kwargs:
                     handler(*args, directory="server/resources", **kwargs)))
         self.server.serve_forever(poll_interval=0.5)
         self.server.server_close()
 
+    def start(self):
+        self.thread = threading.Thread(target=resource_server.main,
+                args=(self,))
+        self.thread.start()
+
     def stop(self):
         self.server.shutdown()
+        self.thread.join()
 
     def error_handler(self, req, addr):
         pass
@@ -89,23 +97,36 @@ class player(monitor):
         pass
 
 
-class CLI:
+class CLI(monitor):
     def __init__(self, players, game_st):
+        monitor.__init__(self)
         self.players = players
         self.game_st = game_st
         readline.set_completer(self.completer)
         readline.set_completer_delims("")
         readline.parse_and_bind("tab: complete")
+        self.work = False
 
     def start(self):
-        work = True
+        self.thread = threading.Thread(target=CLI.main, args=(self,))
+        self.thread.start()
+
+    def stop(self):
+        self.work = False
+        self.thread.join()
+
+    def main(self):
+        self.work = True
         print("CLI started")
-        while work:
+        while self.work:
             try:
                 cmdline = input("\x1b[1;32m>\x1b[0m$ ").split()
             except Exception as ex:
                 print("CLI: error:", ex)
                 continue
+
+            if not self.work:
+                break
 
             if len(cmdline) == 0:
                 continue
@@ -129,7 +150,7 @@ class CLI:
             elif cmdline[0] == "stop":
                 self.game_st.state = "STOPPING_SERVER"
                 print("CLI: exit")
-                work = False
+                self.work = False
             elif cmdline[0] == "status":
                 print(self.game_st.state)
             else:
@@ -147,10 +168,20 @@ class CLI:
 
 
 class disconnector(monitor):
-    def __init__(self, sock):
+    def __init__(self, sock, logger):
         monitor.__init__(self)
         self.sock = sock
         self.active = False
+        self.logger = logger
+
+    def start(self):
+        self.active = True
+        self.thread = threading.Thread(target=disconnector.main, args=(self,))
+        self.thread.start()
+
+    def stop(self):
+        self.active = False
+        self.thread.join()
 
     def main(self):
         while self.active:
@@ -158,13 +189,14 @@ class disconnector(monitor):
                 new_sock = self.sock.accept()
             except:
                 continue
+            self.logger.info("Disconnector: " + str(new_sock[1]))
             conn = connection(new_sock[0])
             conn.send("DISCONNECT")
             conn.close()
 
 
 class player_list(monitor):
-    def __init__(self):
+    def __init__(self, logger):
         monitor.__init__(self)
         self.players = [ ]
         self.semaphores = [ ]
@@ -172,6 +204,7 @@ class player_list(monitor):
         self.sem = threading.Semaphore(1)
         self.locked = False
         self.check = False
+        self.logger = logger
 
     def checker(self):
         while self.check:
@@ -182,6 +215,7 @@ class player_list(monitor):
                     del self.semaphores[i]
                     del self.players[i]
                     del self.threads[i]
+                    break
             self.release()
             time.sleep(1)
 
@@ -223,26 +257,23 @@ class player_list(monitor):
         self.release()
 
 
-def main(listening_socket):
+def main(listening_socket, logger):
     game_st = game_state("PLAYER_CONN")
-    players = player_list()
+    players = player_list(logger)
     players.start_check()
 
     res = resources(env.get_res_link())
 
-    disc = disconnector(listening_socket)
+    disc = disconnector(listening_socket, logger)
 
     cli = CLI(players, game_st)
-    cli_thread = threading.Thread(target=CLI.start, args=(cli,))
-    cli_thread.start()
+    cli.start()
 
     first_player = False
 
     # player connection and version check
-    res_server = resource_server()
-    res_server_thread = threading.Thread(target=resource_server.main,
-                args=(res_server,))
-    res_server_thread.start()
+    res_server = resource_server(logger)
+    res_server.start()
 
     while game_st.state == "PLAYER_CONN":
         try:
@@ -253,12 +284,9 @@ def main(listening_socket):
         players.add_player(not first_player, res, sock_info[0])
         first_player = True
 
-    disc.active = True
-    disc_thread = threading.Thread(target=disconnector.main, args=(disc,))
-    disc_thread.start()
+    disc.start()
 
     res_server.stop()
-    res_server_thread.join()
 
     players.acquire()
     for p in players.players:
@@ -270,8 +298,7 @@ def main(listening_socket):
         pass
 
     players.stop_check()
-    disc.active = False
-    disc_thread.join()
-    cli_thread.join()
+    disc.stop()
+    cli.stop()
 
     print("Exiting")
