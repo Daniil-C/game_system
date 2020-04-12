@@ -5,6 +5,7 @@ import readline
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import socketserver
 import server.environment as env
+import time
 
 
 class monitor:
@@ -21,12 +22,6 @@ class monitor:
         val = object.__getattribute__(self, name)
         object.__getattribute__(self, "_monitor_sem").release()
         return val
-
-
-class list_thr(list, monitor):
-    def __init__(self, *args, **kwargs):
-        monitor.__init__(self)
-        list.__init__(self, *args, **kwargs)
 
 
 class resources(monitor):
@@ -76,6 +71,7 @@ class player(monitor):
     def main(self):
         self.check_version()
         self.control_sem.acquire()
+        self.valid = False
 
     def check_version(self):
         pass
@@ -122,7 +118,11 @@ class CLI:
                 print("\tstatus")
                 print("\tstop")
             elif cmdline[0] == "players":
-                print("CLI:", len(self.players), "players")
+                self.players.acquire()
+                print("CLI:", len(self.players.players), "players")
+                for i in self.players.players:
+                    print(i.name)
+                self.players.release()
             elif cmdline[0] == "start":
                 self.game_st.state = "START_GAME"
                 print("CLI: Starting game")
@@ -163,20 +163,78 @@ class disconnector(monitor):
             conn.close()
 
 
+class player_list(monitor):
+    def __init__(self):
+        monitor.__init__(self)
+        self.players = [ ]
+        self.semaphores = [ ]
+        self.threads = [ ]
+        self.sem = threading.Semaphore(1)
+        self.locked = False
+        self.check = False
+
+    def checker(self):
+        while self.check:
+            self.acquire()
+            for i in range(len(self.players)):
+                if not self.players[i].valid:
+                    self.threads[i].join()
+                    del self.semaphores[i]
+                    del self.players[i]
+                    del self.threads[i]
+            self.release()
+            time.sleep(1)
+
+    def start_check(self):
+        self.check = True
+        self.check_thread = threading.Thread(target=player_list.checker,
+                    args=(self,))
+        self.check_thread.start()
+
+    def stop_check(self):
+        self.check = False
+        self.check_thread.join()
+        for i in range(len(self.players)):
+            self.players[i].valid = False
+            self.threads[i].join()
+        self.players.clear()
+        self.threads.clear()
+        self.semaphores.clear()
+
+    def acquire(self):
+        self.sem.acquire()
+        self.locked = True
+
+    def release(self):
+        self.locked = False
+        self.sem.release()
+
+    def add_player(self, is_master, res, sock):
+        self.acquire()
+        control_sem = threading.Semaphore(0)
+        new_player = player(sock,
+                    "MASTER" if is_master else "PLAYER", control_sem, res)
+        self.players.append(new_player)
+        self.semaphores.append(control_sem)
+
+        self.threads.append(threading.Thread(target=player.main,
+                    args=(new_player,)))
+        self.threads[-1].start()
+        self.release()
+
+
 def main(listening_socket):
     game_st = game_state("PLAYER_CONN")
-    players = list_thr()
-    semaphores = [ ]
-    threads = [ ]
+    players = player_list()
+    players.start_check()
 
     res = resources(env.get_res_link())
 
     disc = disconnector(listening_socket)
 
     cli = CLI(players, game_st)
-
-    threads.append(threading.Thread(target=CLI.start, args=(cli,)))
-    threads[-1].start()
+    cli_thread = threading.Thread(target=CLI.start, args=(cli,))
+    cli_thread.start()
 
     first_player = False
 
@@ -192,15 +250,7 @@ def main(listening_socket):
         except:
             continue
 
-        control_sem = threading.Semaphore(0)
-
-        new_player = player(sock_info[0],
-                    "PLAYER" if first_player else "MASTER", control_sem, res)
-        players.append(new_player)
-        semaphores.append(control_sem)
-
-        threads.append(threading.Thread(target=player.main, args=(new_player,)))
-        threads[-1].start()
+        players.add_player(not first_player, res, sock_info[0])
         first_player = True
 
     disc.active = True
@@ -210,16 +260,18 @@ def main(listening_socket):
     res_server.stop()
     res_server_thread.join()
 
-    for p in players:
+    players.acquire()
+    for p in players.players:
         p.control_sem.release()
+    players.release()
 
     # starting game
     while game_st.state == "START_GAME":
         pass
 
+    players.stop_check()
     disc.active = False
     disc_thread.join()
+    cli_thread.join()
 
     print("Exiting")
-    for thr in threads:
-        thr.join()

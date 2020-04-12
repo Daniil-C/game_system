@@ -12,8 +12,9 @@ if __name__ == "__main__":
     IP_ADDRESS = env.get_ip()
     PORT = env.get_port()
     print("Starting game server.")
-    print("IP = ", IP_ADDRESS)
-    print("Port = ", PORT)
+    print("IP =", IP_ADDRESS)
+    print("Port =", PORT)
+    print("Resources =", env.get_res_link())
     if socket.inet_aton(IP_ADDRESS) == 0 or PORT < 1024:
         print("Wrong IP address or port")
         exit(1)
