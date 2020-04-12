@@ -8,7 +8,7 @@ import logging
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format="%(asctime)-15s %(message)s")
+    logging.basicConfig(format="%(asctime)-15s %(message)s", filename="log.txt")
     LOGGER = logging.getLogger("Game server")
     LOGGER.setLevel("INFO")
     LISTENING_SOCKET = socket.socket()

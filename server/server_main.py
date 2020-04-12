@@ -30,6 +30,16 @@ class resources(monitor):
         self.name = res_name
 
 
+class HTTPHandler(SimpleHTTPRequestHandler):
+    def __init__(*args, **kwargs):
+        SimpleHTTPRequestHandler.__init__(*args, **kwargs)
+
+    def log_message(self, format, *args):
+        self.logger.info("HTTP: " + (format % args))
+
+    log_error = log_message
+
+
 class resource_server(monitor):
     def __init__(self, logger):
         monitor.__init__(self)
@@ -39,8 +49,8 @@ class resource_server(monitor):
         ip = env.get_ip()
         port = env.get_res_port()
 
-        handler = SimpleHTTPRequestHandler
-        handler.log_message = lambda s, f, *args: self.logger.info(f % args)
+        handler = HTTPHandler
+        handler.logger = self.logger
         self.server = HTTPServer((ip, port), (lambda *args, **kwargs:
                     handler(*args, directory="server/resources", **kwargs)))
         self.server.serve_forever(poll_interval=0.5)
@@ -54,9 +64,6 @@ class resource_server(monitor):
     def stop(self):
         self.server.shutdown()
         self.thread.join()
-
-    def error_handler(self, req, addr):
-        pass
 
 
 class game_state(monitor):
