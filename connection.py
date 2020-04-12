@@ -15,8 +15,12 @@ class connection:
         """
         Close connection.
         """
-        self.connection_socket.shutdown(socket.SHUT_RDWR)
+        try:
+            self.connection_socket.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
         self.connection_socket.close()
+        self.status = False
 
     def get(self):
         """
