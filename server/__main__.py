@@ -2,15 +2,15 @@
 Server for Imaginarium game
 """
 import socket
-import os
+import server.environment as env
 import server.server_main
 
 
 if __name__ == "__main__":
     LISTENING_SOCKET = socket.socket()
     LISTENING_SOCKET.settimeout(0.5)
-    IP_ADDRESS = os.getenv("HOST_IP", "127.0.0.1")
-    PORT = int(os.getenv("PORT", "7840"))
+    IP_ADDRESS = env.get_ip()
+    PORT = env.get_port()
     print("Starting game server.")
     print("IP = ", IP_ADDRESS)
     print("Port = ", PORT)

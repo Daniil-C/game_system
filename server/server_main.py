@@ -4,7 +4,7 @@ import threading
 import readline
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import socketserver
-import os
+import server.environment as env
 
 
 class monitor:
@@ -40,8 +40,8 @@ class resource_server(monitor):
         monitor.__init__(self)
 
     def main(self):
-        ip = os.getenv("HOST_IP", "127.0.0.1")
-        port = int(os.getenv("PORT", "7840")) + 1
+        ip = env.get_ip()
+        port = env.get_res_port()
 
         handler = SimpleHTTPRequestHandler
         self.server = HTTPServer((ip, port), (lambda *args, **kwargs:
@@ -169,7 +169,7 @@ def main(listening_socket):
     semaphores = [ ]
     threads = [ ]
 
-    res = resources("template.zip")
+    res = resources(env.get_res_link())
 
     disc = disconnector(listening_socket)
 
