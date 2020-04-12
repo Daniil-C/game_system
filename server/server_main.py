@@ -25,9 +25,10 @@ class monitor:
 
 
 class resources(monitor):
-    def __init__(self, res_name):
+    def __init__(self, res_name, res_link):
         monitor.__init__(self)
         self.name = res_name
+        self.link = res_link
 
 
 class HTTPHandler(SimpleHTTPRequestHandler):
@@ -73,7 +74,7 @@ class game_state(monitor):
 
 
 class player(monitor):
-    def __init__(self, sock, status, sem, res):
+    def __init__(self, sock, status, sem, res, game_st):
         monitor.__init__(self)
         self.player_socket = sock
         self.status = status
@@ -82,14 +83,48 @@ class player(monitor):
         self.valid = True
         self.name = "Player"
         self.res = res
+        self.game_st = game_st
 
     def main(self):
         self.check_version()
+        if not self.valid:
+            return
+        if self.status == "MASTER":
+            self.master_wait()
+            if self.game_st == "PLAYER_CONN":
+                self.game_st = "START_GAME"
         self.control_sem.acquire()
         self.valid = False
 
     def check_version(self):
-        pass
+        self.conn.send("VERSION_REQUEST " + self.res.name)
+        resp = self.conn.get().split()
+        if resp[0] != "VERSION_RESPONSE":
+            self.valid = False
+            return
+        self.name = resp[2]
+        if resp[1] == "OK":
+            self.conn.send(self.status)
+            return
+        elif resp[1] == "UPDATE":
+            self.conn.send("VERSION_LINK " + self.res.link)
+            r = self.conn.get().split()
+            if r[0] == "UPDATE_OK":
+                self.conn.send(self.status)
+                return
+            else:
+                self.conn.send("DISCONNECT")
+                self.valid = False
+                return
+        else:
+            self.conn.send("DISCONNECT")
+            self.valid = False
+            return
+
+    def master_wait(self):
+        resp = self.conn.get()
+        if resp[0] != "START_GAME":
+            self.valid = False
 
     def start_game(self):
         pass
@@ -203,7 +238,7 @@ class disconnector(monitor):
 
 
 class player_list(monitor):
-    def __init__(self, logger):
+    def __init__(self, logger, game_st):
         monitor.__init__(self)
         self.players = [ ]
         self.semaphores = [ ]
@@ -212,6 +247,7 @@ class player_list(monitor):
         self.locked = False
         self.check = False
         self.logger = logger
+        self.game_st = game_st
 
     def checker(self):
         while self.check:
@@ -219,9 +255,15 @@ class player_list(monitor):
             for i in range(len(self.players)):
                 if not self.players[i].valid:
                     self.threads[i].join()
+                    if self.players[i].status == "MASTER":
+                        fl = True
+                    else:
+                        fl = False
                     del self.semaphores[i]
                     del self.players[i]
                     del self.threads[i]
+                    if fl and len(self.players) > 0:
+                        self.players[0].status = "MASTER"
                     break
             self.release()
             time.sleep(1)
@@ -253,8 +295,8 @@ class player_list(monitor):
     def add_player(self, is_master, res, sock):
         self.acquire()
         control_sem = threading.Semaphore(0)
-        new_player = player(sock,
-                    "MASTER" if is_master else "PLAYER", control_sem, res)
+        new_player = player(sock, "MASTER" if is_master else "PLAYER",
+                    control_sem, res, self.game_st)
         self.players.append(new_player)
         self.semaphores.append(control_sem)
 
@@ -266,10 +308,10 @@ class player_list(monitor):
 
 def main(listening_socket, logger):
     game_st = game_state("PLAYER_CONN")
-    players = player_list(logger)
+    players = player_list(logger, game_st)
     players.start_check()
 
-    res = resources(env.get_res_link())
+    res = resources("res", env.get_res_link())
 
     disc = disconnector(listening_socket, logger)
 
