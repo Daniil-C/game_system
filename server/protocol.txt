@@ -10,7 +10,8 @@ Client  ---(OK | UPDATE)-->  Server
 		Case UPDATE_FAILED:
 		DISCONNECT
 
-Server  ---(MASTER | PLAYER)-->  Client
+Server  ---(MASTER | PLAYER)-->  Client // Данное сообщение может быть
+получено в любой момент игры.
 
 3. Начало игры.
 Client1  ---(START_GAME)-->  Server
