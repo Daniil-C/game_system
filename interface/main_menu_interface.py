@@ -135,7 +135,7 @@ class App(tk.Frame):
         self.rowconfigure(5, weight=1)
         self.rowconfigure(6, weight=1)
 
-        self.bg = tk.PhotoImage(file="BG.png")
+        self.bg = tk.PhotoImage(file="BG1.png")
         bg = tk.Label(master=self, image=self.bg)
         bg.grid(sticky="NEWS", column=0, row=0, columnspan = 3, rowspan = 7)
         self.widgets.append(bg)
@@ -147,10 +147,10 @@ class App(tk.Frame):
 
         self.exit = tk.PhotoImage(file="exit.png")
         exit_button = tk.Button(self, image=self.exit, command=self.quit, borderwidth=0, relief=tk.FLAT)
-        exit_button.grid(column=1, row=5)
+        exit_button.grid(column=1, row=4)
         self.widgets.append(exit_button)
 
-        self.gear = tk.PhotoImage(file="settings.png")
+        self.gear = tk.PhotoImage(file="../resources/images/settings.png")
         settings_button = tk.Button(master=self, image=self.gear, command=self.settings_menu, borderwidth=0, relief=tk.FLAT)
         settings_button.grid(sticky="W", column=0, row=6)
         self.widgets.append(settings_button)
