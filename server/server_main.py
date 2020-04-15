@@ -305,49 +305,53 @@ class player_list(monitor):
         self.threads[-1].start()
         self.release()
 
+class game_server:
+    def __init__(self, listening_socket, logger):
+        self.listening_socket = listening_socket
+        self.logger = logger
 
-def main(listening_socket, logger):
-    game_st = game_state("PLAYER_CONN")
-    players = player_list(logger, game_st)
-    players.start_check()
+    def main(self):
+        game_st = game_state("PLAYER_CONN")
+        players = player_list(self.logger, game_st)
+        players.start_check()
 
-    res = resources("res", env.get_res_link())
+        res = resources("res", env.get_res_link())
 
-    disc = disconnector(listening_socket, logger)
+        disc = disconnector(self.listening_socket, self.logger)
 
-    cli = CLI(players, game_st)
-    cli.start()
+        cli = CLI(players, game_st)
+        cli.start()
 
-    first_player = False
+        first_player = False
 
-    # player connection and version check
-    res_server = resource_server(logger)
-    res_server.start()
+        # player connection and version check
+        res_server = resource_server(self.logger)
+        res_server.start()
 
-    while game_st.state == "PLAYER_CONN":
-        try:
-            sock_info = listening_socket.accept()
-        except:
-            continue
+        while game_st.state == "PLAYER_CONN":
+            try:
+                sock_info = self.listening_socket.accept()
+            except:
+                continue
 
-        players.add_player(not first_player, res, sock_info[0])
-        first_player = True
+            players.add_player(not first_player, res, sock_info[0])
+            first_player = True
 
-    disc.start()
+        disc.start()
 
-    res_server.stop()
+        res_server.stop()
 
-    players.acquire()
-    for p in players.players:
-        p.control_sem.release()
-    players.release()
+        players.acquire()
+        for p in players.players:
+            p.control_sem.release()
+        players.release()
 
-    # starting game
-    while game_st.state == "START_GAME":
-        pass
+        # starting game
+        while game_st.state == "START_GAME":
+            pass
 
-    players.stop_check()
-    disc.stop()
-    cli.stop()
+        players.stop_check()
+        disc.stop()
+        cli.stop()
 
-    print("Exiting")
+        print("Exiting")

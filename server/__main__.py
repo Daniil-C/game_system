@@ -3,7 +3,7 @@ Server for Imaginarium game
 """
 import socket
 import server.environment as env
-import server.server_main
+from server.server_main import game_server
 import logging
 
 
@@ -28,5 +28,6 @@ if __name__ == "__main__":
         LOGGER.critical("Failed to bind listening socket.")
         quit()
     LISTENING_SOCKET.listen()
-    server.server_main.main(LISTENING_SOCKET, LOGGER)
+    server = game_server(LISTENING_SOCKET, LOGGER)
+    server.main()
     LISTENING_SOCKET.close()
