@@ -20,10 +20,10 @@ NAME:
 NAME <name>
 
 3:
-START_GAME
+START_GAME <set number>
 
 BEGIN; CARD_NUMBERS:
-STARTING <list of card numbers, separator=','> <list of players: pairs [number, name], separator=','>
+STARTING <set number> <list of card numbers, separator=','> <list of players: pairs [number, name], separator=','>
 
 READY
 
