@@ -1,50 +1,30 @@
-1. Запуск, соединение установлено.
-2. Сверка версий. В случае отличия загрузка ресурсов с сервера.
-Server  ---(VERSION)-->  Client
-Client  ---(OK | UPDATE)-->  Server
+1. Connection:
+Server  ---(VERSION <name> <link>)-->  Client
+Client  ---(OK | FAILED)-->  Server
 
-	Case UPDATE:
-	Server  ---(LINK_TO_ARCHIVE)-->  Client
-	Client  ---(UPDATE_OK | UPDATE_FAILED)-->  Server
+Server  ===(<PLAYER_LIST>)==>  All
 
-		Case UPDATE_FAILED:
-		DISCONNECT
+PLAYER_LIST := PLAYER_LIST <list: num;name>
 
-Server  ---(MASTER | PLAYER)-->  Client // Данное сообщение может быть
-получено в любой момент игры.
+2. Start:
+Client0  ---(START_GAME <set number>)-->  Server
+Server  ---(BEGIN <set number> <list: card>)-->  All
+All  ---(READY)-->  Server
 
-Client  ---(NAME)-->  Server
+3. Turn:
+Server  ---(TURN <player number>)-->  All
+ClientT  ---(TURN <card number> <association>)-->  Server
+Server  ---(ASSOC <association>)-->  All
 
-3. Начало игры.
-Client1  ---(START_GAME)-->  Server
-Server  ---(BEGIN; CARD_NUMBERS)-->  Clients
-Clients  ---(READY)-->  Server
+Client  ---(CARD <card number>)-->  Server
+Server  ===(PLAYER <player number>)==>  All
 
-4. Ход.
-Server  ---(TURN | VOTE)-->  Clients
+Server  ---(VOTE)-->  All
+All  ---(CARD <card number>)-->  Server
 
-	Case TURN:
-	Client  ---(CARD_NUMBER_ASSOC)--> Server
-	Server  ---(ASSOC)-->  Clients
+Server  ---(STATUS <right card number> <list: player num;card;chosen card>
+			<list: player num;score>)-->  All
 
-	Case VOTE:
-	Clients  ---(CARD_NUMBER)-->  Server
-
-Server  ---(CARD_NUMBERS)-->  Clients
-Clients  ---(CARD_NUMBER)-->  Server
-Server  ---(RESULT)-->  Clients
-Clients  ---(NEXT_TURN)-->  Server
-
-5. Перед следующим ходом.
-Server   ---(CARD_NUMBER)-->  Clients
-Step 4
-
-5. Конец игры.
-Server  ---(END_GAME; RESULT)-->  Clients
-Client1  ---(NEW_GAME | EXIT)-->  Server
-
-	Case NEW_GAME:
-	Step 3
-
-	Case EXIT:
-	DISCONNECT
+4. Next turn:
+All  ---(NEXT_TURN)-->  Server
+Server  ---(CARDS <list: card> | END_GAME)-->  All
