@@ -85,6 +85,15 @@ class player(monitor):
         self.res = res
         self.game_st = game_st
 
+    def start(self):
+        self.thread = threading.Thread(target=player.main,
+                    args=(self,))
+        self.thread.start()
+
+    def stop(self):
+        self.valid = False
+        self.thread.join()
+
     def main(self):
         self.check_version()
         if not self.valid:
@@ -97,29 +106,7 @@ class player(monitor):
         self.valid = False
 
     def check_version(self):
-        self.conn.send("VERSION_REQUEST " + self.res.name)
-        resp = self.conn.get().split()
-        if resp[0] != "VERSION_RESPONSE":
-            self.valid = False
-            return
-        self.name = resp[2]
-        if resp[1] == "OK":
-            self.conn.send(self.status)
-            return
-        elif resp[1] == "UPDATE":
-            self.conn.send("VERSION_LINK " + self.res.link)
-            r = self.conn.get().split()
-            if r[0] == "UPDATE_OK":
-                self.conn.send(self.status)
-                return
-            else:
-                self.conn.send("DISCONNECT")
-                self.valid = False
-                return
-        else:
-            self.conn.send("DISCONNECT")
-            self.valid = False
-            return
+        pass
 
     def master_wait(self):
         resp = self.conn.get()
@@ -242,10 +229,10 @@ class player_list(monitor):
         monitor.__init__(self)
         self.players = [ ]
         self.semaphores = [ ]
-        self.threads = [ ]
         self.sem = threading.Semaphore(1)
         self.locked = False
         self.check = False
+        self.master_lost = False
         self.logger = logger
         self.game_st = game_st
 
@@ -254,16 +241,11 @@ class player_list(monitor):
             self.acquire()
             for i in range(len(self.players)):
                 if not self.players[i].valid:
-                    self.threads[i].join()
+                    self.players[i].stop()
                     if self.players[i].status == "MASTER":
-                        fl = True
-                    else:
-                        fl = False
+                        self.master_lost = True
                     del self.semaphores[i]
                     del self.players[i]
-                    del self.threads[i]
-                    if fl and len(self.players) > 0:
-                        self.players[0].status = "MASTER"
                     break
             self.release()
             time.sleep(1)
@@ -274,14 +256,12 @@ class player_list(monitor):
                     args=(self,))
         self.check_thread.start()
 
-    def stop_check(self):
+    def stop(self):
         self.check = False
         self.check_thread.join()
         for i in range(len(self.players)):
-            self.players[i].valid = False
-            self.threads[i].join()
+            self.players[i].stop()
         self.players.clear()
-        self.threads.clear()
         self.semaphores.clear()
 
     def acquire(self):
@@ -297,12 +277,9 @@ class player_list(monitor):
         control_sem = threading.Semaphore(0)
         new_player = player(sock, "MASTER" if is_master else "PLAYER",
                     control_sem, res, self.game_st)
+        new_player.start()
         self.players.append(new_player)
         self.semaphores.append(control_sem)
-
-        self.threads.append(threading.Thread(target=player.main,
-                    args=(new_player,)))
-        self.threads[-1].start()
         self.release()
 
 class game_server:
@@ -350,7 +327,7 @@ class game_server:
         while game_st.state == "START_GAME":
             pass
 
-        players.stop_check()
+        players.stop()
         disc.stop()
         cli.stop()
 
