@@ -13,6 +13,8 @@ Client  ---(OK | UPDATE)-->  Server
 Server  ---(MASTER | PLAYER)-->  Client // Данное сообщение может быть
 получено в любой момент игры.
 
+Client  ---(NAME)-->  Server
+
 3. Начало игры.
 Client1  ---(START_GAME)-->  Server
 Server  ---(BEGIN; CARD_NUMBERS)-->  Clients
