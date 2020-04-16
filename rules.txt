@@ -1,0 +1,51 @@
+Начало игры
+В начале игры каждому игроку раздается по 6 карт и случайным образом выбирается ведущий.
+
+Процесс игры
+На каждом ходу один из игроков исполняет роль ведущего, который задает ассоциацию, и эта роль переходит от одного игрока к другому
+
+Ход ведущего
+Ведущий выбирает одну из своих карт и называет свою ассоциацию с этой картой. 
+
+Ответы игроков
+Остальные игроки выбирают среди своих карт одну такую, которая лучше всего подходит под ассоциацию ведущего. Карты перемешиваются и раскладываются рисунком вверх на столе.
+
+Отгадывание карты ведущего
+Теперь основная задача игроков - догадаться, какую именно из выложенных на столе карт загадал ведущий. Каждый игрок выбирает карту, которую как он считает, выбрал ведущий. Выбирать собственную карту нельзя. Ведущий в отгадывании не участвует.
+
+Подсчет очков
+ - Если карту ведущего отгадали все игроки, то ведущий не получает баллов, а все остальные игроки получают 3 очка
+ - Если карту ведущего никто не отгадал, то ведущий не получает очков, а все остальные получают столько баллов, сколько человек выбрало их карты.
+ - В любом другом случае ведущий и правильно угадавшие участники получают по три балла. Кроме того, все игроки, включая ведущего, получают столько очков, сколько человек выбрало их карты.
+
+Конец хода
+В конце хода разыгранные карты отправляются в сброс, а игроки получают по одной новой карте из колоды. Когда колода закончится, игра продолжается пока на руках есть карты
+
+Start of the game
+At the start of the game every player gets 6 cards and one of the players becomes a master at random.
+
+Game process
+On each turn, one of the players becomes a master, who sets the association, and this role passes from one player to another.
+
+Master's turn
+The master selects one of their cards and names their association with that card.
+
+Player responses
+The rest of the players choose among their cards the one that fits the best for an association of the master. The cards are shuffled and laid out face up on the table.
+
+Guessing the master's card
+Now the main task of the players is to guess which of the cards laid out on the table is the master's one. Each player chooses a card that they suppose the master has chosen. You can't select your own card. The master does not participate in the guessing.
+
+Counting of points
+ - If all players have guessed the master's card, the master does not get points, and all other players get 3 points
+ - If no one guesses the master's card, then the master does not get points, and everyone else gets as many points as the people chose their cards.
+ - In any other case, the master and correctly guessed participants receive three points each. In addition, all players, including the master, get as many points as people chose their cards.
+
+The end of the turn
+At the end of the turn, played cards are sent out of the game, and the players receive one new card from the deck. When the deck runs out, the game continues as long as there are cards on player's hands.
+
+
+
+
+
+
