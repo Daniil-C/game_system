@@ -1,6 +1,6 @@
 1. Connection:
 Server  ---(VERSION <name> <link>)-->  Client
-Client  ---(OK | FAILED)-->  Server
+Client  ---(OK <name> | FAILED)-->  Server
 
 Server  ===(<PLAYER_LIST>)==>  All
 
