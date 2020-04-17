@@ -6,6 +6,7 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 import socketserver
 import server.environment as env
 import time
+from random import shuffle
 
 
 class monitor:
@@ -71,10 +72,11 @@ class game_state(monitor):
     def __init__(self, initial_state):
         monitor.__init__(self)
         self.state = initial_state
+        self.card_set = 0
 
 
 class player(monitor):
-    def __init__(self, sock, status, sem, res, game_st):
+    def __init__(self, sock, status, sem, res, game_st, plist):
         monitor.__init__(self)
         self.player_socket = sock
         self.status = status
@@ -84,46 +86,60 @@ class player(monitor):
         self.name = "Player"
         self.res = res
         self.game_st = game_st
+        self.score = 0
+        self.thread_active = False
+        self.plist = plist
+        self.get_broadcast = False
 
     def start(self):
         self.thread = threading.Thread(target=player.main,
                     args=(self,))
         self.thread.start()
+        self.thread_active = True
 
     def stop(self):
         self.valid = False
-        self.thread.join()
+        if self.thread_active:
+            self.sem.release()
+            self.thread.join()
+            self.thread_active = False
 
     def main(self):
         self.check_version()
         if not self.valid:
             return
+        self.get_broadcast = True
+        self.plist.broadcast("#PLAYER_LIST")
         if self.status == "MASTER":
-            self.master_wait()
-            if self.game_st == "PLAYER_CONN":
-                self.game_st = "START_GAME"
-        self.control_sem.acquire()
-        self.valid = False
+
+
+            start = self.conn.get().split()
+            if len(start) == 2 and start[1].isnumeric():
+                self.game_st.card_set = int(start[1])
+                self.game_st.state = "GAME"
+            elif len(start) != 1 or start[0] != "READY":
+                self.valid = False
+                return
+
+
+        self.sem.acquire()
+        if not self.valid:
+            return
+        self.sem.release()
+        if not self.valid:
+            return
+        self.sem.acquire()
+        if not self.valid:
+            return
 
     def check_version(self):
-        pass
-
-    def master_wait(self):
-        resp = self.conn.get()
-        if resp[0] != "START_GAME":
-            self.valid = False
-
-    def start_game(self):
-        pass
-
-    def turn(self):
-        pass
-
-    def to_new_turn(self):
-        pass
-
-    def end_game(self):
-        pass
+        self.conn.send("VERSION " + self.res.name + " " + self.res.link)
+        res = self.conn.get().split()
+        if self.valid:
+            if len(res) != 2 or res[0] != "OK":
+                self.valid = False
+            else:
+                self.name = res[1]
 
 
 class CLI(monitor):
@@ -174,10 +190,10 @@ class CLI(monitor):
                     print(i.name)
                 self.players.release()
             elif cmdline[0] == "start":
-                self.game_st.state = "START_GAME"
+                self.game_st.state = "GAME"
                 print("CLI: Starting game")
             elif cmdline[0] == "stop":
-                self.game_st.state = "STOPPING_SERVER"
+                self.game_st.state = "SHUTDOWN"
                 print("CLI: exit")
                 self.work = False
             elif cmdline[0] == "status":
@@ -244,10 +260,13 @@ class player_list(monitor):
                     self.players[i].stop()
                     if self.players[i].status == "MASTER":
                         self.master_lost = True
+                        if self.game_st.state == "PLAYER_CONN":
+                            self.game_st.state = "ERROR"
                     del self.semaphores[i]
                     del self.players[i]
                     break
             self.release()
+            self.broadcast("#PLAYER_LIST")
             time.sleep(1)
 
     def start_check(self):
@@ -276,11 +295,21 @@ class player_list(monitor):
         self.acquire()
         control_sem = threading.Semaphore(0)
         new_player = player(sock, "MASTER" if is_master else "PLAYER",
-                    control_sem, res, self.game_st)
+                    control_sem, res, self.game_st, self)
         new_player.start()
         self.players.append(new_player)
         self.semaphores.append(control_sem)
         self.release()
+
+    def broadcast(self, data):
+        self.acquire()
+        if data == "#PLAYER_LIST":
+            data = "PLAYER_LIST " + ",".join([str(i) + ";" + self.players[i].name for i in range(len(self.players))])
+        for i in self.players:
+            if i.get_broadcast:
+                i.conn.send(data)
+        self.release()
+
 
 class game_server:
     def __init__(self, listening_socket, logger):
@@ -289,8 +318,12 @@ class game_server:
 
     def main(self):
         game_st = game_state("PLAYER_CONN")
+
+
         players = player_list(self.logger, game_st)
         players.start_check()
+        cards = [i for i in range(98)]
+        shuffle(cards)
 
         res = resources("res", env.get_res_link())
 
@@ -315,8 +348,15 @@ class game_server:
             first_player = True
 
         disc.start()
-
         res_server.stop()
+
+        if len(players.players) == 4:
+            cards = cards[:len(cards) - 2]
+        elif len(players.players) == 5:
+            cards = cards[:len(cards) - 23]
+        elif len(players.players) == 6:
+            cards = cards[:len(cards) - 26]
+
 
         players.acquire()
         for p in players.players:
