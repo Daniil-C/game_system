@@ -76,11 +76,12 @@ class game_state(monitor):
 
 
 class player(monitor):
-    def __init__(self, sock, status, sem, res, game_st, plist):
+    def __init__(self, sock, status, sem, m_sem, res, game_st, plist):
         monitor.__init__(self)
         self.player_socket = sock
         self.status = status
         self.control_sem = sem
+        self.main_sem = m_sem
         self.conn = connection(self.player_socket)
         self.valid = True
         self.name = "Player"
@@ -113,7 +114,7 @@ class player(monitor):
         self.check_version()
         if not self.valid:
             return
-        if not self.conn.valid:
+        if not self.conn.status:
             self.valid = False
             return
         self.get_broadcast = True
@@ -135,7 +136,7 @@ class player(monitor):
         self.control_sem.acquire()
         if not self.valid:
             return
-        self.control_sem.release()
+        self.main_sem.release()
         if not self.valid:
             return
         self.control_sem.acquire()
@@ -143,17 +144,17 @@ class player(monitor):
             return
         self.conn.send("BEGIN " + str(self.game_st.card_set) + " " +
                     ",".join([str(i) for i in self.cards]))
-        res = self.conn.get().split()
-        if not self.conn.valid:
+        res = self.conn.get()
+        if not self.conn.status:
             self.valid = False
             return
-        if len(res) != 1 or res[0] != "READY":
+        if res != "READY":
             self.valid = False
             return
         self.control_sem.acquire()
         if not self.valid:
             return
-        self.control_sem.release()
+        self.main_sem.release()
         while self.game_st.state == "GAME":
             self.control_sem.acquire()
             if not self.valid:
@@ -167,7 +168,7 @@ class player(monitor):
                     return
                 self.current_card = int(res[1])
             self.plist.broadcast("#SELF", info=self)
-            self.control_sem.release()
+            self.main_sem.release()
             self.control_sem.acquire()
             if not self.valid:
                 return
@@ -177,13 +178,13 @@ class player(monitor):
                     self.valid = False
                     return
                 self.selected_card = int(res[1])
-            self.control_sem.release()
             self.control_sem.acquire()
+            self.main_sem.release()
             res = self.conn.get()
             if res != "NEXT_TURN":
                 self.valid = False
                 return
-            self.control_sem.release()
+            self.main_sem.release()
             self.control_sem.acquire()
             if game_st.state != "GAME":
                 return
@@ -246,7 +247,10 @@ class CLI(monitor):
                         self.players.acquire()
                         print("CLI:", len(self.players.players), "players")
                         for i in self.players.players:
-                            print(i.name, i.score)
+                            if i.status == "MASTER":
+                                print(i.name, i.score, "M")
+                            else:
+                                print(i.name, i.score)
                         self.players.release()
                     else:
                         print("CLI: error: no player list available")
@@ -311,6 +315,7 @@ class player_list(monitor):
         monitor.__init__(self)
         self.players = [ ]
         self.semaphores = [ ]
+        self.main_semaphores = [ ]
         self.sem = threading.Semaphore(1)
         self.locked = False
         self.check = False
@@ -329,10 +334,12 @@ class player_list(monitor):
                         if self.game_st.state == "PLAYER_CONN":
                             self.game_st.state = "ERROR"
                     del self.semaphores[i]
+                    del self.main_semaphores[i]
                     del self.players[i]
+                    if game_st.state == "PLAYER_CONN":
+                        self.broadcast("#PLAYER_LIST")
                     break
             self.release()
-            self.broadcast("#PLAYER_LIST")
             time.sleep(0.5)
 
     def start_check(self):
@@ -348,6 +355,7 @@ class player_list(monitor):
             self.players[i].stop()
         self.players.clear()
         self.semaphores.clear()
+        self.main_semaphores.clear()
 
     def acquire(self):
         self.sem.acquire()
@@ -360,11 +368,13 @@ class player_list(monitor):
     def add_player(self, is_master, res, sock):
         self.acquire()
         control_sem = threading.Semaphore(0)
+        main_sem = threading.Semaphore(0)
         new_player = player(sock, "MASTER" if is_master else "PLAYER",
-                    control_sem, res, self.game_st, self)
+                    control_sem, main_sem, res, self.game_st, self)
         new_player.start()
         self.players.append(new_player)
         self.semaphores.append(control_sem)
+        self.main_semaphores.append(main_sem)
         self.release()
 
     def broadcast(self, data, info=None):
@@ -385,7 +395,7 @@ class player_list(monitor):
         for i in self.players:
             if i.get_broadcast and i.valid:
                 i.conn.send(data)
-                if not i.conn.valid:
+                if not i.conn.status:
                     i.valid = False
                     i.stop()
 
@@ -446,7 +456,7 @@ class game_server:
                 for p in players.players:
                     p.control_sem.release()
                 for p in players.players:
-                    p.control_sem.acquire()
+                    p.main_sem.acquire()
                 for p in players.players:
                     p.cards = cards[:6]
                     cards = cards[6:]
@@ -458,7 +468,7 @@ class game_server:
                 for p in players.players:
                     p.control_sem.release()
                 for p in players.players:
-                    p.control_sem.acquire()
+                    p.main_sem.acquire()
                 players.release()
 
                 # game loop
@@ -470,12 +480,12 @@ class game_server:
                         raise Exception("No players left in game, exit")
                     for i in range(len(players.players)):
                         if i == current_player:
-                            players.players[i],has_turn = True
+                            players.players[i].has_turn = True
                         else:
-                            players.players[i],has_turn = False
+                            players.players[i].has_turn = False
                     players.broadcast("TURN " + str(current_player))
                     get = players.players[current_player].conn.get().split(maxsplit=2)
-                    if not players.players[current_player].conn.valid or len(get) != 3 or get[0] != "TURN":
+                    if not players.players[current_player].conn.status or len(get) != 3 or get[0] != "TURN":
                         players.players[current_player].stop()
                         continue
                     current_card = int(get[1])
@@ -487,7 +497,7 @@ class game_server:
                         p.control_sem.release()
                     players.release()
                     for p in players.players:
-                        p.control_sem.acquire()
+                        p.main_sem.acquire()
                     cards_list = [i.current_card for i in players.players]
                     players.broadcast("VOTE " + ",".join(map(str, cards_list)))
                     players.acquire()
@@ -495,7 +505,7 @@ class game_server:
                         p.control_sem.release()
                     players.release()
                     for p in players.players:
-                        p.control_sem.acquire()
+                        p.main_sem.acquire()
                     players.acquire()
                     result = [0 for p in players.players]
                     for i in range(len(players.players)):
@@ -533,7 +543,7 @@ class game_server:
                     players.release()
                     players.acquire()
                     for p in players.players:
-                        p.control_sem.acquire()
+                        p.main_sem.acquire()
                     players.release()
                     if len(players.players[0].cards) == 0:
                         game_st.state = "END"
