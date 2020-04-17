@@ -19,7 +19,7 @@ Server  ---(ASSOC <association>)-->  All
 Client  ---(CARD <card number>)-->  Server
 Server  ===(PLAYER <player number>)==>  All
 
-Server  ---(VOTE)-->  All
+Server  ---(VOTE <list: card>)-->  All
 All  ---(CARD <card number>)-->  Server
 
 Server  ---(STATUS <right card number> <list: player num;card;chosen card>

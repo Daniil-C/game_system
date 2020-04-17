@@ -2,7 +2,7 @@
 "ERROR" - error state, ending current game.
 "SHUTDOWN" - ending current game, closing server.
 "GAME" - main game loop.
-"END"
+"END" - finish current game
 
 player_list class:
 players - list of player objects
