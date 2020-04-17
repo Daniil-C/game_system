@@ -6,7 +6,7 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 import socketserver
 import server.environment as env
 import time
-from random import shuffle
+from random import shuffle, randrange
 
 
 class monitor:
@@ -90,6 +90,8 @@ class player(monitor):
         self.thread_active = False
         self.plist = plist
         self.get_broadcast = False
+        self.cards = [ ]
+        self.has_turn = False
 
     def start(self):
         self.thread = threading.Thread(target=player.main,
@@ -100,37 +102,92 @@ class player(monitor):
     def stop(self):
         self.valid = False
         if self.thread_active:
-            self.sem.release()
+            self.control_sem.release()
             self.thread.join()
             self.thread_active = False
+        if self.conn != None:
+            self.conn.close()
+            self.conn = None
 
     def main(self):
         self.check_version()
         if not self.valid:
             return
+        if not self.conn.valid:
+            self.valid = False
+            return
         self.get_broadcast = True
         self.plist.broadcast("#PLAYER_LIST")
         if self.status == "MASTER":
-
-
-            start = self.conn.get().split()
-            if len(start) == 2 and start[1].isnumeric():
-                self.game_st.card_set = int(start[1])
-                self.game_st.state = "GAME"
-            elif len(start) != 1 or start[0] != "READY":
+            self.player_socket.settimeout(0.1)
+            while self.game_st.state == "PLAYER_CONN":
+                try:
+                    res = self.conn.get().split()
+                except:
+                    continue
+                if len(res) == 2 and res[1].isnumeric() and res[0] == "START_GAME":
+                    self.game_st.card_set = int(res[1])
+                    self.game_st.state = "GAME"
+                else:
+                    self.valid = False
+                    return
+            self.player_socket.settimeout(None)
+        self.control_sem.acquire()
+        if not self.valid:
+            return
+        self.control_sem.release()
+        if not self.valid:
+            return
+        self.control_sem.acquire()
+        if not self.valid:
+            return
+        self.conn.send("BEGIN " + str(self.game_st.card_set) + " " +
+                    ",".join([str(i) for i in self.cards]))
+        res = self.conn.get().split()
+        if not self.conn.valid:
+            self.valid = False
+            return
+        if len(res) != 1 or res[0] != "READY":
+            self.valid = False
+            return
+        self.control_sem.acquire()
+        if not self.valid:
+            return
+        self.control_sem.release()
+        while self.game_st.state == "GAME":
+            self.control_sem.acquire()
+            if not self.valid:
+                return
+            if self.game_st.state != "GAME":
+                break
+            if not self.has_turn:
+                res = self.conn.get().split()
+                if len(res) != 2 or res[0] != "CARD" or not res[1].isnumeric():
+                    self.valid = False
+                    return
+                self.current_card = int(res[1])
+            self.plist.broadcast("#SELF", info=self)
+            self.control_sem.release()
+            self.control_sem.acquire()
+            if not self.valid:
+                return
+            if not self.has_turn:
+                res = self.conn.get().split()
+                if len(res) != 2 or res[0] != "CARD" or not res[1].isnumeric():
+                    self.valid = False
+                    return
+                self.selected_card = int(res[1])
+            self.control_sem.release()
+            self.control_sem.acquire()
+            res = self.conn.get()
+            if res != "NEXT_TURN":
                 self.valid = False
                 return
-
-
-        self.sem.acquire()
-        if not self.valid:
-            return
-        self.sem.release()
-        if not self.valid:
-            return
-        self.sem.acquire()
-        if not self.valid:
-            return
+            self.control_sem.release()
+            self.control_sem.acquire()
+            if game_st.state != "GAME":
+                return
+            self.conn.send("CARDS " + ",".join(self.cards))
 
     def check_version(self):
         self.conn.send("VERSION " + self.res.name + " " + self.res.link)
@@ -167,7 +224,7 @@ class CLI(monitor):
             try:
                 cmdline = input("\x1b[1;32m>\x1b[0m$ ").split()
             except Exception as ex:
-                print("CLI: error:", ex)
+                print("CLI: error:", str(ex))
                 continue
 
             if not self.work:
@@ -176,33 +233,43 @@ class CLI(monitor):
             if len(cmdline) == 0:
                 continue
 
-            if cmdline[0] == "help":
-                print("CLI commands:")
-                print("\thelp")
-                print("\tplayers")
-                print("\tstart")
-                print("\tstatus")
-                print("\tstop")
-            elif cmdline[0] == "players":
-                self.players.acquire()
-                print("CLI:", len(self.players.players), "players")
-                for i in self.players.players:
-                    print(i.name)
-                self.players.release()
-            elif cmdline[0] == "start":
-                self.game_st.state = "GAME"
-                print("CLI: Starting game")
-            elif cmdline[0] == "stop":
-                self.game_st.state = "SHUTDOWN"
-                print("CLI: exit")
-                self.work = False
-            elif cmdline[0] == "status":
-                print(self.game_st.state)
-            else:
-                print("CLI: error: unknown command")
+            try:
+                if cmdline[0] == "help":
+                    print("CLI commands:")
+                    print("\thelp")
+                    print("\tplayers")
+                    print("\tstart <card set number>")
+                    print("\tstatus")
+                    print("\tstop")
+                elif cmdline[0] == "players":
+                    if self.players != None:
+                        self.players.acquire()
+                        print("CLI:", len(self.players.players), "players")
+                        for i in self.players.players:
+                            print(i.name, i.score)
+                        self.players.release()
+                    else:
+                        print("CLI: error: no player list available")
+                elif cmdline[0] == "start":
+                    if len(cmdline) == 2 and cmdline[1].isnumeric():
+                        self.game_st.card_set = int(cmdline[1])
+                        self.game_st.state = "GAME"
+                        print("CLI: Starting game")
+                    else:
+                        print("CLI: error: expected start <card set number>")
+                elif cmdline[0] == "stop":
+                    self.game_st.state = "SHUTDOWN"
+                    print("CLI: exit")
+                    self.work = False
+                elif cmdline[0] == "status":
+                    print(self.game_st.state)
+                else:
+                    print("CLI: error: unknown command")
+            except Exception as ex:
+                print("CLI: error: " + str(ex))
 
     def completer(self, text, state):
-        commands = ["help", "players", "start", "status", "stop"]
+        commands = ["help", "players", "start ", "status", "stop"]
         for i in commands:
             if i.startswith(text):
                 if state == 0:
@@ -236,7 +303,6 @@ class disconnector(monitor):
                 continue
             self.logger.info("Disconnector: " + str(new_sock[1]))
             conn = connection(new_sock[0])
-            conn.send("DISCONNECT")
             conn.close()
 
 
@@ -267,7 +333,7 @@ class player_list(monitor):
                     break
             self.release()
             self.broadcast("#PLAYER_LIST")
-            time.sleep(1)
+            time.sleep(0.5)
 
     def start_check(self):
         self.check = True
@@ -301,14 +367,27 @@ class player_list(monitor):
         self.semaphores.append(control_sem)
         self.release()
 
-    def broadcast(self, data):
-        self.acquire()
+    def broadcast(self, data, info=None):
         if data == "#PLAYER_LIST":
-            data = "PLAYER_LIST " + ",".join([str(i) + ";" + self.players[i].name for i in range(len(self.players))])
+            data = ("PLAYER_LIST " + ",".join([str(i) + ";" +
+                        self.players[i].name
+                        for i in range(len(self.players))]))
+        if data == "#SELF":
+            for i in range(len(self.players)):
+                p = None
+                if self.players[i] is info:
+                    p = i
+            if p != None:
+                data = "PLAYER " + str(p)
+            else:
+                self.release()
+                return
         for i in self.players:
-            if i.get_broadcast:
+            if i.get_broadcast and i.valid:
                 i.conn.send(data)
-        self.release()
+                if not i.conn.valid:
+                    i.valid = False
+                    i.stop()
 
 
 class game_server:
@@ -318,57 +397,166 @@ class game_server:
 
     def main(self):
         game_st = game_state("PLAYER_CONN")
-
-
-        players = player_list(self.logger, game_st)
-        players.start_check()
-        cards = [i for i in range(98)]
-        shuffle(cards)
-
-        res = resources("res", env.get_res_link())
-
-        disc = disconnector(self.listening_socket, self.logger)
-
-        cli = CLI(players, game_st)
+        cli = CLI(None, game_st)
         cli.start()
 
-        first_player = False
+        while game_st.state != "SHUTDOWN":
+            game_st.state = "PLAYER_CONN"
+            players = player_list(self.logger, game_st)
+            players.start_check()
+            cards = [i for i in range(98)]
+            shuffle(cards)
 
-        # player connection and version check
-        res_server = resource_server(self.logger)
-        res_server.start()
+            res = resources("res", env.get_res_link())
 
-        while game_st.state == "PLAYER_CONN":
+            disc = disconnector(self.listening_socket, self.logger)
+
+            cli.players = players
+
+            first_player = False
+
+            # player connection loop and version check
+            res_server = resource_server(self.logger)
+            res_server.start()
+
+            while game_st.state == "PLAYER_CONN":
+                try:
+                    sock_info = self.listening_socket.accept()
+                except:
+                    continue
+
+                players.add_player(not first_player, res, sock_info[0])
+                first_player = True
+
+            disc.start()
+            res_server.stop()
+
             try:
-                sock_info = self.listening_socket.accept()
-            except:
-                continue
+                if game_st.state != "GAME":
+                    raise Exception(game_st.state + " state detected, end game")
 
-            players.add_player(not first_player, res, sock_info[0])
-            first_player = True
+                if len(players.players) == 4:
+                    cards = cards[:len(cards) - 2]
+                elif len(players.players) == 5:
+                    cards = cards[:len(cards) - 23]
+                elif len(players.players) == 6:
+                    cards = cards[:len(cards) - 26]
 
-        disc.start()
-        res_server.stop()
+                players.acquire()
+                for p in players.players:
+                    p.control_sem.release()
+                for p in players.players:
+                    p.control_sem.acquire()
+                for p in players.players:
+                    p.cards = cards[:6]
+                    cards = cards[6:]
+                for p in players.players:
+                    p.control_sem.release()
+                players.release()
 
-        if len(players.players) == 4:
-            cards = cards[:len(cards) - 2]
-        elif len(players.players) == 5:
-            cards = cards[:len(cards) - 23]
-        elif len(players.players) == 6:
-            cards = cards[:len(cards) - 26]
+                players.acquire()
+                for p in players.players:
+                    p.control_sem.release()
+                for p in players.players:
+                    p.control_sem.acquire()
+                players.release()
 
+                # game loop
+                while game_st.state == "GAME":
+                    current_player = randrange(len(players.players))
+                    while current_player >= len(players.players):
+                        current_player -= 1
+                    if current_player < 0:
+                        raise Exception("No players left in game, exit")
+                    for i in range(len(players.players)):
+                        if i == current_player:
+                            players.players[i],has_turn = True
+                        else:
+                            players.players[i],has_turn = False
+                    players.broadcast("TURN " + str(current_player))
+                    get = players.players[current_player].conn.get().split(maxsplit=2)
+                    if not players.players[current_player].conn.valid or len(get) != 3 or get[0] != "TURN":
+                        players.players[current_player].stop()
+                        continue
+                    current_card = int(get[1])
+                    players.players[current_player].current_card = current_card
+                    players.players[current_player].selected_card = 0
+                    players.acquire()
+                    players.broadcast("ASSOC " + get[2])
+                    for p in players.players:
+                        p.control_sem.release()
+                    players.release()
+                    for p in players.players:
+                        p.control_sem.acquire()
+                    cards_list = [i.current_card for i in players.players]
+                    players.broadcast("VOTE " + ",".join(map(str, cards_list)))
+                    players.acquire()
+                    for p in players.players:
+                        p.control_sem.release()
+                    players.release()
+                    for p in players.players:
+                        p.control_sem.acquire()
+                    players.acquire()
+                    result = [0 for p in players.players]
+                    for i in range(len(players.players)):
+                        for p in players.players:
+                            if not p is players.players[current_player]:
+                                if players.players[i].current_card == p.selected_card:
+                                    result[i] += 1
+                    if result[current_player] == len(players.players) - 1:
+                        for p in players.players:
+                            if not p is players.players[current_player]:
+                                p.score += 3
+                    else:
+                        if result[current_player] != 0:
+                            for p in players.players:
+                                if not p is players.players[current_player]:
+                                    if p.selected_card == current_card:
+                                        p.score += 3
+                            players.players[current_player] += 3
+                        for i in range(len(players.players)):
+                            players.players[i].score += result[i]
+                    player_cards_list = [str(i) + ";" + str(players.players[i].current_card) + ";" +
+                                str(players.players[i].selected_card) for i in range(len(players.players))]
+                    player_score_list = [str[i] + ";" + str(players.players[i].score)
+                                for i in range(len(players.players))]
+                    players.broadcast("STATUS " + str(current_card) + " " + ",".join(player_cards_list) +
+                                " " + ",".join(player_score_list))
+                    for p in players.players:
+                        p.cards = [i for i in p.cards if i != p.current_card]
+                    if len(cards) >= len(players.players):
+                        for p in players.players:
+                            p.cards.append(cards[0])
+                            cards = cards[1:]
+                        for p in players.players:
+                            p.control_sem.release()
+                    players.release()
+                    players.acquire()
+                    for p in players.players:
+                        p.control_sem.acquire()
+                    players.release()
+                    if len(players.players[0].cards) == 0:
+                        game_st.state = "END"
+                        players.acquire()
+                        players.broadcast("END_GAME")
+                        players.release()
+                    else:
+                        players.acquire()
+                        for p in players.players:
+                            p.control_sem.release()
+                        players.release()
 
-        players.acquire()
-        for p in players.players:
-            p.control_sem.release()
-        players.release()
+                players.acquire()
+                for p in players.players:
+                    p.control_sem.release()
+                players.release()
 
-        # starting game
-        while game_st.state == "START_GAME":
-            pass
+            except Exception as ex:
+                self.logger.error(str(ex))
 
-        players.stop()
-        disc.stop()
+            cli.players = None
+            players.stop()
+            disc.stop()
+
         cli.stop()
-
         print("Exiting")
