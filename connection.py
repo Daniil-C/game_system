@@ -27,19 +27,25 @@ class connection:
         Get string.
         """
         buff = bytes()
-        elem = bytes(self.connection_socket.recv(1))
+        try:
+            elem = bytes(self.connection_socket.recv(1))
+        except Exception as ex:
+            if str(ex) == "timed out":
+                raise
+            else:
+                elem = bytes()
         while elem != bytes((0,)) and elem != bytes():
             buff = buff + elem
             elem = bytes(self.connection_socket.recv(1))
         if elem == bytes():
             self.status = False
-        return buff.decode()
+        return buff.decode("utf8")
 
     def send(self, data: str):
         """
         Send string
         """
-        data = bytes(data.encode()) + bytes((0,))
+        data = bytes(data.encode("utf8")) + bytes((0,))
         not_sent = len(data)
         not_sent_data = data
         while not_sent > 0:
