@@ -1,4 +1,5 @@
 import threading
+import socket
 import readline
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import time
@@ -21,6 +22,15 @@ class Monitor:
         val = object.__getattribute__(self, name)
         object.__getattribute__(self, "_Monitor_sem").release()
         return val
+
+
+class GameException(Exception):
+    def __init__(self, message):
+        Exception.__init__(self, message)
+        self.message = message
+
+    def __str__(self):
+        return self.message
 
 
 class Resources(Monitor):
@@ -121,12 +131,12 @@ class Player(Monitor):
 
     def sync(self):
         if not self.valid:
-            raise Exception("thread stop on sync")
+            raise GameException("thread stop on sync")
         self.control_sem.acquire()
         self.main_sem.release()
         self.control_sem.acquire()
         if not self.valid:
-            raise Exception("thread stop on sync")
+            raise GameException("thread stop on sync")
 
     def main(self):
         try:
@@ -140,7 +150,7 @@ class Player(Monitor):
                            ",".join(map(str, self.cards)))
             res = self.conn.get()
             if res != "READY":
-                raise Exception("READY message error")
+                raise GameException("READY message error")
             self.sync()
             while self.game_st.state == "GAME":
                 # Turn group 1
@@ -162,14 +172,14 @@ class Player(Monitor):
                 # next turn group
                 res = self.conn.get()
                 if res != "NEXT_TURN":
-                    raise Exception("NEXT_TURN message error")
+                    raise GameException("NEXT_TURN message error")
                 self.sync() # sync 6
                 self.sync() # sync 7
                 if self.game_st.state != "GAME":
                     return
                 self.conn.send("CARDS " + ",".join(map(str, self.cards)))
                 self.sync() # sync 8
-        except Exception as ex:
+        except GameException as ex:
             self.valid = False
             self.logger.error("Player " + str(self.number) + ": " + str(ex))
             self.main_sem.release()
@@ -179,19 +189,19 @@ class Player(Monitor):
         while self.game_st.state == "PLAYER_CONN":
             try:
                 res = self.conn.get().split()
-            except:
+            except socket.timeout:
                 continue
             if len(res) == 2 and res[1].isnumeric() and res[0] == "START_GAME":
                 self.game_st.card_set = int(res[1])
                 self.game_st.state = "GAME"
             else:
-                raise Exception("START_GAME message error")
+                raise GameException("START_GAME message error")
         self.player_socket.settimeout(None)
 
     def get_card(self):
         res = self.conn.get().split()
         if len(res) != 2 or res[0] != "CARD" or not res[1].isnumeric():
-            raise Exception("CARD message error")
+            raise GameException("CARD message error")
         return int(res[1])
 
     def check_version(self):
@@ -200,7 +210,7 @@ class Player(Monitor):
         res = self.conn.get().split()
         if self.valid:
             if len(res) != 2 or res[0] != "OK":
-                raise Exception("version check error")
+                raise GameException("version check error")
             else:
                 self.name = res[1]
 
@@ -296,8 +306,7 @@ class CLI(Monitor):
             if i.startswith(text):
                 if state == 0:
                     return i
-                else:
-                    state = state - 1
+                state = state - 1
         return None
 
 
@@ -322,7 +331,7 @@ class Disconnector(Monitor):
         while self.active:
             try:
                 new_sock = self.sock.accept()
-            except:
+            except socket.timeout:
                 continue
             self.logger.info("Disconnector: " + str(new_sock[1]))
             conn = connection(new_sock[0])
@@ -464,7 +473,7 @@ class GameServer:
             while game_st.state == "PLAYER_CONN":
                 try:
                     sock_info = self.listening_socket.accept()
-                except:
+                except socket.timeout:
                     continue
 
                 players.add_player(not first_player, res, sock_info[0], p_number)
@@ -478,7 +487,7 @@ class GameServer:
 
             try:
                 if game_st.state != "GAME":
-                    raise Exception(game_st.state + " state detected, end game")
+                    raise GameException(game_st.state + " state detected, end game")
 
                 if len(players) == 4:
                     cards = cards[:len(cards) - 2]
@@ -500,7 +509,7 @@ class GameServer:
                     # turn group 1
                     current_player = players.next_player(current_player)
                     if current_player is None:
-                        raise Exception("No players left in game, exit")
+                        raise GameException("No players left in game, exit")
                     for i in players:
                         if i is current_player:
                             i.has_turn = True
@@ -572,7 +581,7 @@ class GameServer:
                         break
                     players.sync() # sync 8
 
-            except Exception as ex:
+            except GameException as ex:
                 self.logger.error(str(ex))
 
             cli.players = None
