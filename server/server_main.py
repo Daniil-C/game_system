@@ -369,6 +369,7 @@ class PlayerList(Monitor):
             for i in range(len(self.players)):
                 if not (self.players[i].valid and self.players[i].conn.status):
                     self.players[i].stop()
+                    self.logger.info("Checker: collected player %d", self.players[i].number)
                     if self.players[i].status == "MASTER":
                         if self.game_st.state == "PLAYER_CONN":
                             self.game_st.state = "ERROR"
@@ -385,10 +386,7 @@ class PlayerList(Monitor):
                 yield player
 
     def __len__(self):
-        i = 0
-        for player in self:
-            i += 1
-        return i
+        return len(tuple(iter(self)))
 
     def next_player(self, player):
         p_idx = 0
@@ -456,81 +454,45 @@ class GameServer:
     def __init__(self, listening_socket, logger):
         self.listening_socket = listening_socket
         self.logger = logger
+        self.game_state = None
+        self.players = None
+        self.cards = None
+        self.resource_server = None
+        self.resources = None
+        self.disconnector = None
+        self.cli = None
 
     def main(self):
-        game_st = GameState("PLAYER_CONN")
-        cli = CLI(None, game_st)
-        cli.start()
+        self.game_state = GameState("PLAYER_CONN")
+        self.cli = CLI(None, self.game_state)
+        self.cli.start()
 
-        while game_st.state != "SHUTDOWN":
-            game_st.state = "PLAYER_CONN"
-            players = PlayerList(self.logger, game_st)
-            players.start_check()
-            cards = list(range(98))
-            shuffle(cards)
+        while self.game_state.state != "SHUTDOWN":
+            self.prepare()
+            self.connect_players()
 
-            res = Resources(env.get_res_name(), env.get_res_link())
-
-            disc = Disconnector(self.listening_socket, self.logger)
-
-            cli.players = players
-
-            first_player = False
-
-            # player connection loop and version check
-            res_server = ResourceServer(self.logger)
-            res_server.start()
-
-            p_number = 0
-
-            self.logger.info("Waiting for players to connect")
-
-            while game_st.state == "PLAYER_CONN":
-                try:
-                    sock_info = self.listening_socket.accept()
-                except socket.timeout:
-                    continue
-
-                players.add_player(not first_player, res, sock_info[0], p_number)
-                first_player = True
-                p_number += 1
-
-            disc.start()
-            res_server.stop()
-
+            self.disconnector.start()
             self.logger.info("Start game")
 
             try:
-                if game_st.state != "GAME":
-                    raise GameException(game_st.state + " state detected, end game")
+                self.begin_game()
 
-                if len(players) == 4:
-                    cards = cards[:len(cards) - 2]
-                elif len(players) == 5:
-                    cards = cards[:len(cards) - 23]
-                elif len(players) == 6:
-                    cards = cards[:len(cards) - 26]
+                self.players.sync()
+                self.players.sync()
 
-                for player in players:
-                    player.cards = cards[:6]
-                    cards = cards[6:]
-
-                players.sync()
-                players.sync()
-
-                current_player = players.players[randrange(len(players.players))]
+                current_player = self.players.players[randrange(len(self.players.players))]
                 # game loop
-                while game_st.state == "GAME":
+                while self.game_state.state == "GAME":
                     # turn group 1
-                    current_player = players.next_player(current_player)
+                    current_player = self.players.next_player(current_player)
                     if current_player is None:
                         raise GameException("No players left in game, exit")
-                    for i in players:
+                    for i in self.players:
                         if i is current_player:
                             i.has_turn = True
                         else:
                             i.has_turn = False
-                    players.broadcast("TURN " + str(current_player.number))
+                    self.players.broadcast("TURN " + str(current_player.number))
                     get = current_player.conn.get().split(maxsplit=2)
                     if len(get) != 3 or get[0] != "TURN":
                         current_player.valid = False
@@ -538,69 +500,121 @@ class GameServer:
                     current_card = int(get[1])
                     current_player.current_card = current_card
                     current_player.selected_card = 0
-                    players.broadcast("ASSOC " + get[2])
-                    players.sync() # sync 1
+                    self.players.broadcast("ASSOC " + get[2])
+                    self.players.sync() # sync 1
                     # turn group 2
-                    players.sync() # sync 2
+                    self.players.sync() # sync 2
                     #turn group 3
-                    cards_list = [i.current_card for i in players]
-                    players.acquire()
-                    players.broadcast("VOTE " + ",".join(map(str, cards_list)))
-                    players.release()
-                    players.sync() # sync 3
+                    cards_list = [i.current_card for i in self.players]
+                    self.players.acquire()
+                    self.players.broadcast("VOTE " + ",".join(map(str, cards_list)))
+                    self.players.release()
+                    self.players.sync() # sync 3
                     # turn group 4
-                    players.sync() # sync 4
-                    players.acquire()
-                    result = {p:0 for p in players}
-                    for i in players:
-                        for player in players:
-                            if not player is current_player:
-                                if i.current_card == player.selected_card:
-                                    result[i] += 1
-                    if result[current_player] == len(players) - 1:
-                        for player in players:
-                            if not player is current_player:
-                                player.score += 3
-                    else:
-                        if result[current_player] != 0:
-                            for player in players:
-                                if not player is current_player:
-                                    if player.selected_card == current_card:
-                                        player.score += 3
-                            current_player.score += 3
-                        for i in players:
-                            i.score += result[i]
+                    self.players.sync() # sync 4
+
+                    self.players.acquire()
+
+                    self.calculate_result(current_player)
+
                     player_cards_list = [str(i.number) + ";" + str(i.current_card) + ";" +
-                                         str(i.selected_card) for i in players]
-                    player_score_list = [str(i.number) + ";" + str(i.score) for i in players]
-                    players.broadcast("STATUS " + str(current_card) + " " +
-                                      ",".join(player_cards_list) + " " +
-                                      ",".join(player_score_list))
-                    players.sync() # sync 5
+                                         str(i.selected_card) for i in self.players]
+                    player_score_list = [str(i.number) + ";" + str(i.score) for i in self.players]
+                    self.players.broadcast("STATUS " + str(current_card) + " " +
+                                           ",".join(player_cards_list) + " " +
+                                           ",".join(player_score_list))
+
+                    self.players.sync() # sync 5
                     # next turn group
-                    players.sync() # sync 6
-                    for player in players:
+                    self.players.sync() # sync 6
+                    for player in self.players:
                         player.cards = [i for i in player.cards if i != player.current_card]
-                    if len(cards) >= len(players):
-                        for player in players:
-                            player.cards.append(cards[0])
-                            cards = cards[1:]
-                    players.release()
-                    if len(players.players[0].cards) == 0:
-                        game_st.state = "END"
-                        players.acquire()
-                        players.broadcast("END_GAME")
-                        players.release()
-                    players.sync() # sync 7
-                    if game_st.state != "GAME":
+                    if len(self.cards) >= len(self.players):
+                        for player in self.players:
+                            player.cards.append(self.cards[0])
+                            self.cards = self.cards[1:]
+
+                    self.players.release()
+
+                    if len(self.players.players[0].cards) == 0:
+                        self.game_state.state = "END"
+                        self.players.acquire()
+                        self.players.broadcast("END_GAME")
+                        self.players.release()
+                    self.players.sync() # sync 7
+                    if self.game_state.state != "GAME":
                         break
-                    players.sync() # sync 8
+                    self.players.sync() # sync 8
 
             except GameException as ex:
                 self.logger.error(str(ex))
 
-            cli.players = None
-            players.stop()
-            disc.stop()
+            self.cli.players = None
+            self.players.stop()
+            self.disconnector.stop()
 
-        cli.stop()
+        self.cli.stop()
+
+    def prepare(self):
+        self.game_state.state = "PLAYER_CONN"
+        self.players = PlayerList(self.logger, self.game_state)
+        self.players.start_check()
+        self.cards = list(range(98))
+        shuffle(self.cards)
+        self.resources = Resources(env.get_res_name(), env.get_res_link())
+        self.disconnector = Disconnector(self.listening_socket, self.logger)
+        self.cli.players = self.players
+        self.resource_server = ResourceServer(self.logger)
+
+    def connect_players(self):
+        self.resource_server.start()
+        p_number = 0
+        first_player = False
+        self.logger.info("Waiting for players to connect")
+        while self.game_state.state == "PLAYER_CONN":
+            try:
+                sock_info = self.listening_socket.accept()
+            except socket.timeout:
+                continue
+            self.players.add_player(not first_player, self.resources, sock_info[0], p_number)
+            first_player = True
+            p_number += 1
+        self.resource_server.stop()
+
+    def begin_game(self):
+        if len(self.players) == 0:
+            raise GameException("Game started without players, end game")
+        if self.game_state.state != "GAME":
+            raise GameException(self.game_state.state + " state detected, end game")
+
+        if len(self.players) == 4:
+            self.cards = self.cards[:len(self.cards) - 2]
+        elif len(self.players) == 5:
+            self.cards = self.cards[:len(self.cards) - 23]
+        elif len(self.players) == 6:
+            self.cards = self.cards[:len(self.cards) - 26]
+
+        for player in self.players:
+            player.cards = self.cards[:6]
+            self.cards = self.cards[6:]
+
+    def calculate_result(self, current_player):
+        result = {p:0 for p in self.players}
+        for i in self.players:
+            for player in self.players:
+                if not player is current_player:
+                    if i.current_card == player.selected_card:
+                        result[i] += 1
+        if result[current_player] == len(self.players) - 1:
+            for player in self.players:
+                if not player is current_player:
+                    player.score += 3
+        else:
+            if result[current_player] != 0:
+                for player in self.players:
+                    if not player is current_player:
+                        if player.selected_card == current_card:
+                            player.score += 3
+                current_player.score += 3
+            for i in self.players:
+                i.score += result[i]
