@@ -1,5 +1,5 @@
 1. Connection:
-Server  ---(VERSION <player number> <version name> <version link>)-->  Client
+Server  ---(VERSION <player number> <MASTER | PLAYER> <version name> <version link>)-->  Client
 Client  ---(OK <name> | FAILED)-->  Server
 
 Server  ===(<PLAYER_LIST>)==>  All
