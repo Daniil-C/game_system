@@ -5,7 +5,7 @@ import socket
 import logging
 import sys
 import server.environment as env
-from server.server_main import game_server
+from server.server_main import GameServer
 
 
 if __name__ == "__main__":
@@ -31,7 +31,7 @@ if __name__ == "__main__":
         LISTENING_SOCKET.close()
         sys.exit(2)
     LISTENING_SOCKET.listen()
-    SERVER = game_server(LISTENING_SOCKET, LOGGER)
+    SERVER = GameServer(LISTENING_SOCKET, LOGGER)
     SERVER.main()
     LISTENING_SOCKET.close()
     LOGGER.info("Shutdown.")
