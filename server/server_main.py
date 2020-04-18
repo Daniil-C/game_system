@@ -330,13 +330,9 @@ class PlayerList(Monitor):
     def __init__(self, logger, game_st):
         Monitor.__init__(self)
         self.players = list()
-        self.semaphores = list()
-        self.main_semaphores = list()
         self.sem = threading.Semaphore(1)
-        self.locked = False
         self.check = False
         self.check_thread = None
-        self.master_lost = False
         self.logger = logger
         self.game_st = game_st
 
@@ -347,11 +343,8 @@ class PlayerList(Monitor):
                 if not (self.players[i].valid and self.players[i].conn.status):
                     self.players[i].stop()
                     if self.players[i].status == "MASTER":
-                        self.master_lost = True
                         if self.game_st.state == "PLAYER_CONN":
                             self.game_st.state = "ERROR"
-                    del self.semaphores[i]
-                    del self.main_semaphores[i]
                     del self.players[i]
                     if self.game_st.state == "PLAYER_CONN":
                         self.broadcast("#PLAYER_LIST")
@@ -397,15 +390,11 @@ class PlayerList(Monitor):
         for i in range(len(self.players)):
             self.players[i].stop()
         self.players.clear()
-        self.semaphores.clear()
-        self.main_semaphores.clear()
 
     def acquire(self):
         self.sem.acquire()
-        self.locked = True
 
     def release(self):
-        self.locked = False
         self.sem.release()
 
     def add_player(self, is_master, res, sock, number):
@@ -416,8 +405,6 @@ class PlayerList(Monitor):
                             control_sem, main_sem, res, self.game_st, self, number, self.logger)
         new_player.start()
         self.players.append(new_player)
-        self.semaphores.append(control_sem)
-        self.main_semaphores.append(main_sem)
         self.release()
 
     def sync(self):
