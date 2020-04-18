@@ -159,13 +159,13 @@ class Player(Monitor):
                 if self.game_st.state != "GAME":
                     break
                 if not self.has_turn:
-                    self.current_card = get_card()
+                    self.current_card = self.get_card()
                 self.plist.broadcast("#SELF", info=self)
                 self.sync() # sync 2
                 # turn group 3
                 self.sync() # sync 3
                 if not self.has_turn:
-                    self.selected_card = get_card()
+                    self.selected_card = self.get_card()
                 self.sync() # sync 4
                 # turn group 4
                 self.sync() # sync 5
@@ -252,49 +252,15 @@ class CLI(Monitor):
 
             try:
                 if cmdline[0] == "help":
-                    print("CLI commands:")
-                    print("\thelp")
-                    print("\tplayers")
-                    print("\tstart <card set number>")
-                    print("\tstatus")
-                    print("\tstop")
+                    self.comm_help()
                 elif cmdline[0] == "players":
-                    if not self.players is None:
-                        self.players.acquire()
-                        print("CLI:", len(self.players), "player" + "s"*int(len(self.players) != 1))
-                        out = list()
-                        m_len = [len("number"), len("name"), len("score")]
-                        for i in self.players:
-                            out.append((str(i.number), i.name, str(i.score), i.status == "MASTER"))
-                            m_len = [max(m_len[0], len(str(i.number))), max(m_len[1], len(i.name)),
-                                     max(m_len[2], len(str(i.score)))]
-                        if len(out) > 0:
-                            print("number" + " "*(m_len[0] - len("number")),
-                                  "name" + " "*(m_len[1] - len("name")),
-                                  "score" + " "*(m_len[2] - len("score")))
-                            for i in out:
-                                string = ""
-                                for idx in range(3):
-                                    string += i[idx] + " "*(m_len[idx] - len(i[idx]) + 1)
-                                if i[3]:
-                                    string += "master"
-                                print(string.strip())
-                        self.players.release()
-                    else:
-                        print("CLI: error: no player list available")
+                    self.comm_players()
                 elif cmdline[0] == "start":
-                    if len(cmdline) == 2 and cmdline[1].isnumeric():
-                        self.game_st.card_set = int(cmdline[1])
-                        self.game_st.state = "GAME"
-                        print("CLI: Starting game")
-                    else:
-                        print("CLI: error: expected start <card set number>")
+                    self.comm_start(cmdline)
                 elif cmdline[0] == "stop":
-                    self.game_st.state = "SHUTDOWN"
-                    print("CLI: exit")
-                    self.work = False
+                    self.comm_stop()
                 elif cmdline[0] == "status":
-                    print(self.game_st.state)
+                    self.comm_status()
                 else:
                     print("CLI: error: unknown command")
             except Exception as ex:
@@ -308,6 +274,55 @@ class CLI(Monitor):
                     return i
                 state = state - 1
         return None
+
+    def comm_help(self):
+        print("CLI commands:")
+        print("\thelp")
+        print("\tplayers")
+        print("\tstart <card set number>")
+        print("\tstatus")
+        print("\tstop")
+
+    def comm_players(self):
+        if not self.players is None:
+            self.players.acquire()
+            print("CLI:", len(self.players), "player" + "s"*int(len(self.players) != 1))
+            out = list()
+            m_len = [len("number"), len("name"), len("score")]
+            for i in self.players:
+                out.append((str(i.number), i.name, str(i.score), i.status == "MASTER"))
+                m_len = [max(m_len[0], len(str(i.number))), max(m_len[1], len(i.name)),
+                         max(m_len[2], len(str(i.score)))]
+            if len(out) > 0:
+                print("number" + " "*(m_len[0] - len("number")),
+                      "name" + " "*(m_len[1] - len("name")),
+                      "score" + " "*(m_len[2] - len("score")))
+                for i in out:
+                    string = ""
+                    for idx in range(3):
+                        string += i[idx] + " "*(m_len[idx] - len(i[idx]) + 1)
+                    if i[3]:
+                        string += "master"
+                    print(string.strip())
+            self.players.release()
+        else:
+            print("CLI: error: player list is not available")
+
+    def comm_start(self, cmdline):
+        if len(cmdline) == 2 and cmdline[1].isnumeric():
+            self.game_st.card_set = int(cmdline[1])
+            self.game_st.state = "GAME"
+            print("CLI: Starting game")
+        else:
+            print("CLI: error: expected start <card set number>")
+
+    def comm_stop(self):
+        self.game_st.state = "SHUTDOWN"
+        print("CLI: exit")
+        self.work = False
+
+    def comm_status(self):
+        print(self.game_st.state)
 
 
 class Disconnector(Monitor):
