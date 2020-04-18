@@ -17,3 +17,6 @@ def get_res_link():
     if res == "":
         res = "http://" + get_ip() + ":" + str(get_res_port()) + "/resources.zip"
     return res
+
+def get_log_file():
+    return os.getenv("LOG_FILE", "log.txt")
