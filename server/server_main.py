@@ -134,18 +134,7 @@ class Player(Monitor):
             self.get_broadcast = True
             self.plist.broadcast("#PLAYER_LIST")
             if self.status == "MASTER":
-                self.player_socket.settimeout(0.1)
-                while self.game_st.state == "PLAYER_CONN":
-                    try:
-                        res = self.conn.get().split()
-                    except:
-                        continue
-                    if len(res) == 2 and res[1].isnumeric() and res[0] == "START_GAME":
-                        self.game_st.card_set = int(res[1])
-                        self.game_st.state = "GAME"
-                    else:
-                        raise Exception("START_GAME message error")
-                self.player_socket.settimeout(None)
+                self.wait_start()
             self.sync()
             self.conn.send("BEGIN " + str(self.game_st.card_set) + " " +
                            ",".join(map(str, self.cards)))
@@ -160,19 +149,13 @@ class Player(Monitor):
                 if self.game_st.state != "GAME":
                     break
                 if not self.has_turn:
-                    res = self.conn.get().split()
-                    if len(res) != 2 or res[0] != "CARD" or not res[1].isnumeric():
-                        raise Exception("CARD message error")
-                    self.current_card = int(res[1])
+                    self.current_card = get_card()
                 self.plist.broadcast("#SELF", info=self)
                 self.sync() # sync 2
                 # turn group 3
                 self.sync() # sync 3
                 if not self.has_turn:
-                    res = self.conn.get().split()
-                    if len(res) != 2 or res[0] != "CARD" or not res[1].isnumeric():
-                        raise Exception("CARD message error")
-                    self.selected_card = int(res[1])
+                    self.selected_card = get_card()
                 self.sync() # sync 4
                 # turn group 4
                 self.sync() # sync 5
@@ -190,6 +173,26 @@ class Player(Monitor):
             self.valid = False
             self.logger.error("Player " + str(self.number) + ": " + str(ex))
             self.main_sem.release()
+
+    def wait_start(self):
+        self.player_socket.settimeout(0.1)
+        while self.game_st.state == "PLAYER_CONN":
+            try:
+                res = self.conn.get().split()
+            except:
+                continue
+            if len(res) == 2 and res[1].isnumeric() and res[0] == "START_GAME":
+                self.game_st.card_set = int(res[1])
+                self.game_st.state = "GAME"
+            else:
+                raise Exception("START_GAME message error")
+        self.player_socket.settimeout(None)
+
+    def get_card(self):
+        res = self.conn.get().split()
+        if len(res) != 2 or res[0] != "CARD" or not res[1].isnumeric():
+            raise Exception("CARD message error")
+        return int(res[1])
 
     def check_version(self):
         self.conn.send("VERSION " + str(self.number) + " " + self.status + " " + self.res.name +
