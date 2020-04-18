@@ -2,9 +2,10 @@
 Server for Imaginarium game
 """
 import socket
+import logging
+import sys
 import server.environment as env
 from server.server_main import game_server
-import logging
 
 
 if __name__ == "__main__":
@@ -15,22 +16,22 @@ if __name__ == "__main__":
     LISTENING_SOCKET.settimeout(0.5)
     IP_ADDRESS = env.get_ip()
     PORT = env.get_port()
-    LOGGER.info("Starting server. IP: " + IP_ADDRESS + " Port: " + str(PORT))
+    LOGGER.info("Starting server. IP: %s Port: %s", IP_ADDRESS, str(PORT))
     print("IP =", IP_ADDRESS)
     print("Port =", PORT)
     print("Resources =", env.get_res_name())
     print("Resources link =", env.get_res_link())
     if socket.inet_aton(IP_ADDRESS) == 0 or PORT < 1024:
         print("Wrong IP address or port")
-        exit(1)
+        sys.exit(1)
     try:
         LISTENING_SOCKET.bind((IP_ADDRESS, PORT))
-    except Exception as ex:
+    except OSError as ex:
         LOGGER.critical("Failed to bind listening socket.")
         LISTENING_SOCKET.close()
-        quit()
+        sys.exit(2)
     LISTENING_SOCKET.listen()
-    server = game_server(LISTENING_SOCKET, LOGGER)
-    server.main()
+    SERVER = game_server(LISTENING_SOCKET, LOGGER)
+    SERVER.main()
     LISTENING_SOCKET.close()
     LOGGER.info("Shutdown.")
