@@ -18,7 +18,8 @@ if __name__ == "__main__":
     LOGGER.info("Starting server. IP: " + IP_ADDRESS + " Port: " + str(PORT))
     print("IP =", IP_ADDRESS)
     print("Port =", PORT)
-    print("Resources =", env.get_res_link())
+    print("Resources =", env.get_res_name())
+    print("Resources link =", env.get_res_link())
     if socket.inet_aton(IP_ADDRESS) == 0 or PORT < 1024:
         print("Wrong IP address or port")
         exit(1)
@@ -26,8 +27,10 @@ if __name__ == "__main__":
         LISTENING_SOCKET.bind((IP_ADDRESS, PORT))
     except Exception as ex:
         LOGGER.critical("Failed to bind listening socket.")
+        LISTENING_SOCKET.close()
         quit()
     LISTENING_SOCKET.listen()
     server = game_server(LISTENING_SOCKET, LOGGER)
     server.main()
     LISTENING_SOCKET.close()
+    LOGGER.info("Shutdown.")

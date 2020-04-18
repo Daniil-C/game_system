@@ -6,6 +6,9 @@ def get_ip():
 def get_port():
     return int(os.getenv("PORT", "7840"))
 
+def get_res_name():
+    return os.getenv("RESOURCES_VERSION", "res_0.0")
+
 def get_res_port():
     return get_port() + 1
 

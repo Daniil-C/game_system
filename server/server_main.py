@@ -118,6 +118,8 @@ class player(monitor):
             self.conn = None
 
     def sync(self):
+        if not self.valid:
+            raise Exception("thread stop on sync")
         self.control_sem.acquire()
         self.main_sem.release()
         self.control_sem.acquire()
@@ -242,12 +244,25 @@ class CLI(monitor):
                 elif cmdline[0] == "players":
                     if self.players != None:
                         self.players.acquire()
-                        print("CLI:", len(self.players.players), "players")
-                        for i in self.players.players:
-                            if i.status == "MASTER":
-                                print(i.number, i.name, i.score, "M")
-                            else:
-                                print(i.number, i.name, i.score)
+                        print("CLI:", len(self.players), "player" + "s"*int(len(self.players) != 1))
+                        out = [ ]
+                        m_len = [len("number"), len("name"), len("score")]
+                        for i in self.players:
+                            out.append((str(i.number), i.name, str(i.score), i.status == "MASTER"))
+                            m_len = [max(m_len[0], len(str(i.number))), max(m_len[1], len(i.name)),
+                                        max(m_len[2], len(str(i.score)))]
+                        if len(out) > 0:
+                            print("number" + " "*(m_len[0] - len("number")),
+                                        "name" + " "*(m_len[1] - len("name")),
+                                        "score" + " "*(m_len[2] - len("score")))
+                            for i in out:
+                                s = ""
+                                for a in range(3):
+                                    s += i[a] + " "*(m_len[a] - len(i[a]) + 1)
+                                if i[3]:
+                                    s += "master"
+                                s = s.strip()
+                                print(s)
                         self.players.release()
                     else:
                         print("CLI: error: no player list available")
@@ -337,7 +352,7 @@ class player_list(monitor):
                         self.broadcast("#PLAYER_LIST")
                     break
             self.release()
-            time.sleep(0.5)
+            time.sleep(0.1)
 
     def __iter__(self):
         for p in self.players:
@@ -442,7 +457,7 @@ class game_server:
             cards = [i for i in range(98)]
             shuffle(cards)
 
-            res = resources("res", env.get_res_link())
+            res = resources(env.get_res_name(), env.get_res_link())
 
             disc = disconnector(self.listening_socket, self.logger)
 
@@ -456,6 +471,8 @@ class game_server:
 
             p_number = 0
 
+            self.logger.info("Waiting for players to connect")
+
             while game_st.state == "PLAYER_CONN":
                 try:
                     sock_info = self.listening_socket.accept()
@@ -468,6 +485,8 @@ class game_server:
 
             disc.start()
             res_server.stop()
+
+            self.logger.info("Start game")
 
             try:
                 if game_st.state != "GAME":
@@ -513,7 +532,9 @@ class game_server:
                     players.sync() # sync 2
                     #turn group 3
                     cards_list = [i.current_card for i in players]
+                    players.acquire()
                     players.broadcast("VOTE " + ",".join(map(str, cards_list)))
+                    players.release()
                     players.sync() # sync 3
                     # turn group 4
                     players.sync() # sync 4
@@ -570,4 +591,3 @@ class game_server:
             disc.stop()
 
         cli.stop()
-        print("Exiting")
