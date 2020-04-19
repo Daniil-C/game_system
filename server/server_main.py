@@ -613,7 +613,6 @@ class GameServer:
                     work = False
                     continue
 
-
                 if (len(self.players) == 0 and
                         self.game_state.state != "PLAYER_CONN"):
                     self.logger.info("No players left in game, exit.")
