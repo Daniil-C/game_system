@@ -85,6 +85,7 @@ class ResourceServer(Monitor):
         self.logger = logger
         self.server = None
         self.thread = None
+        self.active = False
 
     def main(self):
         """
@@ -111,6 +112,7 @@ class ResourceServer(Monitor):
         self.thread = threading.Thread(target=ResourceServer.main,
                                        args=(self,))
         self.thread.start()
+        self.active = True
 
     def stop(self):
         """
@@ -118,6 +120,7 @@ class ResourceServer(Monitor):
         """
         self.server.shutdown()
         self.thread.join()
+        self.active = False
 
 
 class GameState(Monitor):
@@ -193,6 +196,9 @@ class Player(Monitor):
         self.has_buffer = True
 
     # Player states:
+    #
+    #    |
+    #    v
     # VER_CHECK
     #    v  [Send version info]
     # VER_WAIT
@@ -220,7 +226,7 @@ class Player(Monitor):
     # SYNC_NEXT_TURN                   |
     #    |  [All reached sync]         |
     #    |-----------------------------/
-    # END
+    #    v
 
     def handle_message(self):
         """
@@ -257,11 +263,13 @@ class Player(Monitor):
         elif self.state == "WAIT_ASSOC":
             if not self.has_turn:
                 self.valid = False
+                self.log_message("receive association from wrong player")
                 return
             if len(res) < 3 or res[0] != "TURN" or not res[1].isnumeric():
                 self.valid = False
                 for player in self.plist:
                     player.state = "TURN_SYNC"
+                self.log_message("expected association message")
                 return
             self.current_card = int(res[1])
             self.selected_card = 0
@@ -272,24 +280,29 @@ class Player(Monitor):
             if not self.has_turn:
                 if len(res) < 2 or res[0] != "CARD" or not res[1].isnumeric():
                     self.valid = False
+                    self.log_message("expected CARD message")
                     return
                 self.current_card = int(res[1])
                 self.plist.broadcast("#SELF", self)
                 self.state = "SELF_SYNC"
             else:
                 self.valid = False
+                self.log_message("received unexpected message")
         elif self.state == "WAIT_VOTE":
             if not self.has_turn:
                 if len(res) < 2 or res[0] != "CARD" or not res[1].isnumeric():
                     self.valid = False
+                    self.log_message("expected CARD message")
                     return
                 self.selected_card = int(res[1])
                 self.state = "VOTE_SYNC"
             else:
                 self.valid = False
+                self.log_message("received unexpected message")
         elif self.state == "WAIT_NEXT_TURN":
             if len(res) != 1 or res[0] != "NEXT_TURN":
                 self.valid = False
+                self.log_message("expected NEXT_TURN message")
                 return
             self.state = "SYNC_NEXT_TURN"
         else:
@@ -444,7 +457,7 @@ class CLI(Monitor):
         if len(cmdline) == 2 and cmdline[1].isnumeric():
             self.game_st.card_set = int(cmdline[1])
             self.game_st.state = "GAME"
-            print("CLI: Starting game")
+            print("CLI: Starting game.")
         else:
             print("CLI: error: expected start <card set number>")
 
@@ -578,6 +591,7 @@ class GameServer:
         self.resource_server = None
         self.resources = None
         self.cli = None
+        self.current_player = None
 
     def main(self):
         """
@@ -590,23 +604,19 @@ class GameServer:
         while self.game_state.state != "SHUTDOWN":
             self.prepare()
             work = True
-            res_serv = False
             while work:
+                self.check_resource_server()
                 if (self.game_state.state != "PLAYER_CONN" and
                         self.game_state.state != "GAME"):
                     self.logger.info("Detected state %s, exit.",
                                      self.game_state.state)
                     work = False
+                    continue
 
-                if self.game_state.state == "PLAYER_CONN" and not res_serv:
-                    self.resource_server.start()
-                    res_serv = True
-                if self.game_state.state != "PLAYER_CONN" and res_serv:
-                    self.resource_server.stop()
-                    res_serv = False
+
                 if (len(self.players) == 0 and
                         self.game_state.state != "PLAYER_CONN"):
-                    self.logger.info("No players left in game, exit")
+                    self.logger.info("No players left in game, exit.")
                     work = False
                     continue
 
@@ -635,72 +645,7 @@ class GameServer:
                     player.handle_state()
 
                 # Global operations
-                cond = self.get_sync_state()
-                if cond == "BEGIN_SYNC":
-                    if len(self.players) > 0:
-                        self.begin_game()
-                        for player in self.players:
-                            player.state = "READY_WAIT"
-                            player.send_message("BEGIN " +
-                                                str(self.game_state.card_set) +
-                                                " " +
-                                                ",".join(map(str,
-                                                             player.cards)))
-                        current_player = self.players.next_player(
-                            self.players.players[randrange(len(
-                                self.players.players))])
-                    else:
-                        self.logger.info("Started game without players, exit")
-                        self.game_state.state = "ERROR"
-                elif cond == "TURN_SYNC":
-                    current_player = self.players.next_player(current_player)
-                    for player in self.players:
-                        player.has_turn = player is current_player
-                        player.state = "WAIT_ASSOC"
-                    self.players.broadcast("TURN " +
-                                           str(current_player.number))
-                elif cond == "SELF_SYNC":
-                    card_list = [player.current_card
-                                 for player in self.players]
-                    self.players.broadcast("VOTE " +
-                                           ",".join(map(str, card_list)))
-                    for player in self.players:
-                        player.state = "WAIT_VOTE"
-                elif cond == "VOTE_SYNC":
-                    self.calculate_result(current_player)
-                    card_list = [str(player.number) + ";" +
-                                 str(player.current_card) + ";" +
-                                 str(player.selected_card)
-                                 for player in self.players]
-                    score_list = [str(player.number) + ";" +
-                                  str(player.score)
-                                  for player in self.players]
-                    self.players.broadcast("STATUS " +
-                                           str(current_player.current_card) +
-                                           " " + ",".join(card_list) + " " +
-                                           ",".join(score_list))
-                    for player in self.players:
-                        player.state = "WAIT_NEXT_TURN"
-                elif cond == "SYNC_NEXT_TURN":
-                    for player in self.players:
-                        for card in player.cards:
-                            if card == player.current_card:
-                                player.cards.remove(card)
-                                break
-                    if len(self.cards) >= len(self.players):
-                        for player in self.players:
-                            player.cards.append(self.cards.pop(0))
-                    if len(tuple(self.players)[0].cards) > 0:
-                        for player in self.players:
-                            player.send_message("CARDS " +
-                                                ",".join(map(str,
-                                                             player.cards)))
-                            player.state = "TURN_SYNC"
-                    else:
-                        self.players.broadcast("END_GAME")
-                        for player in self.players:
-                            player.valid = False
-                        self.game_state.state = "END"
+                self.global_operations()
 
                 self.players.check()
                 self.players.release()
@@ -743,7 +688,7 @@ class GameServer:
         if self.game_state.state == "PLAYER_CONN":
             self.players.add_player(self.resources, new_conn[0])
         else:
-            self.logger.info("Disconnected: " + str(new_conn[1]))
+            self.logger.info("Disconnected: %s.", str(new_conn[1]))
 
     def begin_game(self):
         """
@@ -760,27 +705,108 @@ class GameServer:
             player.cards = self.cards[:6]
             self.cards = self.cards[6:]
 
-    def calculate_result(self, current_player):
+    def calculate_result(self):
         """
         Update players' score.
         """
-        current_card = current_player.current_card
+        current_card = self.current_player.current_card
         result = {p: 0 for p in self.players}
         for i in self.players:
             for player in self.players:
-                if player is not current_player:
+                if player is not self.current_player:
                     if i.current_card == player.selected_card:
                         result[i] += 1
-        if result[current_player] == len(self.players) - 1:
+        if result[self.current_player] == len(self.players) - 1:
             for player in self.players:
-                if player is not current_player:
+                if player is not self.current_player:
                     player.score += 3
         else:
-            if result[current_player] != 0:
+            if result[self.current_player] != 0:
                 for player in self.players:
-                    if player is not current_player:
+                    if player is not self.current_player:
                         if player.selected_card == current_card:
                             player.score += 3
-                current_player.score += 3
+                self.current_player.score += 3
             for i in self.players:
                 i.score += result[i]
+
+    def global_operations(self):
+        """
+        Check state transitions in player synchronization points.
+        """
+        cond = self.get_sync_state()
+        if cond == "BEGIN_SYNC":
+            if len(self.players) > 0:
+                self.begin_game()
+                for player in self.players:
+                    player.state = "READY_WAIT"
+                    player.send_message("BEGIN " +
+                                        str(self.game_state.card_set) + " " +
+                                        ",".join(map(str, player.cards)))
+                self.current_player = self.players.next_player(
+                    self.players.players[randrange(len(
+                        self.players.players))])
+            else:
+                self.logger.info("Started game without players, exit.")
+                self.game_state.state = "ERROR"
+        elif cond == "TURN_SYNC":
+            self.current_player = self.players.next_player(self.current_player)
+            for player in self.players:
+                player.has_turn = player is self.current_player
+                player.state = "WAIT_ASSOC"
+            self.players.broadcast("TURN " +
+                                   str(self.current_player.number))
+        elif cond == "SELF_SYNC":
+            card_list = [player.current_card
+                         for player in self.players]
+            self.players.broadcast("VOTE " +
+                                   ",".join(map(str, card_list)))
+            for player in self.players:
+                player.state = "WAIT_VOTE"
+        elif cond == "VOTE_SYNC":
+            self.calculate_result()
+            card_list = [str(player.number) + ";" +
+                         str(player.current_card) + ";" +
+                         str(player.selected_card)
+                         for player in self.players]
+            score_list = [str(player.number) + ";" +
+                          str(player.score)
+                          for player in self.players]
+            self.players.broadcast("STATUS " +
+                                   str(self.current_player.current_card) +
+                                   " " + ",".join(card_list) + " " +
+                                   ",".join(score_list))
+            for player in self.players:
+                player.state = "WAIT_NEXT_TURN"
+        elif cond == "SYNC_NEXT_TURN":
+            for player in self.players:
+                for card in player.cards:
+                    if card == player.current_card:
+                        player.cards.remove(card)
+                        break
+            if len(self.cards) >= len(self.players):
+                for player in self.players:
+                    player.cards.append(self.cards.pop(0))
+            if len(tuple(self.players)[0].cards) > 0:
+                for player in self.players:
+                    player.send_message("CARDS " +
+                                        ",".join(map(str, player.cards)))
+                    player.state = "TURN_SYNC"
+            else:
+                self.players.broadcast("END_GAME")
+                for player in self.players:
+                    player.valid = False
+                self.game_state.state = "END"
+
+    def check_resource_server(self):
+        """
+        Check game state and start or stop resource server if necessary.
+        """
+        if (self.game_state.state == "PLAYER_CONN" and
+                not self.resource_server.active):
+            self.logger.info("Start resource server.")
+            self.resource_server.start()
+        if (self.game_state.state != "PLAYER_CONN" and
+                self.resource_server.active):
+            self.logger.info("Stop resource server.")
+            self.resource_server.stop()
