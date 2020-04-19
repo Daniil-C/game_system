@@ -100,7 +100,8 @@ class ResourceServer(Monitor):
         handler.logger = self.logger
         self.server = HTTPServer((ip_addr, port),
                                  (lambda *args, **kwargs:
-                                  handler(*args, directory="server/resources", **kwargs)))
+                                  handler(*args, directory="server/resources",
+                                          **kwargs)))
         self.server.serve_forever(poll_interval=0.5)
         self.server.server_close()
 
@@ -108,7 +109,8 @@ class ResourceServer(Monitor):
         """
         Start main server function.
         """
-        self.thread = threading.Thread(target=ResourceServer.main, args=(self,))
+        self.thread = threading.Thread(target=ResourceServer.main,
+                                       args=(self,))
         self.thread.start()
 
     def stop(self):
@@ -138,7 +140,8 @@ class Player(Monitor):
 
     player_socket: socket, connected to player.
     status: player status: MASTER or PLAYER.
-    control_sem, main_sem: semaphores, used for synchronization with main thread.
+    control_sem, main_sem: semaphores, used for synchronization with main
+                           thread.
     conn: connection object, containing player_socket.
     valid: is set to False if error occures.
     name: player name.
@@ -150,7 +153,8 @@ class Player(Monitor):
     cards: list of player's cards.
     number: player number.
     """
-    def __init__(self, sock, status, sem, m_sem, res, game_st, plist, number, logger):
+    def __init__(self, sock, status, sem, m_sem, res, game_st, plist, number,
+                 logger):
         Monitor.__init__(self)
         self.player_socket = sock
         self.status = status
@@ -195,7 +199,7 @@ class Player(Monitor):
             self.control_sem.release()
             self.thread.join()
             self.thread_active = False
-        if not self.conn is None:
+        if self.conn is not None:
             self.conn.close()
             self.conn = None
 
@@ -230,31 +234,31 @@ class Player(Monitor):
             self.sync()
             while self.game_st.state == "GAME":
                 # Turn group 1
-                self.sync() # sync 1
+                self.sync()  # sync 1
                 # turn group 2
                 if self.game_st.state != "GAME":
                     break
                 if not self.has_turn:
                     self.current_card = self.get_card()
                 self.plist.broadcast("#SELF", info=self)
-                self.sync() # sync 2
+                self.sync()  # sync 2
                 # turn group 3
-                self.sync() # sync 3
+                self.sync()  # sync 3
                 if not self.has_turn:
                     self.selected_card = self.get_card()
-                self.sync() # sync 4
+                self.sync()  # sync 4
                 # turn group 4
-                self.sync() # sync 5
+                self.sync()  # sync 5
                 # next turn group
                 res = self.conn.get()
                 if res != "NEXT_TURN":
                     raise GameException("NEXT_TURN message error")
-                self.sync() # sync 6
-                self.sync() # sync 7
+                self.sync()  # sync 6
+                self.sync()  # sync 7
                 if self.game_st.state != "GAME":
                     return
                 self.conn.send("CARDS " + ",".join(map(str, self.cards)))
-                self.sync() # sync 8
+                self.sync()  # sync 8
         except GameException as ex:
             self.valid = False
             self.logger.error("Player " + str(self.number) + ": " + str(ex))
@@ -290,7 +294,8 @@ class Player(Monitor):
         """
         Check resources version.
         """
-        self.conn.send("VERSION " + str(self.number) + " " + self.status + " " + self.res.name +
+        self.conn.send("VERSION " + str(self.number) + " " + self.status +
+                       " " + self.res.name +
                        " " + self.res.link)
         res = self.conn.get().split()
         if self.valid:
@@ -390,14 +395,17 @@ class CLI(Monitor):
         """
         Execute 'players' command.
         """
-        if not self.players is None:
+        if self.players is not None:
             self.players.acquire()
-            print("CLI:", len(self.players), "player" + "s"*int(len(self.players) != 1))
+            print("CLI:", len(self.players), "player" +
+                  "s"*int(len(self.players) != 1))
             out = list()
             m_len = [len("number"), len("name"), len("score")]
             for i in self.players:
-                out.append((str(i.number), i.name, str(i.score), i.status == "MASTER"))
-                m_len = [max(m_len[0], len(str(i.number))), max(m_len[1], len(i.name)),
+                out.append((str(i.number), i.name, str(i.score),
+                            i.status == "MASTER"))
+                m_len = [max(m_len[0], len(str(i.number))),
+                         max(m_len[1], len(i.name)),
                          max(m_len[2], len(str(i.score)))]
             if len(out) > 0:
                 print("number" + " "*(m_len[0] - len("number")),
@@ -505,7 +513,8 @@ class PlayerList(Monitor):
             for i in range(len(self.players)):
                 if not (self.players[i].valid and self.players[i].conn.status):
                     self.players[i].stop()
-                    self.logger.info("Checker: collected player %d", self.players[i].number)
+                    self.logger.info("Checker: collected player %d",
+                                     self.players[i].number)
                     if self.players[i].status == "MASTER":
                         if self.game_st.state == "PLAYER_CONN":
                             self.game_st.state = "ERROR"
@@ -548,7 +557,8 @@ class PlayerList(Monitor):
         Start check thread.
         """
         self.check = True
-        self.check_thread = threading.Thread(target=PlayerList.checker, args=(self,))
+        self.check_thread = threading.Thread(target=PlayerList.checker,
+                                             args=(self,))
         self.check_thread.start()
 
     def stop(self):
@@ -581,7 +591,8 @@ class PlayerList(Monitor):
         control_sem = threading.Semaphore(0)
         main_sem = threading.Semaphore(0)
         new_player = Player(sock, "MASTER" if is_master else "PLAYER",
-                            control_sem, main_sem, res, self.game_st, self, number, self.logger)
+                            control_sem, main_sem, res, self.game_st, self,
+                            number, self.logger)
         new_player.start()
         self.players.append(new_player)
         self.release()
@@ -602,7 +613,8 @@ class PlayerList(Monitor):
         Send broadcast message.
         """
         if data == "#PLAYER_LIST":
-            data = "PLAYER_LIST " + ",".join([str(i.number) + ";" + i.name for i in self])
+            data = "PLAYER_LIST " + ",".join([str(i.number) + ";" + i.name
+                                              for i in self])
         if data == "#SELF":
             data = "PLAYER " + str(info.number)
         for i in self:
@@ -646,7 +658,8 @@ class GameServer:
                 self.players.sync()
                 self.players.sync()
 
-                current_player = self.players.players[randrange(len(self.players.players))]
+                current_player = self.players.players[randrange(len(
+                    self.players.players))]
                 # game loop
                 while self.game_state.state == "GAME":
                     # turn group 1
@@ -658,7 +671,8 @@ class GameServer:
                             i.has_turn = True
                         else:
                             i.has_turn = False
-                    self.players.broadcast("TURN " + str(current_player.number))
+                    self.players.broadcast("TURN " +
+                                           str(current_player.number))
                     get = current_player.conn.get().split(maxsplit=2)
                     if len(get) != 3 or get[0] != "TURN":
                         current_player.valid = False
@@ -667,34 +681,39 @@ class GameServer:
                     current_player.current_card = current_card
                     current_player.selected_card = 0
                     self.players.broadcast("ASSOC " + get[2])
-                    self.players.sync() # sync 1
+                    self.players.sync()  # sync 1
                     # turn group 2
-                    self.players.sync() # sync 2
-                    #turn group 3
+                    self.players.sync()  # sync 2
+                    # turn group 3
                     cards_list = [i.current_card for i in self.players]
                     self.players.acquire()
-                    self.players.broadcast("VOTE " + ",".join(map(str, cards_list)))
+                    self.players.broadcast("VOTE " +
+                                           ",".join(map(str, cards_list)))
                     self.players.release()
-                    self.players.sync() # sync 3
+                    self.players.sync()  # sync 3
                     # turn group 4
-                    self.players.sync() # sync 4
+                    self.players.sync()  # sync 4
 
                     self.players.acquire()
 
                     self.calculate_result(current_player, current_card)
 
-                    player_cards_list = [str(i.number) + ";" + str(i.current_card) + ";" +
-                                         str(i.selected_card) for i in self.players]
-                    player_score_list = [str(i.number) + ";" + str(i.score) for i in self.players]
-                    self.players.broadcast("STATUS " + str(current_card) + " " +
-                                           ",".join(player_cards_list) + " " +
-                                           ",".join(player_score_list))
+                    player_cards_list = [str(i.number) + ";" +
+                                         str(i.current_card) + ";" +
+                                         str(i.selected_card)
+                                         for i in self.players]
+                    player_score_list = [str(i.number) + ";" +
+                                         str(i.score) for i in self.players]
+                    self.players.broadcast("STATUS " + str(current_card) +
+                                           " " + ",".join(player_cards_list) +
+                                           " " + ",".join(player_score_list))
 
-                    self.players.sync() # sync 5
+                    self.players.sync()  # sync 5
                     # next turn group
-                    self.players.sync() # sync 6
+                    self.players.sync()  # sync 6
                     for player in self.players:
-                        player.cards = [i for i in player.cards if i != player.current_card]
+                        player.cards = [i for i in player.cards
+                                        if i != player.current_card]
                     if len(self.cards) >= len(self.players):
                         for player in self.players:
                             player.cards.append(self.cards[0])
@@ -707,10 +726,10 @@ class GameServer:
                         self.players.acquire()
                         self.players.broadcast("END_GAME")
                         self.players.release()
-                    self.players.sync() # sync 7
+                    self.players.sync()  # sync 7
                     if self.game_state.state != "GAME":
                         break
-                    self.players.sync() # sync 8
+                    self.players.sync()  # sync 8
 
             except GameException as ex:
                 self.logger.error(str(ex))
@@ -748,7 +767,8 @@ class GameServer:
                 sock_info = self.listening_socket.accept()
             except socket.timeout:
                 continue
-            self.players.add_player(not first_player, self.resources, sock_info[0], p_number)
+            self.players.add_player(not first_player, self.resources,
+                                    sock_info[0], p_number)
             first_player = True
             p_number += 1
         self.resource_server.stop()
@@ -760,7 +780,8 @@ class GameServer:
         if len(self.players) == 0:
             raise GameException("Game started without players, end game")
         if self.game_state.state != "GAME":
-            raise GameException(self.game_state.state + " state detected, end game")
+            raise GameException(self.game_state.state +
+                                " state detected, end game")
 
         if len(self.players) == 4:
             self.cards = self.cards[:len(self.cards) - 2]
@@ -777,20 +798,20 @@ class GameServer:
         """
         Update players' score.
         """
-        result = {p:0 for p in self.players}
+        result = {p: 0 for p in self.players}
         for i in self.players:
             for player in self.players:
-                if not player is current_player:
+                if player is not current_player:
                     if i.current_card == player.selected_card:
                         result[i] += 1
         if result[current_player] == len(self.players) - 1:
             for player in self.players:
-                if not player is current_player:
+                if player is not current_player:
                     player.score += 3
         else:
             if result[current_player] != 0:
                 for player in self.players:
-                    if not player is current_player:
+                    if player is not current_player:
                         if player.selected_card == current_card:
                             player.score += 3
                 current_player.score += 3
