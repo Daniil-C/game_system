@@ -101,18 +101,17 @@ def settings_menu():
 						port_active = True
 					elif event.key == pygame.K_BACKSPACE:
 						ip_text = ip_text[:-1]
-					else:
+					elif len(ip_text) < 20:
 						ip_text += event.unicode
 				elif port_active:
 					if event.key == pygame.K_RETURN:
-						# TODO save data!!
 						ip_active = False
 						port_active = False
 						# == press save
 						save_fun()
 					elif event.key == pygame.K_BACKSPACE:
 						port_text = port_text[:-1]
-					else:
+					elif len(port_text) < 22:
 						port_text += event.unicode
 			"""OTHER EVENTS"""
 			if event.type == pygame.QUIT:
@@ -130,6 +129,80 @@ def settings_menu():
 		screen.blit(port_box, (portrect[0] + shift, portrect[1] + shift))
 		pygame.draw.rect(screen, ip_color, iprect, 2)
 		pygame.draw.rect(screen, port_color, portrect, 2)
+		pygame.display.flip()
+
+def rule_menu():
+	BG_rule = pygame.transform.scale(pygame.image.load("rule_menu.png"), size)
+	BG_rulerect = BG_rule.get_rect()
+
+	back = pygame.transform.scale(pygame.image.load("back.png"), (int(height * 21 / 216), int(height * 21 / 216)))
+	backrect = back.get_rect()
+	backrect[0] = 0
+	backrect[1] = int(height * 185 / 216)
+
+	while True:
+		for event in pygame.event.get():
+			"""MOUSE EVENTS"""
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				if backrect.collidepoint(event.pos):
+					return None
+		screen.blit(BG_rule, BG_rulerect)
+		screen.blit(back, backrect)
+		pygame.display.flip()
+
+def play_menu():
+	BG = pygame.transform.scale(pygame.image.load("BG_main.png"), size)
+	BGrect = BG.get_rect()
+
+	back = pygame.transform.scale(pygame.image.load("back.png"), (int(height * 21 / 216), int(height * 21 / 216)))
+	backrect = back.get_rect()
+	backrect[0] = 0
+	backrect[1] = int(height * 185 / 216)
+
+	mode1 = pygame.transform.scale(pygame.image.load("classic.png"), (int(width / 6), int(width / 6)))
+	mode1rect = mode1.get_rect()
+	mode1rect[0] = int(width / 8)
+	mode1rect[1] = int(height * 29 / 216)
+
+	mode2 = pygame.transform.scale(pygame.image.load("ariadna.png"), (int(width / 6), int(width / 6)))
+	mode2rect = mode2.get_rect()
+	mode2rect[0] = int(width * 5 / 12)
+	mode2rect[1] = int(height * 29 / 216)
+
+	mode3 = pygame.transform.scale(pygame.image.load("himera.png"), (int(width / 6), int(width / 6)))
+	mode3rect = mode3.get_rect()
+	mode3rect[0] = int(width * 17 / 24)
+	mode3rect[1] = int(height * 29 / 216)
+
+	mode4 = pygame.transform.scale(pygame.image.load("Odiseya.png"), (int(width / 6), int(width / 6)))
+	mode4rect = mode4.get_rect()
+	mode4rect[0] = int(width / 8)
+	mode4rect[1] = int(height * 122 / 216)
+
+	mode5 = pygame.transform.scale(pygame.image.load("pandora.png"), (int(width / 6), int(width / 6)))
+	mode5rect = mode5.get_rect()
+	mode5rect[0] = int(width * 5 / 12)
+	mode5rect[1] = int(height * 122 / 216)
+
+	mode6 = pygame.transform.scale(pygame.image.load("persefona.png"), (int(width / 6), int(width / 6)))
+	mode6rect = mode6.get_rect()
+	mode6rect[0] = int(width * 17 / 24)
+	mode6rect[1] = int(height * 122 / 216)
+
+	while True:
+		for event in pygame.event.get():
+			"""MOUSE EVENTS"""
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				if backrect.collidepoint(event.pos):
+					return None
+		screen.blit(BG, BGrect)
+		screen.blit(back, backrect)
+		screen.blit(mode1, mode1rect)
+		screen.blit(mode2, mode2rect)
+		screen.blit(mode3, mode3rect)
+		screen.blit(mode4, mode4rect)
+		screen.blit(mode5, mode5rect)
+		screen.blit(mode6, mode6rect)
 		pygame.display.flip()
 
 def main_menu():
@@ -162,6 +235,10 @@ def main_menu():
 				sys.exit()
 			elif event.type == pygame.MOUSEBUTTONDOWN and settingsrect.collidepoint(event.pos):
 				settings_menu()
+			elif event.type == pygame.MOUSEBUTTONDOWN and rulerect.collidepoint(event.pos):
+				rule_menu()
+			elif event.type == pygame.MOUSEBUTTONDOWN and playrect.collidepoint(event.pos):
+				play_menu()
 
 		screen.blit(BG, BGrect)
 		screen.blit(play, playrect)
