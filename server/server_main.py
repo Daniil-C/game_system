@@ -3,11 +3,9 @@ Imaginarium game server.
 """
 
 import threading
-import socket
 import readline
 from select import select
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-import time
 from random import shuffle, randrange
 from connection import connection
 import server.environment as env
@@ -225,6 +223,9 @@ class Player(Monitor):
     # END
 
     def handle_message(self):
+        """
+        Receive and handle a message.
+        """
         res = self.conn.get().split()
         if self.state == "VER_WAIT":
             if len(res) != 2 or res[0] != "OK":
@@ -241,7 +242,7 @@ class Player(Monitor):
                 self.log_message("receive START_GAME message")
                 return
             if (len(res) != 2 or res[0] != "START_GAME" or
-                not res[1].isnumeric()):
+                    not res[1].isnumeric()):
                 self.valid = False
                 return
             self.game_st.state = "GAME"
@@ -296,6 +297,9 @@ class Player(Monitor):
             self.valid = False
 
     def handle_state(self):
+        """
+        Check and do state transition.
+        """
         if self.state == "VER_CHECK":
             self.send_message("VERSION " + str(self.number) + " " +
                               self.status + " " + self.res.name + " " +
@@ -310,6 +314,9 @@ class Player(Monitor):
             self.state = "VOTE_SYNC"
 
     def log_message(self, message):
+        """
+        Print message into log file.
+        """
         self.logger.info("Player %d: %s.", self.number, message)
 
 
@@ -479,18 +486,27 @@ class PlayerList(Monitor):
         return len(tuple(iter(self)))
 
     def acquire(self):
+        """
+        Acquire semaphore.
+        """
         self.sem.acquire()
 
     def release(self):
+        """
+        Release semaphore.
+        """
         self.sem.release()
 
     def check(self):
+        """
+        Check for Player objects to be removed.
+        """
         for player in self.players:
             if not player.valid or not player.conn.status:
                 player.stop()
                 self.sockets.pop(player.player_socket)
                 if (player.status == "MASTER" and
-                    self.game_st.state == "PLAYER_CONN"):
+                        self.game_st.state == "PLAYER_CONN"):
                     self.game_st.state = "ERROR"
                 self.players.remove(player)
                 break
@@ -577,7 +593,7 @@ class GameServer:
             res_serv = False
             while work:
                 if (self.game_state.state != "PLAYER_CONN" and
-                    self.game_state.state != "GAME"):
+                        self.game_state.state != "GAME"):
                     self.logger.info("Detected state %s, exit.",
                                      self.game_state.state)
                     work = False
@@ -588,7 +604,8 @@ class GameServer:
                 if self.game_state.state != "PLAYER_CONN" and res_serv:
                     self.resource_server.stop()
                     res_serv = False
-                if len(self.players) == 0 and self.game_state.state != "PLAYER_CONN":
+                if (len(self.players) == 0 and
+                        self.game_state.state != "PLAYER_CONN"):
                     self.logger.info("No players left in game, exit")
                     work = False
                     continue
@@ -630,8 +647,8 @@ class GameServer:
                                                 ",".join(map(str,
                                                              player.cards)))
                         current_player = self.players.next_player(
-                                self.players.players[randrange(len(
-                                    self.players.players))])
+                            self.players.players[randrange(len(
+                                self.players.players))])
                     else:
                         self.logger.info("Started game without players, exit")
                         self.game_state.state = "ERROR"
@@ -643,7 +660,8 @@ class GameServer:
                     self.players.broadcast("TURN " +
                                            str(current_player.number))
                 elif cond == "SELF_SYNC":
-                    card_list = [player.current_card for player in self.players]
+                    card_list = [player.current_card
+                                 for player in self.players]
                     self.players.broadcast("VOTE " +
                                            ",".join(map(str, card_list)))
                     for player in self.players:
@@ -658,9 +676,9 @@ class GameServer:
                                   str(player.score)
                                   for player in self.players]
                     self.players.broadcast("STATUS " +
-                                   str(current_player.current_card) + " " +
-                                   ",".join(card_list) + " " +
-                                   ",".join(score_list))
+                                           str(current_player.current_card) +
+                                           " " + ",".join(card_list) + " " +
+                                           ",".join(score_list))
                     for player in self.players:
                         player.state = "WAIT_NEXT_TURN"
                 elif cond == "SYNC_NEXT_TURN":
@@ -674,8 +692,9 @@ class GameServer:
                             player.cards.append(self.cards.pop(0))
                     if len(tuple(self.players)[0].cards) > 0:
                         for player in self.players:
-                            player.send_message(
-                                    "CARDS " + ",".join(map(str, player.cards)))
+                            player.send_message("CARDS " +
+                                                ",".join(map(str,
+                                                             player.cards)))
                             player.state = "TURN_SYNC"
                     else:
                         self.players.broadcast("END_GAME")
@@ -691,6 +710,9 @@ class GameServer:
         self.cli.stop()
 
     def get_sync_state(self):
+        """
+        Check if all players have the same state.
+        """
         st = None
         for player in self.players:
             if st is None:
@@ -711,8 +733,12 @@ class GameServer:
         self.resources = Resources(env.get_res_name(), env.get_res_link())
         self.cli.players = self.players
         self.resource_server = ResourceServer(self.logger)
+        self.current_player = None
 
     def accept_connection(self):
+        """
+        Accept a new connection and create Player object.
+        """
         new_conn = self.listening_socket.accept()
         if self.game_state.state == "PLAYER_CONN":
             self.players.add_player(self.resources, new_conn[0])
