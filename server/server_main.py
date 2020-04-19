@@ -80,7 +80,7 @@ class HTTPHandler(SimpleHTTPRequestHandler):
 
 class ResourceServer(Monitor):
     """
-    Server for downloading resource pack.
+    Server for resource pack downloading.
     """
     def __init__(self, logger):
         Monitor.__init__(self)
@@ -173,6 +173,7 @@ class Player(Monitor):
         self.selected_card = None
         self.buffer = list()
         self.has_buffer = False
+        self.has_turn = False
 
     def __hash__(self):
         return self.number
@@ -187,13 +188,129 @@ class Player(Monitor):
             self.conn = None
 
     def send_message(self, data):
-        self.buffer.push_back(data)
+        """
+        Put message into send buffer.
+        """
+        self.buffer.append(data)
         self.has_buffer = True
 
+    # Player states:
+    # VER_CHECK
+    #    v  [Send version info]
+    # VER_WAIT
+    #    v  [Get OK <name>]
+    # START_WAIT
+    #    v  [game_state -> GAME]
+    # BEGIN_SYNC
+    #    v  [All reached sync]
+    # READY_WAIT
+    #    v  [Get READY]
+    # TURN_SYNC <----------------------\
+    #    v  [All reached sync]         |
+    # WAIT_ASSOC                       |
+    #    v  [Get assoc, sent to all]   |
+    # WAIT_SELF_CARD                   |
+    #    v  [Get self card]            |
+    # SELF_SYNC                        |
+    #    v  [All reached sync]         |
+    # WAIT_VOTE                        |
+    #    v  [Get vote card]            |
+    # VOTE_SYNC                        |
+    #    v  [All reached sync]         |
+    # WAIT_NEXT_TURN                   |
+    #    v  [Get NEXT_TURN]            |
+    # SYNC_NEXT_TURN                   |
+    #    |  [All reached sync]         |
+    #    |-----------------------------/
+    # END
+
     def handle_message(self):
-        res = self.conn.get()
+        res = self.conn.get().split()
+        if self.state == "VER_WAIT":
+            if len(res) != 2 or res[0] != "OK":
+                self.valid = False
+                self.log_message("version check failed")
+                return
+            self.name = res[1]
+            self.get_broadcast = True
+            self.plist.broadcast("#PLAYER_LIST")
+            self.state = "START_WAIT"
+        elif self.state == "START_WAIT":
+            if self.status != "MASTER":
+                self.valid = False
+                self.log_message("receive START_GAME message")
+                return
+            if (len(res) != 2 or res[0] != "START_GAME" or
+                not res[1].isnumeric()):
+                self.valid = False
+                return
+            self.game_st.state = "GAME"
+            self.game_st.card_set = int(res[1])
+            self.state = "BEGIN_SYNC"
+        elif self.state == "READY_WAIT":
+            if len(res) != 1 or res[0] != "READY":
+                self.valid = False
+                self.log_message("did not receive READY")
+                return
+            self.state = "TURN_SYNC"
+        elif self.state == "WAIT_ASSOC":
+            if not self.has_turn:
+                self.valid = False
+                return
+            if len(res) < 3 or res[0] != "TURN" or not res[1].isnumeric():
+                self.valid = False
+                for player in self.plist:
+                    player.state = "TURN_SYNC"
+                return
+            self.current_card = int(res[1])
+            self.selected_card = 0
+            for player in self.plist:
+                player.state = "WAIT_SELF_CARD"
+            self.plist.broadcast("ASSOC " + " ".join(res[2:]))
+        elif self.state == "WAIT_SELF_CARD":
+            if not self.has_turn:
+                if len(res) < 2 or res[0] != "CARD" or not res[1].isnumeric():
+                    self.valid = False
+                    return
+                self.current_card = int(res[1])
+                self.plist.broadcast("#SELF", self)
+                self.state = "SELF_SYNC"
+            else:
+                self.valid = False
+        elif self.state == "WAIT_VOTE":
+            if not self.has_turn:
+                if len(res) < 2 or res[0] != "CARD" or not res[1].isnumeric():
+                    self.valid = False
+                    return
+                self.selected_card = int(res[1])
+                self.state = "VOTE_SYNC"
+            else:
+                self.valid = False
+        elif self.state == "WAIT_NEXT_TURN":
+            if len(res) != 1 or res[0] != "NEXT_TURN":
+                self.valid = False
+                return
+            self.state = "SYNC_NEXT_TURN"
+        else:
+            self.log_message("error state reached: " + self.state)
+            self.valid = False
 
     def handle_state(self):
+        if self.state == "VER_CHECK":
+            self.send_message("VERSION " + str(self.number) + " " +
+                              self.status + " " + self.res.name + " " +
+                              self.res.link)
+            self.state = "VER_WAIT"
+        if self.state == "START_WAIT" and self.game_st.state == "GAME":
+            self.state = "BEGIN_SYNC"
+        if self.state == "WAIT_SELF_CARD" and self.has_turn:
+            self.state = "SELF_SYNC"
+            self.plist.broadcast("#SELF", self)
+        if self.state == "WAIT_VOTE" and self.has_turn:
+            self.state = "VOTE_SYNC"
+
+    def log_message(self, message):
+        self.logger.info("Player %d: %s.", self.number, message)
 
 
 class CLI(Monitor):
@@ -347,8 +464,6 @@ class PlayerList(Monitor):
         Monitor.__init__(self)
         self.players = list()
         self.sockets = dict()
-        self.check = False
-        self.check_thread = None
         self.logger = logger
         self.game_st = game_st
         self.sem = threading.Semaphore(1)
@@ -368,6 +483,17 @@ class PlayerList(Monitor):
 
     def release(self):
         self.sem.release()
+
+    def check(self):
+        for player in self.players:
+            if not player.valid or not player.conn.status:
+                player.stop()
+                self.sockets.pop(player.player_socket)
+                if (player.status == "MASTER" and
+                    self.game_st.state == "PLAYER_CONN"):
+                    self.game_st.state = "ERROR"
+                self.players.remove(player)
+                break
 
     def next_player(self, player):
         """
@@ -395,6 +521,7 @@ class PlayerList(Monitor):
         for i in range(len(self.players)):
             self.players[i].stop()
         self.players.clear()
+        self.sockets.clear()
 
     def add_player(self, res, sock):
         """
@@ -447,27 +574,36 @@ class GameServer:
         while self.game_state.state != "SHUTDOWN":
             self.prepare()
             work = True
+            res_serv = False
             while work:
-                if self.game_state.state != "PLAYER_CONN" and
-                self.game_state.state != "GAME":
+                if (self.game_state.state != "PLAYER_CONN" and
+                    self.game_state.state != "GAME"):
+                    self.logger.info("Detected state %s, exit.",
+                                     self.game_state.state)
                     work = False
 
-                rlist = [player.player_socket for player in self.players
-                         if player.valid]
-                rlist.append(self.listening_socket)
-                wlist = [player.player_socket for player in self.players
-                         if player.has_buffer and player.valid]
-                flows = select(rlist, wlist, list(), 0.5)
-
-                if len(flows[0]) == 0 and len(flows[1]) == 0:
+                if self.game_state.state == "PLAYER_CONN" and not res_serv:
+                    self.resource_server.start()
+                    res_serv = True
+                if self.game_state.state != "PLAYER_CONN" and res_serv:
+                    self.resource_server.stop()
+                    res_serv = False
+                if len(self.players) == 0 and self.game_state.state != "PLAYER_CONN":
+                    self.logger.info("No players left in game, exit")
+                    work = False
                     continue
 
-                players.acquire()
+                rlist = [player.player_socket for player in self.players]
+                rlist.append(self.listening_socket)
+                wlist = [player.player_socket for player in self.players
+                         if player.has_buffer]
+                flows = select(rlist, wlist, list(), 0.5)
+
+                self.players.acquire()
                 # Push buffers
                 for flow in flows[1]:
                     player = self.players.sockets[flow]
-                    player.conn.send(player.buffer[0])
-                    player.buffer.remove(0)
+                    player.conn.send(player.buffer.pop(0))
                     player.has_buffer = len(player.buffer) > 0
 
                 # Handle input
@@ -477,11 +613,92 @@ class GameServer:
                     else:
                         self.players.sockets[flow].handle_message()
 
-                for player in players:
+                # Do player events according to state
+                for player in self.players:
                     player.handle_state()
-                players.release()
+
+                # Global operations
+                cond = self.get_sync_state()
+                if cond == "BEGIN_SYNC":
+                    if len(self.players) > 0:
+                        self.begin_game()
+                        for player in self.players:
+                            player.state = "READY_WAIT"
+                            player.send_message("BEGIN " +
+                                                str(self.game_state.card_set) +
+                                                " " +
+                                                ",".join(map(str,
+                                                             player.cards)))
+                        current_player = self.players.next_player(
+                                self.players.players[randrange(len(
+                                    self.players.players))])
+                    else:
+                        self.logger.info("Started game without players, exit")
+                        self.game_state.state = "ERROR"
+                elif cond == "TURN_SYNC":
+                    current_player = self.players.next_player(current_player)
+                    for player in self.players:
+                        player.has_turn = player is current_player
+                        player.state = "WAIT_ASSOC"
+                    self.players.broadcast("TURN " +
+                                           str(current_player.number))
+                elif cond == "SELF_SYNC":
+                    card_list = [player.current_card for player in self.players]
+                    self.players.broadcast("VOTE " +
+                                           ",".join(map(str, card_list)))
+                    for player in self.players:
+                        player.state = "WAIT_VOTE"
+                elif cond == "VOTE_SYNC":
+                    self.calculate_result(current_player)
+                    card_list = [str(player.number) + ";" +
+                                 str(player.current_card) + ";" +
+                                 str(player.selected_card)
+                                 for player in self.players]
+                    score_list = [str(player.number) + ";" +
+                                  str(player.score)
+                                  for player in self.players]
+                    self.players.broadcast("STATUS " +
+                                   str(current_player.current_card) + " " +
+                                   ",".join(card_list) + " " +
+                                   ",".join(score_list))
+                    for player in self.players:
+                        player.state = "WAIT_NEXT_TURN"
+                elif cond == "SYNC_NEXT_TURN":
+                    for player in self.players:
+                        for card in player.cards:
+                            if card == player.current_card:
+                                player.cards.remove(card)
+                                break
+                    if len(self.cards) >= len(self.players):
+                        for player in self.players:
+                            player.cards.append(self.cards.pop(0))
+                    if len(tuple(self.players)[0].cards) > 0:
+                        for player in self.players:
+                            player.send_message(
+                                    "CARDS " + ",".join(map(str, player.cards)))
+                            player.state = "TURN_SYNC"
+                    else:
+                        self.players.broadcast("END_GAME")
+                        for player in self.players:
+                            player.valid = False
+                        self.game_state.state = "END"
+
+                self.players.check()
+                self.players.release()
+
+            self.players.stop()
 
         self.cli.stop()
+
+    def get_sync_state(self):
+        st = None
+        for player in self.players:
+            if st is None:
+                st = player.state
+            else:
+                if player.state != st:
+                    return None
+        return st
 
     def prepare(self):
         """
@@ -498,7 +715,7 @@ class GameServer:
     def accept_connection(self):
         new_conn = self.listening_socket.accept()
         if self.game_state.state == "PLAYER_CONN":
-            self.players.add_player(new_conn[0], self.resources)
+            self.players.add_player(self.resources, new_conn[0])
         else:
             self.logger.info("Disconnected: " + str(new_conn[1]))
 
@@ -506,12 +723,6 @@ class GameServer:
         """
         Setup before game start.
         """
-        if len(self.players) == 0:
-            raise GameException("Game started without players, end game")
-        if self.game_state.state != "GAME":
-            raise GameException(self.game_state.state +
-                                " state detected, end game")
-
         if len(self.players) == 4:
             self.cards = self.cards[:len(self.cards) - 2]
         elif len(self.players) == 5:
@@ -523,10 +734,11 @@ class GameServer:
             player.cards = self.cards[:6]
             self.cards = self.cards[6:]
 
-    def calculate_result(self, current_player, current_card):
+    def calculate_result(self, current_player):
         """
         Update players' score.
         """
+        current_card = current_player.current_card
         result = {p: 0 for p in self.players}
         for i in self.players:
             for player in self.players:
