@@ -1,3 +1,7 @@
+"""
+Imaginarium game server.
+"""
+
 import threading
 import socket
 import readline
@@ -9,6 +13,9 @@ import server.environment as env
 
 
 class Monitor:
+    """
+    Base class for objects, accessable from multiple threads.
+    """
     def __init__(self):
         object.__setattr__(self, "_Monitor_sem", threading.Semaphore(1))
 
@@ -25,6 +32,9 @@ class Monitor:
 
 
 class GameException(Exception):
+    """
+    Exceptions for error handling in this module.
+    """
     def __init__(self, message):
         Exception.__init__(self, message)
         self.message = message
@@ -34,6 +44,12 @@ class GameException(Exception):
 
 
 class Resources(Monitor):
+    """
+    Information about game resources.
+
+    name: resources version name.
+    link: new resources version address.
+    """
     def __init__(self, res_name, res_link):
         Monitor.__init__(self)
         self.name = res_name
@@ -41,16 +57,30 @@ class Resources(Monitor):
 
 
 class HTTPHandler(SimpleHTTPRequestHandler):
+    """
+    Handler for HTTP requests.
+
+    It allows to access files in file system.
+    """
     def __init__(self, *args, **kwargs):
         SimpleHTTPRequestHandler.__init__(self, *args, **kwargs)
 
     def log_message(self, format, *args):
+        """
+        Log message from request handler.
+
+        format: format string.
+        args: arguments for log message.
+        """
         self.logger.info("HTTP: " + (format % args))
 
     log_error = log_message
 
 
 class ResourceServer(Monitor):
+    """
+    Server for downloading resource pack.
+    """
     def __init__(self, logger):
         Monitor.__init__(self)
         self.logger = logger
@@ -58,6 +88,11 @@ class ResourceServer(Monitor):
         self.thread = None
 
     def main(self):
+        """
+        Main server function.
+        It should be started using start function.
+        Executed in separate thread.
+        """
         ip_addr = env.get_ip()
         port = env.get_res_port()
 
@@ -70,15 +105,27 @@ class ResourceServer(Monitor):
         self.server.server_close()
 
     def start(self):
+        """
+        Start main server function.
+        """
         self.thread = threading.Thread(target=ResourceServer.main, args=(self,))
         self.thread.start()
 
     def stop(self):
+        """
+        Stop server.
+        """
         self.server.shutdown()
         self.thread.join()
 
 
 class GameState(Monitor):
+    """
+    Information about game state.
+
+    state: current game state.
+    card_set: current card set number.
+    """
     def __init__(self, initial_state):
         Monitor.__init__(self)
         self.state = initial_state
@@ -86,6 +133,23 @@ class GameState(Monitor):
 
 
 class Player(Monitor):
+    """
+    Player class is used for player connection handling.
+
+    player_socket: socket, connected to player.
+    status: player status: MASTER or PLAYER.
+    control_sem, main_sem: semaphores, used for synchronization with main thread.
+    conn: connection object, containing player_socket.
+    valid: is set to False if error occures.
+    name: player name.
+    res: Resources object.
+    game_st: GameState object.
+    score: current player score.
+    plist: PlayerList object, containing this Player object.
+    get_broadcast: will this player receive broadcast messages.
+    cards: list of player's cards.
+    number: player number.
+    """
     def __init__(self, sock, status, sem, m_sem, res, game_st, plist, number, logger):
         Monitor.__init__(self)
         self.player_socket = sock
@@ -110,6 +174,9 @@ class Player(Monitor):
         self.selected_card = None
 
     def start(self):
+        """
+        Start player thread.
+        """
         self.thread = threading.Thread(target=Player.main, args=(self,))
         self.thread.start()
         self.thread_active = True
@@ -118,6 +185,9 @@ class Player(Monitor):
         return self.number
 
     def stop(self):
+        """
+        Stop player thread and disconnect.
+        """
         self.valid = False
         if self.thread_active:
             self.main_sem.release()
@@ -130,6 +200,9 @@ class Player(Monitor):
             self.conn = None
 
     def sync(self):
+        """
+        Synchronize with main process.
+        """
         if not self.valid:
             raise GameException("thread stop on sync")
         self.control_sem.acquire()
@@ -139,6 +212,9 @@ class Player(Monitor):
             raise GameException("thread stop on sync")
 
     def main(self):
+        """
+        Main thread function.
+        """
         try:
             self.check_version()
             self.get_broadcast = True
@@ -185,6 +261,9 @@ class Player(Monitor):
             self.main_sem.release()
 
     def wait_start(self):
+        """
+        Wait for start message from MASTER player.
+        """
         self.player_socket.settimeout(0.1)
         while self.game_st.state == "PLAYER_CONN":
             try:
@@ -199,12 +278,18 @@ class Player(Monitor):
         self.player_socket.settimeout(None)
 
     def get_card(self):
+        """
+        Receive CARD message.
+        """
         res = self.conn.get().split()
         if len(res) != 2 or res[0] != "CARD" or not res[1].isnumeric():
             raise GameException("CARD message error")
         return int(res[1])
 
     def check_version(self):
+        """
+        Check resources version.
+        """
         self.conn.send("VERSION " + str(self.number) + " " + self.status + " " + self.res.name +
                        " " + self.res.link)
         res = self.conn.get().split()
@@ -216,6 +301,9 @@ class Player(Monitor):
 
 
 class CLI(Monitor):
+    """
+    Game server command line interface.
+    """
     def __init__(self, players, game_st):
         Monitor.__init__(self)
         self.players = players
@@ -227,14 +315,23 @@ class CLI(Monitor):
         self.work = False
 
     def start(self):
+        """
+        Start thread.
+        """
         self.thread = threading.Thread(target=CLI.main, args=(self,))
         self.thread.start()
 
     def stop(self):
+        """
+        Stop thread.
+        """
         self.work = False
         self.thread.join()
 
     def main(self):
+        """
+        Main thread function.
+        """
         self.work = True
         print("CLI started")
         while self.work:
@@ -267,6 +364,9 @@ class CLI(Monitor):
                 print("CLI: error: " + str(ex))
 
     def completer(self, text, state):
+        """
+        Function for command completion.
+        """
         commands = ["help", "players", "start ", "status", "stop"]
         for i in commands:
             if i.startswith(text):
@@ -276,6 +376,9 @@ class CLI(Monitor):
         return None
 
     def comm_help(self):
+        """
+        Execute 'help' command.
+        """
         print("CLI commands:")
         print("\thelp")
         print("\tplayers")
@@ -284,6 +387,9 @@ class CLI(Monitor):
         print("\tstop")
 
     def comm_players(self):
+        """
+        Execute 'players' command.
+        """
         if not self.players is None:
             self.players.acquire()
             print("CLI:", len(self.players), "player" + "s"*int(len(self.players) != 1))
@@ -309,6 +415,9 @@ class CLI(Monitor):
             print("CLI: error: player list is not available")
 
     def comm_start(self, cmdline):
+        """
+        Execute 'start' command.
+        """
         if len(cmdline) == 2 and cmdline[1].isnumeric():
             self.game_st.card_set = int(cmdline[1])
             self.game_st.state = "GAME"
@@ -317,15 +426,25 @@ class CLI(Monitor):
             print("CLI: error: expected start <card set number>")
 
     def comm_stop(self):
+        """
+        Execute 'stop' command.
+        """
         self.game_st.state = "SHUTDOWN"
         print("CLI: exit")
         self.work = False
 
     def comm_status(self):
+        """
+        Execute 'status' command.
+        """
         print(self.game_st.state)
 
 
 class Disconnector(Monitor):
+    """
+    Disconnector object is used for accepting connections
+    on listening socket and closing them.
+    """
     def __init__(self, sock, logger):
         Monitor.__init__(self)
         self.sock = sock
@@ -334,15 +453,24 @@ class Disconnector(Monitor):
         self.logger = logger
 
     def start(self):
+        """
+        Start thread.
+        """
         self.active = True
         self.thread = threading.Thread(target=Disconnector.main, args=(self,))
         self.thread.start()
 
     def stop(self):
+        """
+        Stop thread.
+        """
         self.active = False
         self.thread.join()
 
     def main(self):
+        """
+        Main thread function.
+        """
         while self.active:
             try:
                 new_sock = self.sock.accept()
@@ -354,6 +482,9 @@ class Disconnector(Monitor):
 
 
 class PlayerList(Monitor):
+    """
+    Player objects container.
+    """
     def __init__(self, logger, game_st):
         Monitor.__init__(self)
         self.players = list()
@@ -364,6 +495,11 @@ class PlayerList(Monitor):
         self.game_st = game_st
 
     def checker(self):
+        """
+        Main thread function.
+
+        Check errors im Player objects and delete objects with errors.
+        """
         while self.check:
             self.acquire()
             for i in range(len(self.players)):
@@ -389,6 +525,9 @@ class PlayerList(Monitor):
         return len(tuple(iter(self)))
 
     def next_player(self, player):
+        """
+        Get next player in player sequence.
+        """
         p_idx = 0
         for i in range(len(self.players)):
             if self.players[i] is player:
@@ -405,11 +544,17 @@ class PlayerList(Monitor):
         return None
 
     def start_check(self):
+        """
+        Start check thread.
+        """
         self.check = True
         self.check_thread = threading.Thread(target=PlayerList.checker, args=(self,))
         self.check_thread.start()
 
     def stop(self):
+        """
+        Stop check thread and delete all Player objects.
+        """
         self.check = False
         self.check_thread.join()
         for i in range(len(self.players)):
@@ -417,12 +562,21 @@ class PlayerList(Monitor):
         self.players.clear()
 
     def acquire(self):
+        """
+        Acquire semaphore.
+        """
         self.sem.acquire()
 
     def release(self):
+        """
+        Release semaphore.
+        """
         self.sem.release()
 
     def add_player(self, is_master, res, sock, number):
+        """
+        Add player to PlayerList.
+        """
         self.acquire()
         control_sem = threading.Semaphore(0)
         main_sem = threading.Semaphore(0)
@@ -433,6 +587,9 @@ class PlayerList(Monitor):
         self.release()
 
     def sync(self):
+        """
+        Synchronize with all Player objects.
+        """
         for player in self:
             player.control_sem.release()
         for player in self:
@@ -441,6 +598,9 @@ class PlayerList(Monitor):
             player.control_sem.release()
 
     def broadcast(self, data, info=None):
+        """
+        Send broadcast message.
+        """
         if data == "#PLAYER_LIST":
             data = "PLAYER_LIST " + ",".join([str(i.number) + ";" + i.name for i in self])
         if data == "#SELF":
@@ -451,6 +611,9 @@ class PlayerList(Monitor):
 
 
 class GameServer:
+    """
+    Main game server class.
+    """
     def __init__(self, listening_socket, logger):
         self.listening_socket = listening_socket
         self.logger = logger
@@ -463,6 +626,9 @@ class GameServer:
         self.cli = None
 
     def main(self):
+        """
+        Game server main function.
+        """
         self.game_state = GameState("PLAYER_CONN")
         self.cli = CLI(None, self.game_state)
         self.cli.start()
@@ -515,7 +681,7 @@ class GameServer:
 
                     self.players.acquire()
 
-                    self.calculate_result(current_player)
+                    self.calculate_result(current_player, current_card)
 
                     player_cards_list = [str(i.number) + ";" + str(i.current_card) + ";" +
                                          str(i.selected_card) for i in self.players]
@@ -556,6 +722,9 @@ class GameServer:
         self.cli.stop()
 
     def prepare(self):
+        """
+        Create components before players connection.
+        """
         self.game_state.state = "PLAYER_CONN"
         self.players = PlayerList(self.logger, self.game_state)
         self.players.start_check()
@@ -567,6 +736,9 @@ class GameServer:
         self.resource_server = ResourceServer(self.logger)
 
     def connect_players(self):
+        """
+        Connect players to the server.
+        """
         self.resource_server.start()
         p_number = 0
         first_player = False
@@ -582,6 +754,9 @@ class GameServer:
         self.resource_server.stop()
 
     def begin_game(self):
+        """
+        Setup before game start.
+        """
         if len(self.players) == 0:
             raise GameException("Game started without players, end game")
         if self.game_state.state != "GAME":
@@ -598,7 +773,10 @@ class GameServer:
             player.cards = self.cards[:6]
             self.cards = self.cards[6:]
 
-    def calculate_result(self, current_player):
+    def calculate_result(self, current_player, current_card):
+        """
+        Update players' score.
+        """
         result = {p:0 for p in self.players}
         for i in self.players:
             for player in self.players:
