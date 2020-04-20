@@ -10,6 +10,15 @@ from connection import connection as Conn
 from monitor import Monitor
 
 
+class Player:
+	"""
+	This class provides players data
+	"""
+	def __init__(self):
+		self.cards = []
+		self.is_master = False
+
+
 class Common(Monitor):
 	"""
 	This class consists of common data between backend and interface
@@ -18,7 +27,7 @@ class Common(Monitor):
 		Monitor.__init__(self)
 		self.ip = ""
 		self.port = 0
-		self.is_master = False
+		self.player = Player()
 
 	def set_connection_params(self, ip, port):
 		"""
@@ -34,6 +43,7 @@ class Common(Monitor):
 		sock = socket.socket()
 		self.conn = Conn(sock)
 
+
 class Backend(threading.Thread):
 	"""
 	This class is a backend service of game
@@ -47,6 +57,8 @@ class Backend(threading.Thread):
 		Starts the game
 		"""
 		self.common.connect()
+
+
 
 
 
