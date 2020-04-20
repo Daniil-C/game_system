@@ -3,6 +3,7 @@ This module allows to send python strings over the network.
 """
 import socket
 
+
 class connection:
     """
     Class connection allows to send python strings over the network.
@@ -17,7 +18,7 @@ class connection:
         """
         try:
             self.connection_socket.shutdown(socket.SHUT_RDWR)
-        except:
+        except Exception:
             pass
         self.connection_socket.close()
         self.status = False
@@ -51,7 +52,7 @@ class connection:
         while not_sent > 0:
             try:
                 not_sent -= self.connection_socket.send(not_sent_data)
-            except:
+            except Exception:
                 not_sent = 0
                 self.status = False
             not_sent_data = data[len(data) - not_sent:]
