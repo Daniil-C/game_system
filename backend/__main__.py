@@ -8,6 +8,7 @@ import threading
 import time
 from connection import connection as Conn
 from monitor import Monitor
+import interface
 
 
 class Player:
@@ -127,6 +128,13 @@ class Backend(threading.Thread):
         logging.info("Hi, {}".format(name))
         self.common.set_name(name)
 
+    def set_mode(self, mode):
+        """
+        Sets game mode
+        """
+        self.mode = mode
+
+
     def start_game(self):
         """
         Starts the game
@@ -166,10 +174,5 @@ if __name__ == "__main__":
     com = Common()
     back = Backend(com)
     back.start()
-    if back.set_connection_params("192.168.1.4", 7840):
-        logging.info("Connected succesfully")
-        back.set_name("Ivan")
-        back.start_game()
-    else:
-        logging.error("Fail to connect")
+    init_interface(com, back)
     back.join()
