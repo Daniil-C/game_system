@@ -44,7 +44,7 @@ def settings_menu(com, backend):
 	def save_fun(*arg):
 		"""Save ip and port"""
 		nonlocal BG_settings, BG_settingsrect, ip_text, port_text
-		if checker(ip_text, port_text):	# backend.set_conection_params(ip_text, int(port_text))
+		if checker(ip_text, port_text) and  backend.set_conection_params(ip_text, int(port_text)):
 			global SETTINGS
 			SERVER_IP = ip_text
 			SERVER_PORT = int(port_text)
@@ -175,7 +175,7 @@ def play_menu_2(com, backend):
 		"""Save ip and port"""
 		nonlocal BG, BG, name_text
 		if name_text.isalnum:	
-			#backend.set_name(name_text)
+			backend.set_name(name_text)
 			BG_settings = pygame.transform.scale(pygame.image.load("BG_settings_saved.png"), size)
 			BG_settingsrect = BG_settings.get_rect()
 			name_text = ""
@@ -228,8 +228,8 @@ def play_menu(com, backend):
 	while not SETTINGS:
 		settings_menu(com, backend)
 		return None
-	#backend.start_game()
-	num = 1 #backend.get_num()
+	backend.start_game()
+	num = com.get_number()
 	if num == 1:
 		BG = pygame.transform.scale(pygame.image.load("BG_main.png"), size)
 		BGrect = BG.get_rect()
@@ -280,37 +280,42 @@ def play_menu(com, backend):
 					if mode1rect.collidepoint(event.pos):
 						#global MODE
 						MODE = 1
-						#backend.mode(MODE)
+						backend.set_mode(MODE)
 						play_menu_2(com, backend)
 						return None
 					if mode2rect.collidepoint(event.pos):
 						#global MODE
 						MODE = 2
 						#backend.mode(MODE)
+						backend.set_mode(MODE)
 						play_menu_2(com, backend)
 						return None
 					if mode3rect.collidepoint(event.pos):
 						#global MODE
 						MODE = 3
 						#backend.mode(MODE)
+						backend.set_mode(MODE)
 						play_menu_2(com, backend)
 						return None
 					if mode4rect.collidepoint(event.pos):
 						#global MODE
 						MODE = 4
 						#backend.mode(MODE)
+						backend.set_mode(MODE)
 						play_menu_2(com, backend)
 						return None
 					if mode5rect.collidepoint(event.pos):
 						#global MODE
 						MODE = 5
 						#backend.mode(MODE)
+						backend.set_mode(MODE)
 						play_menu_2(com, backend)
 						return None
 					if mode6rect.collidepoint(event.pos):
 						#global MODE
 						MODE = 6
 						#backend.mode(MODE)
+						backend.set_mode(MODE)
 						play_menu_2(com, backend)
 						return None
 
@@ -335,8 +340,8 @@ def play_menu(com, backend):
 		backrect = back.get_rect()
 		backrect[0] = 0
 		backrect[1] = int(height * 185 / 216)
-#		while not backend.end.upd():
-		for i in range(15):
+		while not backend.end.upd():
+#		for i in range(15):
 			for event in pygame.event.get():
 				"""MOUSE EVENTS"""
 				if event.type == pygame.MOUSEBUTTONDOWN:
@@ -392,5 +397,3 @@ def main_menu(com, backend):
 
 def init_interface(com, backend):
 	main_menu(com, backend)
-
-init_interface(-1, -1)
