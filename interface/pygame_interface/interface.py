@@ -171,6 +171,18 @@ def play_menu_2(com, backend):
 	active_color = 0xAD, 0xE5, 0xF3
 	name_color = inactive_color
 
+	def save_fun(*arg):
+		"""Save ip and port"""
+		nonlocal BG, BG, name_text
+		if name_text.isalnum:	
+			#backend.set_name(name_text)
+			BG_settings = pygame.transform.scale(pygame.image.load("BG_settings_saved.png"), size)
+			BG_settingsrect = BG_settings.get_rect()
+			name_text = ""
+		else:
+			BG_settings = pygame.transform.scale(pygame.image.load("BG_settings_not_saved.png"), size)
+			BG_settingsrect = BG_settings.get_rect()
+
 	save = pygame.transform.scale(pygame.image.load("save.png"), (int(width * 7 / 128), int(height * 12 / 216)))
 	saverect = save.get_rect()
 	saverect[0] = int(width * 227 / 480)
@@ -187,8 +199,7 @@ def play_menu_2(com, backend):
 				else:
 					name_active = False
 					if saverect.collidepoint(event.pos):
-						a = 1
-						#save_fun()
+						save_fun()
 			"""KEYBOARD EVENTS"""
 			if event.type == pygame.KEYDOWN:
 				if name_active:
@@ -217,8 +228,8 @@ def play_menu(com, backend):
 	while not SETTINGS:
 		settings_menu(com, backend)
 		return None
-
-	num = 1 #backend.start_game()
+	#backend.start_game()
+	num = 1 #backend.get_num()
 	if num == 1:
 		BG = pygame.transform.scale(pygame.image.load("BG_main.png"), size)
 		BGrect = BG.get_rect()
