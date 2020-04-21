@@ -23,7 +23,7 @@ def checker(IP, PORT):
     if PORT.isnumeric():
         if int(PORT) >= 1024 and int(PORT) <= 65535:
             port_flg = True
-    return (ip_flg and port_flg)
+    return ip_flg and port_flg
 
 class App(tk.Frame):
     """ App Class"""
@@ -97,6 +97,62 @@ class App(tk.Frame):
         save_button.grid(sticky="N", column=1, row=6)
         self.widgets.append(save_button)
 
+    def play_menu(self):
+        """Play menu"""
+        for i in self.widgets:
+            i.grid_forget()
+        self.widgets.clear()
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+        self.columnconfigure(2, weight=1)
+        self.columnconfigure(3, weight=1)
+        self.columnconfigure(4, weight=1)
+        self.columnconfigure(5, weight=1)
+
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)
+        self.rowconfigure(2, weight=1)
+
+        self.BG_play = tk.PhotoImage(file="BG_main.png")
+        bg_play = tk.Label(master=self, image=self.BG_play)
+        bg_play.grid(sticky="NEWS", column=0, row=0, columnspan = 6, rowspan = 3)
+        self.widgets.append(bg_play)
+
+        self.back = tk.PhotoImage(file="back.png")
+        back_button = tk.Button(master=self, image=self.back, command=self.main_menu, borderwidth=0, relief=tk.FLAT)
+        back_button.grid(sticky="W", column=0, row=2)
+        self.widgets.append(back_button)
+
+        self.classic = tk.PhotoImage(file="classic.png")
+        classic_button = tk.Button(master=self, image=self.classic, borderwidth=0, relief=tk.FLAT)
+        classic_button.grid(sticky="N", column=0, row=1)
+        self.widgets.append(classic_button)
+
+        self.ariadna = tk.PhotoImage(file="ariadna.png")
+        ariadna_button = tk.Button(master=self, image=self.ariadna, borderwidth=0, relief=tk.FLAT)
+        ariadna_button.grid(sticky="N", column=1, row=1)
+        self.widgets.append(ariadna_button)
+
+        self.himera = tk.PhotoImage(file="himera.png")
+        himera_button = tk.Button(master=self, image=self.himera, borderwidth=0, relief=tk.FLAT)
+        himera_button.grid(sticky="N", column=2, row=1)
+        self.widgets.append(himera_button)
+
+        self.Odiseya = tk.PhotoImage(file="Odiseya.png")
+        Odiseya_button = tk.Button(master=self, image=self.Odiseya, borderwidth=0, relief=tk.FLAT)
+        Odiseya_button.grid(sticky="N", column=3, row=1)
+        self.widgets.append(Odiseya_button)
+
+        self.pandora = tk.PhotoImage(file="pandora.png")
+        pandora_button = tk.Button(master=self, image=self.pandora, borderwidth=0, relief=tk.FLAT)
+        pandora_button.grid(sticky="N", column=4, row=1)
+        self.widgets.append(pandora_button)
+
+        self.persefona = tk.PhotoImage(file="persefona.png")
+        persefona_button = tk.Button(master=self, image=self.persefona, borderwidth=0, relief=tk.FLAT)
+        persefona_button.grid(sticky="N", column=5, row=1)
+        self.widgets.append(persefona_button)
+
     def rule_menu(self):
         """RULES"""
         for i in self.widgets:
@@ -141,7 +197,7 @@ class App(tk.Frame):
         self.widgets.append(bg)
 
         self.play = tk.PhotoImage(file="play.png")
-        play_button = tk.Button(master=self, image=self.play, borderwidth=0, relief=tk.FLAT)#, command=self.play_menu)
+        play_button = tk.Button(master=self, image=self.play, borderwidth=0, relief=tk.FLAT, command=self.play_menu)
         play_button.grid(column=1, row=3)
         self.widgets.append(play_button)
 
@@ -156,7 +212,7 @@ class App(tk.Frame):
         self.widgets.append(settings_button)
 
         self.rule = tk.PhotoImage(file="rule.png")
-        rule_button = tk.Button(master=self, image=self.rule, borderwidth=0, relief=tk.FLAT)
+        rule_button = tk.Button(master=self, image=self.rule, borderwidth=0, relief=tk.FLAT, command=self.rule_menu)
         rule_button.grid(sticky="E", column=2, row=6)
         self.widgets.append(rule_button)
 
