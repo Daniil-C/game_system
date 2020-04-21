@@ -17,6 +17,7 @@ class Player:
     def __init__(self):
         self.cards = []
         self.is_master = False
+        self.name = ""
 
 
 class Common(Monitor):
@@ -29,19 +30,12 @@ class Common(Monitor):
         self.port = 0
         self.player = Player()
 
-    def set_connection_params(self, ip, port):
+    def set_ip_port(self, ip, port):
         """
         Set connections params to connect to game server
         """
         self.ip = ip
         self.port = port
-
-    def connect(self):
-        """
-        Connect to the server
-        """
-        sock = socket.socket()
-        self.conn = Conn(sock)
 
 
 class Backend(threading.Thread):
@@ -52,20 +46,45 @@ class Backend(threading.Thread):
         threading.Thread.__init__(self)
         self.common = common
 
+    def set_connection_params(self, ip, port):
+        """
+        Set connections params to connect to game server
+        """
+        self.common.set_ip_port(ip, port)
+        logging.debug("Connection params: ip {}, port {}".format(ip, port))
+        try:
+            self.connect()
+            self.sock.close()
+            return True
+        except Exception as e:
+            logging.error("Error while connection: {}".format(e))
+            return False
+
+    def connect(self):
+        """
+        Connect to the server
+        """
+        self.sock = socket.socket()
+        self.sock.connect((self.common.ip, self.common.port))
+        self.conn = Conn(self.sock)
+
     def start_game(self):
         """
         Starts the game
         """
-        self.common.connect()
+        self.connect()
         logging.info("Game started")
 
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level=logging.INFO)
+    logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level=logging.DEBUG)
     com = Common()
-    com.set_connection_params("8.8.8.8", 80)
-    thread = Backend(com)
-    thread.start()
-    thread.start_game()
-    thread.join()
+    back = Backend(com)
+    back.start()
+    if back.set_connection_params("localhost", 8000):
+        logging.debug("Connected succesfully")
+        back.start_game()
+    else:
+        logging.debug("Fail to connect")
+    back.join()
