@@ -18,6 +18,7 @@ class Player:
         self.cards = []
         self.is_master = False
         self.name = ""
+        self.number = -1
 
 
 class Common(Monitor):
@@ -43,6 +44,50 @@ class Common(Monitor):
         """
         self.player.name = name
 
+    def set_number(self, number):
+        """
+        Sets player`s number
+        """
+        self.player.number = number
+
+    def set_master(self):
+        """
+        Sets player`s master role
+        """
+        self.player.is_master = True
+
+    def get_name(self):
+        """
+        Returns player`s name
+        """
+        return self.player.name
+
+    def get_number(self):
+        """
+        Returns player`s number
+        """
+        return self.player.number
+
+    def get_ip_port(self):
+        """
+        Returns (ip, port)
+        """
+        return self.ip, self.port
+
+    def is_master(self):
+        """
+        Returns true if player is a master
+        """
+        return self.player.is_master
+
+
+def parse_message(message):
+    """
+    Parse mmessage by spaces
+    """
+    return message.split(" ")
+
+
 
 class Backend(threading.Thread):
     """
@@ -51,6 +96,7 @@ class Backend(threading.Thread):
     def __init__(self, common):
         threading.Thread.__init__(self)
         self.common = common
+        self.version = "res_0.0"
 
     def set_connection_params(self, ip, port):
         """
@@ -87,7 +133,30 @@ class Backend(threading.Thread):
         """
         self.connect()
         logging.info("Game started")
-        
+        mes = self.conn.get()
+        logging.debug(mes)
+        parsed = parse_message(mes)
+        if parsed[0] == "VERSION":
+            player_num = int(parsed[1])
+            role = parsed[2]
+            version = parsed[3]
+            url = parsed[4]
+            if version != self.version:
+                logging.debug("Versions are different")
+                # TODO
+            if role == "MASTER":
+                self.common.set_master()
+            self.common.set_number(player_num)
+
+            self.conn.send("OK {}".format(self.common.get_name()))
+            while True:
+                pass
+
+
+        else:
+            raise Exception("Unexpected keyword. Expected: VERSION, real: {}".format(parsed[0]))
+
+
 
 
 
@@ -96,7 +165,7 @@ if __name__ == "__main__":
     com = Common()
     back = Backend(com)
     back.start()
-    if back.set_connection_params("localhost", 8000):
+    if back.set_connection_params("192.168.1.4", 7840):
         logging.info("Connected succesfully")
         back.set_name("Ivan")
         back.start_game()
