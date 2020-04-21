@@ -44,7 +44,7 @@ def settings_menu(com, backend):
 	def save_fun(*arg):
 		"""Save ip and port"""
 		nonlocal BG_settings, BG_settingsrect, ip_text, port_text
-		if checker(ip_text, port_text) and  backend.set_conection_params(ip_text, int(port_text)):
+		if checker(ip_text, port_text) and  backend.set_connection_params(ip_text, int(port_text)):
 			global SETTINGS
 			SERVER_IP = ip_text
 			SERVER_PORT = int(port_text)
