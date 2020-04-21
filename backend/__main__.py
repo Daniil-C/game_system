@@ -174,5 +174,5 @@ if __name__ == "__main__":
     com = Common()
     back = Backend(com)
     back.start()
-    init_interface(com, back)
+    interface.init_interface(com, back)
     back.join()
