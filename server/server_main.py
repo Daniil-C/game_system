@@ -30,18 +30,6 @@ class Monitor:
         return val
 
 
-class GameException(Exception):
-    """
-    Exceptions for error handling in this module.
-    """
-    def __init__(self, message):
-        Exception.__init__(self, message)
-        self.message = message
-
-    def __str__(self):
-        return self.message
-
-
 class Resources(Monitor):
     """
     Information about game resources.
@@ -133,7 +121,7 @@ class GameState(Monitor):
     def __init__(self, initial_state):
         Monitor.__init__(self)
         self.state = initial_state
-        self.card_set = 0
+        self.card_set = "0"
 
 
 class Player(Monitor):
@@ -188,6 +176,9 @@ class Player(Monitor):
             self.conn.close()
             self.conn = None
 
+    def verify(self):
+        return self.valid and self.conn.status
+
     def send_message(self, data):
         """
         Put message into send buffer.
@@ -200,32 +191,32 @@ class Player(Monitor):
     #    |
     #    v
     # VER_CHECK
-    #    v  [Send version info]
+    #    v  [Send version info][hndl]
     # VER_WAIT
-    #    v  [Get OK <name>]
+    #    v  [Get OK <name>][msg]
     # START_WAIT
-    #    v  [game_state -> GAME]
+    #    v  [game_state -> GAME][hndl][msg]
     # BEGIN_SYNC
-    #    v  [All reached sync]
+    #    v  [All reached sync][main]
     # READY_WAIT
-    #    v  [Get READY]
-    # TURN_SYNC <----------------------\
-    #    v  [All reached sync]         |
-    # WAIT_ASSOC                       |
-    #    v  [Get assoc, sent to all]   |
-    # WAIT_SELF_CARD                   |
-    #    v  [Get self card]            |
-    # SELF_SYNC                        |
-    #    v  [All reached sync]         |
-    # WAIT_VOTE                        |
-    #    v  [Get vote card]            |
-    # VOTE_SYNC                        |
-    #    v  [All reached sync]         |
-    # WAIT_NEXT_TURN                   |
-    #    v  [Get NEXT_TURN]            |
-    # SYNC_NEXT_TURN                   |
-    #    |  [All reached sync]         |
-    #    |-----------------------------/
+    #    v  [Get READY][msg]
+    # TURN_SYNC <---------------------------------\
+    #    v  [All reached sync][main]              |
+    # WAIT_ASSOC                                  |
+    #    v  [Get assoc, sent to all][msg]         |
+    # WAIT_SELF_CARD                              |
+    #    v  [Get self card][hndl][msg]            |
+    # SELF_SYNC                                   |
+    #    v  [All reached sync][main]              |
+    # WAIT_VOTE                                   |
+    #    v  [Get vote card][hndl][msg]            |
+    # VOTE_SYNC                                   |
+    #    v  [All reached sync][main]              |
+    # WAIT_NEXT_TURN                              |
+    #    v  [Get NEXT_TURN][msg]                  |
+    # SYNC_NEXT_TURN                              |
+    #    |  [All reached sync][main]              |
+    #    |----------------------------------------/
     #    v
 
     def handle_message(self):
@@ -247,12 +238,11 @@ class Player(Monitor):
                 self.valid = False
                 self.log_message("receive START_GAME message")
                 return
-            if (len(res) != 2 or res[0] != "START_GAME" or
-                    not res[1].isnumeric()):
+            if len(res) != 2 or res[0] != "START_GAME":
                 self.valid = False
                 return
             self.game_st.state = "GAME"
-            self.game_st.card_set = int(res[1])
+            self.game_st.card_set = res[1]
             self.state = "BEGIN_SYNC"
         elif self.state == "READY_WAIT":
             if len(res) != 1 or res[0] != "READY":
@@ -454,12 +444,12 @@ class CLI(Monitor):
         """
         Execute 'start' command.
         """
-        if len(cmdline) == 2 and cmdline[1].isnumeric():
-            self.game_st.card_set = int(cmdline[1])
+        if len(cmdline) == 2:
+            self.game_st.card_set = cmdline[1]
             self.game_st.state = "GAME"
             print("CLI: Starting game.")
         else:
-            print("CLI: error: expected start <card set number>")
+            print("CLI: error: expected start <card set>")
 
     def comm_stop(self):
         """
@@ -515,7 +505,7 @@ class PlayerList(Monitor):
         Check for Player objects to be removed.
         """
         for player in self.players:
-            if not player.valid or not player.conn.status:
+            if not player.verify():
                 player.stop()
                 self.sockets.pop(player.player_socket)
                 if (player.status == "MASTER" and
@@ -733,6 +723,10 @@ class GameServer:
         """
         Check state transitions in player synchronization points.
         """
+        if self.current_player is not None:
+            if not self.current_player.verify():
+                for player in self.players:
+                    player.state = "TURN_SYNC"
         cond = self.get_sync_state()
         if cond == "BEGIN_SYNC":
             if len(self.players) > 0:
@@ -740,7 +734,7 @@ class GameServer:
                 for player in self.players:
                     player.state = "READY_WAIT"
                     player.send_message("BEGIN " +
-                                        str(self.game_state.card_set) + " " +
+                                        self.game_state.card_set + " " +
                                         ",".join(map(str, player.cards)))
                 self.current_player = self.players.next_player(
                     self.players.players[randrange(len(

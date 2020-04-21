@@ -34,7 +34,7 @@ def get_res_link():
     """
     res = os.getenv("RESOURCEPACK", "")
     if res == "":
-        res = "http://" + get_ip() + ":" + str(get_res_port()) + "/resources.zip"
+        res = "http://" + get_ip() + ":" + str(get_res_port()) + "/db.zip"
     return res
 
 def get_log_file():
