@@ -37,6 +37,12 @@ class Common(Monitor):
         self.ip = ip
         self.port = port
 
+    def set_name(self, name):
+        """
+        Sets player`s name
+        """
+        self.player.name = name
+
 
 class Backend(threading.Thread):
     """
@@ -68,12 +74,20 @@ class Backend(threading.Thread):
         self.sock.connect((self.common.ip, self.common.port))
         self.conn = Conn(self.sock)
 
+    def set_name(self, name):
+        """
+        Sets player`s name
+        """
+        logging.info("Hi, {}".format(name))
+        self.common.set_name(name)
+
     def start_game(self):
         """
         Starts the game
         """
         self.connect()
         logging.info("Game started")
+        
 
 
 
@@ -83,8 +97,9 @@ if __name__ == "__main__":
     back = Backend(com)
     back.start()
     if back.set_connection_params("localhost", 8000):
-        logging.debug("Connected succesfully")
+        logging.info("Connected succesfully")
+        back.set_name("Ivan")
         back.start_game()
     else:
-        logging.debug("Fail to connect")
+        logging.error("Fail to connect")
     back.join()
