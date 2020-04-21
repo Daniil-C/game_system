@@ -127,6 +127,7 @@ class Backend(threading.Thread):
         """
         logging.info("Hi, {}".format(name))
         self.common.set_name(name)
+        self.conn.send("OK {}".format(self.common.get_name()))
 
     def set_mode(self, mode):
         """
@@ -156,9 +157,6 @@ class Backend(threading.Thread):
                 self.common.set_master()
             self.common.set_number(player_num)
 
-            self.conn.send("OK {}".format(self.common.get_name()))
-            s = self.conn.get()
-            print(s)
 
 
 
