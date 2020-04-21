@@ -49,12 +49,12 @@ def settings_menu(com, backend):
 			SERVER_IP = ip_text
 			SERVER_PORT = int(port_text)
 			SETTINGS = True
-			BG_settings = pygame.transform.scale(pygame.image.load("BG_settings_saved.png"), size)
+			BG_settings = pygame.transform.scale(pygame.image.load("interface/BG_settings_saved.png"), size)
 			BG_settingsrect = BG_settings.get_rect()
 			ip_text = ""
 			port_text = ""
 		else:
-			BG_settings = pygame.transform.scale(pygame.image.load("BG_settings_not_saved.png"), size)
+			BG_settings = pygame.transform.scale(pygame.image.load("interface/BG_settings_not_saved.png"), size)
 			BG_settingsrect = BG_settings.get_rect()
 
 	font = pygame.font.SysFont("Chilanka", int(height / 30))
@@ -67,15 +67,15 @@ def settings_menu(com, backend):
 	ip_color = inactive_color
 	port_color = inactive_color
 
-	BG_settings = pygame.transform.scale(pygame.image.load("BG_settings.png"), size)
+	BG_settings = pygame.transform.scale(pygame.image.load("interface/BG_settings.png"), size)
 	BG_settingsrect = BG_settings.get_rect()
 
-	back = pygame.transform.scale(pygame.image.load("back.png"), (int(height * 21 / 216), int(height * 21 / 216)))
+	back = pygame.transform.scale(pygame.image.load("interface/back.png"), (int(height * 21 / 216), int(height * 21 / 216)))
 	backrect = back.get_rect()
 	backrect[0] = 0
 	backrect[1] = int(height * 185 / 216)
 
-	save = pygame.transform.scale(pygame.image.load("save.png"), (int(width * 7 / 128), int(height * 12 / 216)))
+	save = pygame.transform.scale(pygame.image.load("interface/save.png"), (int(width * 7 / 128), int(height * 12 / 216)))
 	saverect = save.get_rect()
 	saverect[0] = int(width * 227 / 480)
 	saverect[1] = int(height * 7 / 9)
@@ -136,10 +136,10 @@ def settings_menu(com, backend):
 		pygame.display.flip()
 
 def rule_menu(com, backend):
-	BG_rule = pygame.transform.scale(pygame.image.load("rule_menu.png"), size)
+	BG_rule = pygame.transform.scale(pygame.image.load("interface/rule_menu.png"), size)
 	BG_rulerect = BG_rule.get_rect()
 
-	back = pygame.transform.scale(pygame.image.load("back.png"), (int(height * 21 / 216), int(height * 21 / 216)))
+	back = pygame.transform.scale(pygame.image.load("interface/back.png"), (int(height * 21 / 216), int(height * 21 / 216)))
 	backrect = back.get_rect()
 	backrect[0] = 0
 	backrect[1] = int(height * 185 / 216)
@@ -155,10 +155,10 @@ def rule_menu(com, backend):
 		pygame.display.flip()
 
 def play_menu_2(com, backend):
-	BG = pygame.transform.scale(pygame.image.load("BG_main.png"), size)
+	BG = pygame.transform.scale(pygame.image.load("interface/BG_main.png"), size)
 	BGrect = BG.get_rect()
 
-	back = pygame.transform.scale(pygame.image.load("back.png"), (int(height * 21 / 216), int(height * 21 / 216)))
+	back = pygame.transform.scale(pygame.image.load("interface/back.png"), (int(height * 21 / 216), int(height * 21 / 216)))
 	backrect = back.get_rect()
 	backrect[0] = 0
 	backrect[1] = int(height * 185 / 216)
@@ -176,14 +176,14 @@ def play_menu_2(com, backend):
 		nonlocal BG, BG, name_text
 		if name_text.isalnum:	
 			backend.set_name(name_text)
-			BG_settings = pygame.transform.scale(pygame.image.load("BG_settings_saved.png"), size)
+			BG_settings = pygame.transform.scale(pygame.image.load("interface/BG_settings_saved.png"), size)
 			BG_settingsrect = BG_settings.get_rect()
 			name_text = ""
 		else:
-			BG_settings = pygame.transform.scale(pygame.image.load("BG_settings_not_saved.png"), size)
+			BG_settings = pygame.transform.scale(pygame.image.load("interface/BG_settings_not_saved.png"), size)
 			BG_settingsrect = BG_settings.get_rect()
 
-	save = pygame.transform.scale(pygame.image.load("save.png"), (int(width * 7 / 128), int(height * 12 / 216)))
+	save = pygame.transform.scale(pygame.image.load("interface/save.png"), (int(width * 7 / 128), int(height * 12 / 216)))
 	saverect = save.get_rect()
 	saverect[0] = int(width * 227 / 480)
 	saverect[1] = int(height * 7 / 9)
@@ -231,40 +231,40 @@ def play_menu(com, backend):
 	backend.start_game()
 	num = com.get_number()
 	if num == 1:
-		BG = pygame.transform.scale(pygame.image.load("BG_main.png"), size)
+		BG = pygame.transform.scale(pygame.image.load("interface/BG_main.png"), size)
 		BGrect = BG.get_rect()
 
-		back = pygame.transform.scale(pygame.image.load("back.png"), (int(height * 21 / 216), int(height * 21 / 216)))
+		back = pygame.transform.scale(pygame.image.load("interface/back.png"), (int(height * 21 / 216), int(height * 21 / 216)))
 		backrect = back.get_rect()
 		backrect[0] = 0
 		backrect[1] = int(height * 185 / 216)
 
-		mode1 = pygame.transform.scale(pygame.image.load("classic.png"), (int(width / 6), int(width / 6)))
+		mode1 = pygame.transform.scale(pygame.image.load("interface/classic.png"), (int(width / 6), int(width / 6)))
 		mode1rect = mode1.get_rect()
 		mode1rect[0] = int(width / 8)
 		mode1rect[1] = int(height * 29 / 216)
 
-		mode2 = pygame.transform.scale(pygame.image.load("ariadna.png"), (int(width / 6), int(width / 6)))
+		mode2 = pygame.transform.scale(pygame.image.load("interface/ariadna.png"), (int(width / 6), int(width / 6)))
 		mode2rect = mode2.get_rect()
 		mode2rect[0] = int(width * 5 / 12)
 		mode2rect[1] = int(height * 29 / 216)
 
-		mode3 = pygame.transform.scale(pygame.image.load("himera.png"), (int(width / 6), int(width / 6)))
+		mode3 = pygame.transform.scale(pygame.image.load("interface/himera.png"), (int(width / 6), int(width / 6)))
 		mode3rect = mode3.get_rect()
 		mode3rect[0] = int(width * 17 / 24)
 		mode3rect[1] = int(height * 29 / 216)
 
-		mode4 = pygame.transform.scale(pygame.image.load("Odiseya.png"), (int(width / 6), int(width / 6)))
+		mode4 = pygame.transform.scale(pygame.image.load("interface/Odiseya.png"), (int(width / 6), int(width / 6)))
 		mode4rect = mode4.get_rect()
 		mode4rect[0] = int(width / 8)
 		mode4rect[1] = int(height * 122 / 216)
 
-		mode5 = pygame.transform.scale(pygame.image.load("pandora.png"), (int(width / 6), int(width / 6)))
+		mode5 = pygame.transform.scale(pygame.image.load("interface/pandora.png"), (int(width / 6), int(width / 6)))
 		mode5rect = mode5.get_rect()
 		mode5rect[0] = int(width * 5 / 12)
 		mode5rect[1] = int(height * 122 / 216)
 
-		mode6 = pygame.transform.scale(pygame.image.load("persefona.png"), (int(width / 6), int(width / 6)))
+		mode6 = pygame.transform.scale(pygame.image.load("interface/persefona.png"), (int(width / 6), int(width / 6)))
 		mode6rect = mode6.get_rect()
 		mode6rect[0] = int(width * 17 / 24)
 		mode6rect[1] = int(height * 122 / 216)
@@ -333,10 +333,10 @@ def play_menu(com, backend):
 		return None
 	else:
 		clock = pygame.time.Clock()
-		BG = pygame.transform.scale(pygame.image.load("BG_main.png"), size)
+		BG = pygame.transform.scale(pygame.image.load("interface/BG_main.png"), size)
 		BGrect = BG.get_rect()
 
-		back = pygame.transform.scale(pygame.image.load("back.png"), (int(height * 21 / 216), int(height * 21 / 216)))
+		back = pygame.transform.scale(pygame.image.load("interface/back.png"), (int(height * 21 / 216), int(height * 21 / 216)))
 		backrect = back.get_rect()
 		backrect[0] = 0
 		backrect[1] = int(height * 185 / 216)
@@ -354,25 +354,25 @@ def play_menu(com, backend):
 			pygame.display.flip()
 
 def main_menu(com, backend):
-	BG = pygame.transform.scale(pygame.image.load("BG.png"), size)
+	BG = pygame.transform.scale(pygame.image.load("interface/BG.png"), size)
 	BGrect = BG.get_rect()
 
-	play = pygame.transform.scale(pygame.image.load("play.png"), (int(width / 3), int(height * 11 / 72)))
+	play = pygame.transform.scale(pygame.image.load("interface/play.png"), (int(width / 3), int(height * 11 / 72)))
 	playrect = play.get_rect()
 	playrect[0] = int(width / 3)
 	playrect[1] = int(height * 64 / 216)
 
-	exit = pygame.transform.scale(pygame.image.load("exit.png"), (int(width / 3), int(height * 11 / 72)))
+	exit = pygame.transform.scale(pygame.image.load("interface/exit.png"), (int(width / 3), int(height * 11 / 72)))
 	exitrect = exit.get_rect()
 	exitrect[0] = int(width / 3)
 	exitrect[1] = int(height * 115 / 216)
 
-	settings = pygame.transform.scale(pygame.image.load("settings.png"), (int(height * 21 / 216), int(height * 21 / 216)))
+	settings = pygame.transform.scale(pygame.image.load("interface/settings.png"), (int(height * 21 / 216), int(height * 21 / 216)))
 	settingsrect = settings.get_rect()
 	settingsrect[0] = 0
 	settingsrect[1] = int(height * 185 / 216)
 
-	rule = pygame.transform.scale(pygame.image.load("rule.png"), (int(height * 21 / 216), int(height * 21 / 216)))
+	rule = pygame.transform.scale(pygame.image.load("interface/rule.png"), (int(height * 21 / 216), int(height * 21 / 216)))
 	rulerect = rule.get_rect()
 	rulerect[0] = int(width * 121 / 128)
 	rulerect[1] = int(height * 185 / 216)
