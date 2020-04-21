@@ -1,3 +1,6 @@
+"""
+Module, containing Monitor class.
+"""
 import threading
 
 class Monitor:

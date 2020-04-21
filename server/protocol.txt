@@ -1,0 +1,30 @@
+1. Connection:
+Server  ---(VERSION <player number> <MASTER | PLAYER> <version name> <version link>)-->  Client
+Client  ---(OK <name> | FAILED)-->  Server
+
+Server  ===(<PLAYER_LIST>)==>  All
+
+PLAYER_LIST := PLAYER_LIST <list: num;name>
+
+2. Start:
+Client0  ---(START_GAME <set number>)-->  Server
+Server  ---(BEGIN <set number> <list: card>)-->  All
+All  ---(READY)-->  Server
+
+3. Turn:
+Server  ---(TURN <player number>)-->  All
+ClientT  ---(TURN <card number> <association>)-->  Server
+Server  ---(ASSOC <association>)-->  All
+
+Client  ---(CARD <card number>)-->  Server
+Server  ===(PLAYER <player number>)==>  All
+
+Server  ---(VOTE <list: card>)-->  All
+All  ---(CARD <card number>)-->  Server
+
+Server  ---(STATUS <right card number> <list: player num;card;chosen card>
+			<list: player num;score>)-->  All
+
+4. Next turn:
+All  ---(NEXT_TURN)-->  Server
+Server  ---(CARDS <list: card> | END_GAME)-->  All

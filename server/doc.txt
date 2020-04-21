@@ -1,0 +1,26 @@
+"PLAYER_CONN" - players are connecting, version check.
+"ERROR" - error state, ending current game.
+"SHUTDOWN" - ending current game, closing server.
+"GAME" - main game loop.
+"END" - finish current game
+
+player_list class:
+players - list of player objects
+semaphores - list of player synchronization semaphores
+game_st - game_state object
+
+game_state class:
+state - current game state
+card_set - current card set number
+
+player class:
+conn - connection object
+valid - player thread is running without errors
+status - "MASTER" | "PLAYER"
+control_sem - synchronization semaphore
+name - player name
+res - resources information
+game_st - game_state object
+score - player score
+plist - player_list object
+get_broadcast - does player receive broadcast messages
