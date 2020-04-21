@@ -9,7 +9,12 @@ from server.server_main import GameServer
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format="%(asctime)-15s %(message)s", filename=env.get_log_file())
+    if len(sys.argv) == 2 and sys.argv[1] == "--env":
+        print("Environment variables, used by server:\nHOST_IP\nPORT\n\
+RESOURCES_VERSION\nRESOURCEPACK\nLOG_FILE")
+        sys.exit(0)
+    logging.basicConfig(format="%(asctime)-15s %(message)s",
+                        filename=env.get_log_file())
     LOGGER = logging.getLogger("Game server")
     LOGGER.setLevel("INFO")
     LISTENING_SOCKET = socket.socket()
@@ -26,7 +31,7 @@ if __name__ == "__main__":
         sys.exit(1)
     try:
         LISTENING_SOCKET.bind((IP_ADDRESS, PORT))
-    except OSError as ex:
+    except OSError:
         LOGGER.critical("Failed to bind listening socket.")
         LISTENING_SOCKET.close()
         sys.exit(2)
