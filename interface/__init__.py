@@ -230,7 +230,7 @@ def play_menu(com, backend):
 		return None
 	backend.start_game()
 	num = com.get_number()
-	if num == 1:
+	if num == 0:
 		BG = pygame.transform.scale(pygame.image.load("interface/BG_main.png"), size)
 		BGrect = BG.get_rect()
 
