@@ -149,8 +149,9 @@ class Backend(threading.Thread):
             self.common.set_number(player_num)
 
             self.conn.send("OK {}".format(self.common.get_name()))
-            while True:
-                pass
+            s = self.conn.get()
+            print(s)
+
 
 
         else:
