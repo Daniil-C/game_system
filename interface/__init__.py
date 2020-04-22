@@ -100,6 +100,8 @@ def settings_menu(com, backend):
 						save_fun()
 			"""KEYBOARD EVENTS"""
 			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_ESCAPE:
+					sys.exit()
 				if ip_active:
 					if event.key == pygame.K_RETURN:
 						ip_active = False
@@ -151,6 +153,9 @@ def rule_menu(com, backend):
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				if backrect.collidepoint(event.pos):
 					return None
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_ESCAPE:
+					sys.exit()
 		screen.blit(BG_rule, BG_rulerect)
 		screen.blit(back, backrect)
 		pygame.display.flip()
@@ -203,6 +208,8 @@ def play_menu_2(com, backend):
 						save_fun()
 			"""KEYBOARD EVENTS"""
 			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_ESCAPE:
+					sys.exit()
 				if name_active:
 					if event.key == pygame.K_RETURN:
 						name_active = False
@@ -210,6 +217,8 @@ def play_menu_2(com, backend):
 						name_text = name_text[:-1]
 					elif len(name_text) < 20:
 						name_text += event.unicode
+					if event.key == pygame.K_ESCAPE:
+						sys.exit()
 			"""OTHER EVENTS"""
 			if event.type == pygame.QUIT:
 				sys.exit()
@@ -309,6 +318,9 @@ def play_menu(com, backend):
 #						backend.set_mode(MODE)
 						play_menu_2(com, backend)
 						return None
+				if event.type == pygame.KEYDOWN:
+					if event.key == pygame.K_ESCAPE:
+						sys.exit()
 
 			screen.blit(BG, BGrect)
 			screen.blit(back, backrect)
@@ -338,6 +350,9 @@ def play_menu(com, backend):
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if backrect.collidepoint(event.pos):
 						return None
+				if event.type == pygame.KEYDOWN:
+					if event.key == pygame.K_ESCAPE:
+						sys.exit()
 			time_passed = clock.tick (1)
 
 			screen.blit(BG, BGrect)
