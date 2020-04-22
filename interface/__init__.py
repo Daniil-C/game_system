@@ -361,27 +361,38 @@ def play_menu(com, backend):
 		return None
 
 def main_menu(com, backend):
+	"""DROW MAIN MENU INTERFACE"""
+	"""Background"""
 	BG = pygame.transform.scale(pygame.image.load("interface/BG.png"), size)
 	BGrect = BG.get_rect()
 
-	play = pygame.transform.scale(pygame.image.load("interface/play.png"), (int(width / 3), int(height * 11 / 72)))
+	"""Play button"""
+	play_scale = (int(width / 3), int(height * 33 / 216))
+	play = pygame.transform.scale(pygame.image.load("interface/play.png"), play_scale)
 	playrect = play.get_rect()
-	playrect[0] = int(width / 3)
+	playrect[0] = width / 3
 	playrect[1] = int(height * 64 / 216)
 
-	exit = pygame.transform.scale(pygame.image.load("interface/exit.png"), (int(width / 3), int(height * 11 / 72)))
+	"""Exit button"""
+	exit_scale = (int(width / 3), int(height * 33 / 216))
+	exit = pygame.transform.scale(pygame.image.load("interface/exit.png"), exit_scale)
 	exitrect = exit.get_rect()
-	exitrect[0] = int(width / 3)
-	exitrect[1] = int(height * 115 / 216)
+	exitrect[0] = width / 3
+	exitrect[1] = (height * 115 / 216)
 
-	settings = pygame.transform.scale(pygame.image.load("interface/settings.png"), (int(height * 21 / 216), int(height * 21 / 216)))
+	"""Settings button"""
+	settings_scale = (int(height * 21 / 216), int(height * 21 / 216))
+	settings = pygame.transform.scale(pygame.image.load("interface/settings.png"), settings_scale)
 	settingsrect = settings.get_rect()
 	settingsrect[0] = 0
-	settingsrect[1] = int(height * 185 / 216)
+	settingsrect[1] = (height * 185 / 216)
 
-	rule = pygame.transform.scale(pygame.image.load("interface/rule.png"), (int(height * 21 / 216), int(height * 21 / 216)))
+	"""Rule button"""
+	rule_scale = settings_scale = (int(height * 21 / 216), int(height * 21 / 216))
+	rule = pygame.transform.scale(pygame.image.load("interface/rule.png"), rule_scale)
 	rulerect = rule.get_rect()
-	rulerect[0] = int(width * 121 / 128)
+	rule_offset = width - rule_scale[0]
+	rulerect[0] = rule_offset
 	rulerect[1] = int(height * 185 / 216)
 
 	while 1:
