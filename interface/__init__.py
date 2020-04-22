@@ -44,7 +44,8 @@ def settings_menu(com, backend):
 	def save_fun(*arg):
 		"""Save ip and port"""
 		nonlocal BG_settings, BG_settingsrect, ip_text, port_text
-		if checker(ip_text, port_text) and  backend.set_connection_params(ip_text, int(port_text)):
+#		if checker(ip_text, port_text) and  backend.set_connection_params(ip_text, int(port_text)):
+		if checker(ip_text, port_text):
 			global SETTINGS
 			SERVER_IP = ip_text
 			SERVER_PORT = int(port_text)
@@ -174,14 +175,14 @@ def play_menu_2(com, backend):
 	def save_fun(*arg):
 		"""Save ip and port"""
 		nonlocal BG, BG, name_text
-		if name_text.isalnum:	
-			backend.set_name(name_text)
-			BG_settings = pygame.transform.scale(pygame.image.load("interface/BG_settings_saved.png"), size)
-			BG_settingsrect = BG_settings.get_rect()
+		if name_text.isalnum():
+#			backend.set_name(name_text)
+			BG = pygame.transform.scale(pygame.image.load("interface/BG_settings_saved.png"), size)
+			BGrect = BG.get_rect()
 			name_text = ""
 		else:
-			BG_settings = pygame.transform.scale(pygame.image.load("interface/BG_settings_not_saved.png"), size)
-			BG_settingsrect = BG_settings.get_rect()
+			BG = pygame.transform.scale(pygame.image.load("interface/BG_settings_not_saved.png"), size)
+			BGrect = BG.get_rect()
 
 	save = pygame.transform.scale(pygame.image.load("interface/save.png"), (int(width * 7 / 128), int(height * 12 / 216)))
 	saverect = save.get_rect()
@@ -228,8 +229,9 @@ def play_menu(com, backend):
 	while not SETTINGS:
 		settings_menu(com, backend)
 		return None
-	backend.start_game()
-	num = com.get_number()
+#	backend.start_game()
+#	num = com.get_number()
+	num = 0
 	if num == 0:
 		BG = pygame.transform.scale(pygame.image.load("interface/BG_main.png"), size)
 		BGrect = BG.get_rect()
@@ -278,44 +280,33 @@ def play_menu(com, backend):
 					if backrect.collidepoint(event.pos):
 						return None
 					if mode1rect.collidepoint(event.pos):
-						#global MODE
 						MODE = 1
-						backend.set_mode(MODE)
+#						backend.set_mode(MODE)
 						play_menu_2(com, backend)
 						return None
 					if mode2rect.collidepoint(event.pos):
-						#global MODE
 						MODE = 2
-						#backend.mode(MODE)
-						backend.set_mode(MODE)
+#						backend.set_mode(MODE)
 						play_menu_2(com, backend)
 						return None
 					if mode3rect.collidepoint(event.pos):
-						#global MODE
 						MODE = 3
-						#backend.mode(MODE)
-						backend.set_mode(MODE)
+#						backend.set_mode(MODE)
 						play_menu_2(com, backend)
 						return None
 					if mode4rect.collidepoint(event.pos):
-						#global MODE
 						MODE = 4
-						#backend.mode(MODE)
-						backend.set_mode(MODE)
+#						backend.set_mode(MODE)
 						play_menu_2(com, backend)
 						return None
 					if mode5rect.collidepoint(event.pos):
-						#global MODE
 						MODE = 5
-						#backend.mode(MODE)
-						backend.set_mode(MODE)
+#						backend.set_mode(MODE)
 						play_menu_2(com, backend)
 						return None
 					if mode6rect.collidepoint(event.pos):
-						#global MODE
 						MODE = 6
-						#backend.mode(MODE)
-						backend.set_mode(MODE)
+#						backend.set_mode(MODE)
 						play_menu_2(com, backend)
 						return None
 
@@ -340,8 +331,8 @@ def play_menu(com, backend):
 		backrect = back.get_rect()
 		backrect[0] = 0
 		backrect[1] = int(height * 185 / 216)
-		while not backend.end.upd():
-#		for i in range(15):
+#		while not backend.end.upd():
+		for i in range(15):
 			for event in pygame.event.get():
 				"""MOUSE EVENTS"""
 				if event.type == pygame.MOUSEBUTTONDOWN:
@@ -352,6 +343,7 @@ def play_menu(com, backend):
 			screen.blit(BG, BGrect)
 			screen.blit(back, backrect)
 			pygame.display.flip()
+		return None
 
 def main_menu(com, backend):
 	BG = pygame.transform.scale(pygame.image.load("interface/BG.png"), size)
@@ -388,6 +380,10 @@ def main_menu(com, backend):
 			elif event.type == pygame.MOUSEBUTTONDOWN and playrect.collidepoint(event.pos):
 				play_menu(com, backend)
 
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_ESCAPE:
+					sys.exit()
+
 		screen.blit(BG, BGrect)
 		screen.blit(play, playrect)
 		screen.blit(exit, exitrect)
@@ -397,3 +393,5 @@ def main_menu(com, backend):
 
 def init_interface(com, backend):
 	main_menu(com, backend)
+
+init_interface(-1, -1)
