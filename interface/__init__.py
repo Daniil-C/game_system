@@ -235,55 +235,76 @@ def play_menu_2(com, backend):
 
 
 def play_menu(com, backend):
+	"""DRAW PLAY MENU INTERFACE FOR MASTER (FIRST) PLAYER OR DOWNLOADING RESOURCES INTERFACE"""
 	while not SETTINGS:
+		"""If the player hasn't specified connection parameters"""
 		settings_menu(com, backend)
 		return None
+
+	"""Start connection"""
 #	backend.start_game()
 #	num = com.get_number()
-	num = 0
+	num = 0		# number of the player
 	if num == 0:
+		"""First player interface"""
+		"""Background"""
 		BG = pygame.transform.scale(pygame.image.load("interface/BG_main.png"), size)
 		BGrect = BG.get_rect()
 
-		back = pygame.transform.scale(pygame.image.load("interface/back.png"), (int(height * 21 / 216), int(height * 21 / 216)))
+		"""Back button"""
+		back_scale = (int(height * 21 / 216), int(height * 21 / 216))
+		back = pygame.transform.scale(pygame.image.load("interface/back.png"), back_scale)
 		backrect = back.get_rect()
 		backrect[0] = 0
 		backrect[1] = int(height * 185 / 216)
 
-		mode1 = pygame.transform.scale(pygame.image.load("interface/classic.png"), (int(width / 6), int(width / 6)))
+		"""Mode 1 button"""
+		mode1_scale = (int(width / 6), int(width / 6))
+		mode1 = pygame.transform.scale(pygame.image.load("interface/classic.png"), mode1_scale)
 		mode1rect = mode1.get_rect()
 		mode1rect[0] = int(width / 8)
 		mode1rect[1] = int(height * 29 / 216)
 
-		mode2 = pygame.transform.scale(pygame.image.load("interface/ariadna.png"), (int(width / 6), int(width / 6)))
+		"""Mode 2 button"""
+		mode2_scale = (int(width / 6), int(width / 6))
+		mode2 = pygame.transform.scale(pygame.image.load("interface/ariadna.png"), mode2_scale)
 		mode2rect = mode2.get_rect()
 		mode2rect[0] = int(width * 5 / 12)
 		mode2rect[1] = int(height * 29 / 216)
 
-		mode3 = pygame.transform.scale(pygame.image.load("interface/himera.png"), (int(width / 6), int(width / 6)))
+		"""Mode 3 button"""
+		mode3_scale = (int(width / 6), int(width / 6))
+		mode3 = pygame.transform.scale(pygame.image.load("interface/himera.png"), mode3_scale)
 		mode3rect = mode3.get_rect()
 		mode3rect[0] = int(width * 17 / 24)
 		mode3rect[1] = int(height * 29 / 216)
 
-		mode4 = pygame.transform.scale(pygame.image.load("interface/Odiseya.png"), (int(width / 6), int(width / 6)))
+		"""Mode 4 button"""
+		mode4_scale = (int(width / 6), int(width / 6))
+		mode4 = pygame.transform.scale(pygame.image.load("interface/Odiseya.png"), mode4_scale)
 		mode4rect = mode4.get_rect()
 		mode4rect[0] = int(width / 8)
 		mode4rect[1] = int(height * 122 / 216)
 
-		mode5 = pygame.transform.scale(pygame.image.load("interface/pandora.png"), (int(width / 6), int(width / 6)))
+		"""Mode 5 button"""
+		mode5_scale = (int(width / 6), int(width / 6))
+		mode5 = pygame.transform.scale(pygame.image.load("interface/pandora.png"), mode5_scale)
 		mode5rect = mode5.get_rect()
 		mode5rect[0] = int(width * 5 / 12)
 		mode5rect[1] = int(height * 122 / 216)
 
-		mode6 = pygame.transform.scale(pygame.image.load("interface/persefona.png"), (int(width / 6), int(width / 6)))
+		"""Mode 6 button"""
+		mode6_scale = (int(width / 6), int(width / 6))
+		mode6 = pygame.transform.scale(pygame.image.load("interface/persefona.png"), mode6_scale)
 		mode6rect = mode6.get_rect()
 		mode6rect[0] = int(width * 17 / 24)
 		mode6rect[1] = int(height * 122 / 216)
 
-		global MODE
-
 		while True:
+			"""MAINLOOP"""
 			for event in pygame.event.get():
+				"""EVENTS HANDLING"""
+
 				"""MOUSE EVENTS"""
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if backrect.collidepoint(event.pos):
@@ -318,10 +339,16 @@ def play_menu(com, backend):
 #						backend.set_mode(MODE)
 						play_menu_2(com, backend)
 						return None
+				"""KEYBOARD EVENTS"""
 				if event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_ESCAPE:
 						sys.exit()
 
+				"""OTHER EVENTS"""
+				if event.type == pygame.QUIT:
+					sys.exit()
+
+			"""RENDERING"""
 			screen.blit(BG, BGrect)
 			screen.blit(back, backrect)
 			screen.blit(mode1, mode1rect)
@@ -331,11 +358,15 @@ def play_menu(com, backend):
 			screen.blit(mode5, mode5rect)
 			screen.blit(mode6, mode6rect)
 			pygame.display.flip()
+
 	elif num > 0:
+		"""Not first player"""
 		play_menu_2(com, backend)
 		return None
 	else:
+		"""Download interface"""
 		clock = pygame.time.Clock()
+		"""Background"""
 		BG = pygame.transform.scale(pygame.image.load("interface/BG_main.png"), size)
 		BGrect = BG.get_rect()
 
@@ -343,25 +374,34 @@ def play_menu(com, backend):
 		backrect = back.get_rect()
 		backrect[0] = 0
 		backrect[1] = int(height * 185 / 216)
+
 #		while not backend.end.upd():
 		for i in range(15):
+			"""MAINLOOP"""
 			for event in pygame.event.get():
+				"""EVENTS HANDLING"""
+
 				"""MOUSE EVENTS"""
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if backrect.collidepoint(event.pos):
 						return None
+
+				"""KEYBOARD EVENTS"""
 				if event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_ESCAPE:
 						sys.exit()
 			time_passed = clock.tick (1)
 
+			"""RENDERING"""
 			screen.blit(BG, BGrect)
 			screen.blit(back, backrect)
 			pygame.display.flip()
+
 		return None
 
+
 def main_menu(com, backend):
-	"""DROW MAIN MENU INTERFACE"""
+	"""DRAW MAIN MENU INTERFACE"""
 	"""Background"""
 	BG = pygame.transform.scale(pygame.image.load("interface/BG.png"), size)
 	BGrect = BG.get_rect()
@@ -396,7 +436,10 @@ def main_menu(com, backend):
 	rulerect[1] = int(height * 185 / 216)
 
 	while True:
+		"""MAINLOOP"""
 		for event in pygame.event.get():
+			"""EVENTS HANDLING"""
+
 			"""OTHER EVENTS"""
 			if event.type == pygame.QUIT:
 				sys.exit()
@@ -424,6 +467,7 @@ def main_menu(com, backend):
 		screen.blit(settings, settingsrect)
 		screen.blit(rule, rulerect)
 		pygame.display.flip()
+
 
 def init_interface(com, backend):
 	main_menu(com, backend)
