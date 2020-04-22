@@ -395,21 +395,29 @@ def main_menu(com, backend):
 	rulerect[0] = rule_offset
 	rulerect[1] = int(height * 185 / 216)
 
-	while 1:
+	while True:
 		for event in pygame.event.get():
-			if event.type == pygame.QUIT or event.type == pygame.MOUSEBUTTONDOWN and exitrect.collidepoint(event.pos):
+			"""OTHER EVENTS"""
+			if event.type == pygame.QUIT:
 				sys.exit()
-			elif event.type == pygame.MOUSEBUTTONDOWN and settingsrect.collidepoint(event.pos):
-				settings_menu(com, backend)
-			elif event.type == pygame.MOUSEBUTTONDOWN and rulerect.collidepoint(event.pos):
-				rule_menu(com, backend)
-			elif event.type == pygame.MOUSEBUTTONDOWN and playrect.collidepoint(event.pos):
-				play_menu(com, backend)
 
+			"""MOUSE EVENTS"""
+			if event.type == pygame.MOUSEBUTTONDOWN: 
+				if exitrect.collidepoint(event.pos):
+					sys.exit()
+				elif settingsrect.collidepoint(event.pos):
+					settings_menu(com, backend)
+				elif rulerect.collidepoint(event.pos):
+					rule_menu(com, backend)
+				elif playrect.collidepoint(event.pos):
+					play_menu(com, backend)
+
+			"""KEYBOARD EVENTS"""
 			if event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_ESCAPE:
 					sys.exit()
 
+		"""RENDERING"""
 		screen.blit(BG, BGrect)
 		screen.blit(play, playrect)
 		screen.blit(exit, exitrect)
