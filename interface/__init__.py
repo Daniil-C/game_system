@@ -222,11 +222,11 @@ def play_menu_2(com, backend):
 
 	"""OK button"""
 	#TODO: OK image
-	ok_scale = (int(width * 7 / 128), int(height * 12 / 216))
-	ok = pygame.transform.scale(pygame.image.load("interface/save.png"), ok_scale)
+	ok_scale = (int(width / 3), int(height * 33 / 216))
+	ok = pygame.transform.scale(pygame.image.load("interface/ok.png"), ok_scale)
 	okrect = ok.get_rect()
-	okrect[0] = int(width * 227 / 480)
-	okrect[1] = int(height * 7 / 9)
+	okrect[0] = int(width / 3)
+	okrect[1] = int(height * 115 / 216)
 
 	def save_fun(*arg):
 		"""Save Name"""
