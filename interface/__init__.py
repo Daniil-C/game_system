@@ -161,41 +161,60 @@ def rule_menu(com, backend):
 		pygame.display.flip()
 
 def play_menu_2(com, backend):
+	"""DRAW NAME INSERTION INTERFACE"""
+	"""Background"""
+	#TODO: make BG image
 	BG = pygame.transform.scale(pygame.image.load("interface/BG_main.png"), size)
 	BGrect = BG.get_rect()
 
-	back = pygame.transform.scale(pygame.image.load("interface/back.png"), (int(height * 21 / 216), int(height * 21 / 216)))
+	"""Back button"""
+	back_scale = (int(height * 21 / 216), int(height * 21 / 216))
+	back = pygame.transform.scale(pygame.image.load("interface/back.png"), back_scale)
 	backrect = back.get_rect()
 	backrect[0] = 0
 	backrect[1] = int(height * 185 / 216)
 
-	font = pygame.font.SysFont("Chilanka", int(height / 30))
+	"""Text"""
+	font_size = int(height / 30)
+	font = pygame.font.SysFont("Chilanka", font_size)
 	name_active = False
 	name_text = ""
-	namerect = pygame.Rect(int(width / 3), int(height * 53 / 216), int(width / 3), int(height * 3 / 60))
+
+	"""Text box aka Entry"""
+	namebox_size = (int(width / 3), int(height * 3 / 60))
+	namebox_pos = (int(width / 3), int(height * 53 / 216))
+	namerect = pygame.Rect(namebox_pos[0], namebox_pos[1], namebox_size[0], namebox_size[1])
 	inactive_color = 0xFF, 0xFF, 0xFF
 	active_color = 0xAD, 0xE5, 0xF3
 	name_color = inactive_color
 
+	"""OK button"""
+	#TODO: OK image
+	ok_scale = (int(width * 7 / 128), int(height * 12 / 216))
+	ok = pygame.transform.scale(pygame.image.load("interface/save.png"), ok_scale)
+	okrect = ok.get_rect()
+	okrect[0] = int(width * 227 / 480)
+	okrect[1] = int(height * 7 / 9)
+
 	def save_fun(*arg):
-		"""Save ip and port"""
+		"""Save Name"""
 		nonlocal BG, BG, name_text
 		if name_text.isalnum():
 #			backend.set_name(name_text)
+			# go to waiting window
 			BG = pygame.transform.scale(pygame.image.load("interface/BG_settings_saved.png"), size)
 			BGrect = BG.get_rect()
 			name_text = ""
 		else:
+			#TODO: make BG image
 			BG = pygame.transform.scale(pygame.image.load("interface/BG_settings_not_saved.png"), size)
 			BGrect = BG.get_rect()
-
-	save = pygame.transform.scale(pygame.image.load("interface/save.png"), (int(width * 7 / 128), int(height * 12 / 216)))
-	saverect = save.get_rect()
-	saverect[0] = int(width * 227 / 480)
-	saverect[1] = int(height * 7 / 9)
 	
-	while True:		
-		for event in pygame.event.get():			
+	while True:
+		"""MAINLOOP"""
+		for event in pygame.event.get():
+			"""EVENTS HANDLING"""
+
 			"""MOUSE EVENTS"""
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				if backrect.collidepoint(event.pos):
@@ -204,8 +223,9 @@ def play_menu_2(com, backend):
 					name_active = not name_active
 				else:
 					name_active = False
-					if saverect.collidepoint(event.pos):
+					if okrect.collidepoint(event.pos):
 						save_fun()
+
 			"""KEYBOARD EVENTS"""
 			if event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_ESCAPE:
@@ -213,21 +233,22 @@ def play_menu_2(com, backend):
 				if name_active:
 					if event.key == pygame.K_RETURN:
 						name_active = False
+						save_fun()
 					elif event.key == pygame.K_BACKSPACE:
 						name_text = name_text[:-1]
 					elif len(name_text) < 20:
 						name_text += event.unicode
-					if event.key == pygame.K_ESCAPE:
-						sys.exit()
+
 			"""OTHER EVENTS"""
 			if event.type == pygame.QUIT:
 				sys.exit()
-			name_color = active_color if name_active else inactive_color
-
+		
+		"""RENDERING"""
+		name_color = active_color if name_active else inactive_color
 		shift = int(height / 120)
 		screen.blit(BG, BGrect)
 		screen.blit(back, backrect)
-		screen.blit(save, saverect)
+		screen.blit(ok, okrect)
 		name_box = font.render(name_text, True, name_color)
 		screen.blit(name_box, (namerect[0] + shift, namerect[1] + shift))
 		pygame.draw.rect(screen, name_color, namerect, 2)
