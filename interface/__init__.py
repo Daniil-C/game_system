@@ -9,80 +9,93 @@ info = pygame.display.Info()
 size = width, height = info.current_w, info.current_h
 print(size)
 
-SERVER_IP = ""
-SERVER_PORT = ""
 SETTINGS = False
-MODE = 0
-
-def checker(IP, PORT):
-	"""Check data in settings fields"""
-	ip_pars = IP.split(".")
-	ip_flg = False
-	port_flg = False
-	if len(ip_pars) == 4:
-		for i in ip_pars:
-			if i.isnumeric():
-				if int(i) <= 255 and int(i) >= 0:
-					continue
-				else:
-					break
-			else:
-				break
-		else:
-			ip_flg = True
-	if PORT.isnumeric():
-		if int(PORT) >= 1024 and int(PORT) <= 65535:
-			port_flg = True
-	return ip_flg and port_flg
 
 def settings_menu(com, backend):
 	"""settings menu"""
-	BG_settings = 0
-	BG_settingsrect = 0
+
+	def checker(IP, PORT):
+		"""Check data in settings fields"""
+		ip_pars = IP.split(".")
+		ip_flg = False
+		port_flg = False
+		if len(ip_pars) == 4:
+			for i in ip_pars:
+				if i.isnumeric():
+					if int(i) <= 255 and int(i) >= 0:
+						continue
+					else:
+						break
+				else:
+					break
+			else:
+				ip_flg = True
+		if PORT.isnumeric():
+			if int(PORT) >= 1024 and int(PORT) <= 65535:
+				port_flg = True
+		return ip_flg and port_flg
+
+	BG = 0
+	BGrect = 0
 	ip_text = ""
 	port_text = ""
+
 	def save_fun(*arg):
 		"""Save ip and port"""
-		nonlocal BG_settings, BG_settingsrect, ip_text, port_text
+		nonlocal BG, BGrect, ip_text, port_text
 #		if checker(ip_text, port_text) and  backend.set_connection_params(ip_text, int(port_text)):
 		if checker(ip_text, port_text):
 			global SETTINGS
-			SERVER_IP = ip_text
-			SERVER_PORT = int(port_text)
 			SETTINGS = True
-			BG_settings = pygame.transform.scale(pygame.image.load("interface/BG_settings_saved.png"), size)
-			BG_settingsrect = BG_settings.get_rect()
+			BG = pygame.transform.scale(pygame.image.load("interface/BG_settings_saved.png"), size)
+			BGrect = BG.get_rect()
 			ip_text = ""
 			port_text = ""
 		else:
-			BG_settings = pygame.transform.scale(pygame.image.load("interface/BG_settings_not_saved.png"), size)
-			BG_settingsrect = BG_settings.get_rect()
+			BG = pygame.transform.scale(pygame.image.load("interface/BG_settings_not_saved.png"), size)
+			BGrect = BG.get_rect()
 
-	font = pygame.font.SysFont("Chilanka", int(height / 30))
+	"""Text"""
+	font_size = int(height / 30)
+	font = pygame.font.SysFont("Chilanka", font_size)
 	ip_active = False
 	port_active = False
-	iprect = pygame.Rect(int(width / 3), int(height * 53 / 216), int(width / 3), int(height * 3 / 60))
-	portrect = pygame.Rect(int(width / 3), int(height * 137 / 216), int(width / 3), int(height * 3 / 60))
 	inactive_color = 0xFF, 0xFF, 0xFF
 	active_color = 0xAD, 0xE5, 0xF3
+
+	"""Text box for ip"""
+	ipbox_size = (int(width / 3), int(height * 3 / 60))
+	ipbox_pos = (int(width / 3), int(height * 53 / 216))
+	iprect = pygame.Rect(ipbox_pos[0], ipbox_pos[1], ipbox_size[0], ipbox_size[1])
 	ip_color = inactive_color
+
+	"""Text box for port"""
+	portbox_size = (int(width / 3), int(height * 3 / 60))
+	portbox_pos = (int(width / 3), int(height * 137 / 216))
+	portrect = pygame.Rect(portbox_pos[0], portbox_pos[1], portbox_size[0], portbox_size[1])
 	port_color = inactive_color
 
-	BG_settings = pygame.transform.scale(pygame.image.load("interface/BG_settings.png"), size)
-	BG_settingsrect = BG_settings.get_rect()
+	"""Background"""
+	BG = pygame.transform.scale(pygame.image.load("interface/BG_settings.png"), size)
+	BGrect = BG.get_rect()
 
-	back = pygame.transform.scale(pygame.image.load("interface/back.png"), (int(height * 21 / 216), int(height * 21 / 216)))
+	"""Back button"""
+	back_scale = (int(height * 21 / 216), int(height * 21 / 216))
+	back = pygame.transform.scale(pygame.image.load("interface/back.png"), back_scale)
 	backrect = back.get_rect()
 	backrect[0] = 0
 	backrect[1] = int(height * 185 / 216)
 
-	save = pygame.transform.scale(pygame.image.load("interface/save.png"), (int(width * 7 / 128), int(height * 12 / 216)))
+	"""Save buton"""
+	save_scale = (int(width * 7 / 128), int(height * 12 / 216))
+	save = pygame.transform.scale(pygame.image.load("interface/save.png"), save_scale)
 	saverect = save.get_rect()
 	saverect[0] = int(width * 227 / 480)
 	saverect[1] = int(height * 7 / 9)
 	
-	while True:		
-		for event in pygame.event.get():			
+	while True:
+		"""MAINLOOP"""
+		for event in pygame.event.get():
 			"""MOUSE EVENTS"""
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				if backrect.collidepoint(event.pos):
@@ -98,6 +111,7 @@ def settings_menu(com, backend):
 					port_active = False
 					if saverect.collidepoint(event.pos):
 						save_fun()
+
 			"""KEYBOARD EVENTS"""
 			if event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_ESCAPE:
@@ -120,14 +134,16 @@ def settings_menu(com, backend):
 						port_text = port_text[:-1]
 					elif len(port_text) < 22:
 						port_text += event.unicode
+
 			"""OTHER EVENTS"""
 			if event.type == pygame.QUIT:
 				sys.exit()
-			ip_color = active_color if ip_active else inactive_color
-			port_color = active_color if port_active else inactive_color
 
+		"""RENDERING"""
+		ip_color = active_color if ip_active else inactive_color
+		port_color = active_color if port_active else inactive_color
 		shift = int(height / 120)
-		screen.blit(BG_settings, BG_settingsrect)
+		screen.blit(BG, BGrect)
 		screen.blit(back, backrect)
 		screen.blit(save, saverect)
 		ip_box = font.render(ip_text, True, ip_color)
@@ -137,6 +153,7 @@ def settings_menu(com, backend):
 		pygame.draw.rect(screen, ip_color, iprect, 2)
 		pygame.draw.rect(screen, port_color, portrect, 2)
 		pygame.display.flip()
+
 
 def rule_menu(com, backend):
 	"""DRAW RULE MENU INTERFACE"""
@@ -173,6 +190,7 @@ def rule_menu(com, backend):
 		screen.blit(BG_rule, BG_rulerect)
 		screen.blit(back, backrect)
 		pygame.display.flip()
+
 
 def play_menu_2(com, backend):
 	"""DRAW NAME INSERTION INTERFACE"""
@@ -494,7 +512,6 @@ def main_menu(com, backend):
 			"""OTHER EVENTS"""
 			if event.type == pygame.QUIT:
 				sys.exit()
-
 
 		"""RENDERING"""
 		screen.blit(BG, BGrect)
