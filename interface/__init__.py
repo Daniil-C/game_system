@@ -198,7 +198,7 @@ def play_menu_2(com, backend):
 	"""DRAW NAME INSERTION INTERFACE"""
 	"""Background"""
 	#TODO: make BG image
-	BG = pygame.transform.scale(pygame.image.load("interface/BG_main.png"), size)
+	BG = pygame.transform.scale(pygame.image.load("interface/BG_name.png"), size)
 	BGrect = BG.get_rect()
 
 	"""Back button"""
@@ -240,7 +240,7 @@ def play_menu_2(com, backend):
 			name_text = ""
 		else:
 			#TODO: make BG image
-			BG = pygame.transform.scale(pygame.image.load("interface/BG_settings_not_saved.png"), size)
+			BG = pygame.transform.scale(pygame.image.load("interface/BG_name_bad.png"), size)
 			BGrect = BG.get_rect()
 	
 	while True:
