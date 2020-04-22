@@ -99,6 +99,7 @@ def settings_menu(com, backend):
 			"""MOUSE EVENTS"""
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				if backrect.collidepoint(event.pos):
+#					backend.exit()
 					return None
 				if iprect.collidepoint(event.pos):
 					port_active = False
@@ -176,6 +177,7 @@ def rule_menu(com, backend):
 			"""MOUSE EVENTS"""
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				if backrect.collidepoint(event.pos):
+#					backend.exit()
 					return None
 			"""KEYBOARD EVENTS"""
 			if event.type == pygame.KEYDOWN:
@@ -221,7 +223,6 @@ def play_menu_2(com, backend):
 	name_color = inactive_color
 
 	"""OK button"""
-	#TODO: OK image
 	ok_scale = (int(width / 3), int(height * 33 / 216))
 	ok = pygame.transform.scale(pygame.image.load("interface/ok.png"), ok_scale)
 	okrect = ok.get_rect()
@@ -250,6 +251,7 @@ def play_menu_2(com, backend):
 			"""MOUSE EVENTS"""
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				if backrect.collidepoint(event.pos):
+#					backend.exit()
 					return None
 				if namerect.collidepoint(event.pos):
 					name_active = not name_active
@@ -361,6 +363,7 @@ def play_menu(com, backend):
 				"""MOUSE EVENTS"""
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if backrect.collidepoint(event.pos):
+#						backend.exit()
 						return None
 					if mode1rect.collidepoint(event.pos):
 						MODE = 1
@@ -392,6 +395,7 @@ def play_menu(com, backend):
 #						backend.set_mode(MODE)
 						play_menu_2(com, backend)
 						return None
+
 				"""KEYBOARD EVENTS"""
 				if event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_ESCAPE:
@@ -437,6 +441,7 @@ def play_menu(com, backend):
 				"""MOUSE EVENTS"""
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if backrect.collidepoint(event.pos):
+#						backend.exit()
 						return None
 
 				"""KEYBOARD EVENTS"""
@@ -463,28 +468,28 @@ def main_menu(com, backend):
 	play_scale = (int(width / 3), int(height * 33 / 216))
 	play = pygame.transform.scale(pygame.image.load("interface/play.png"), play_scale)
 	playrect = play.get_rect()
-	playrect[0] = width / 3
+	playrect[0] = int(width / 3)
 	playrect[1] = int(height * 64 / 216)
 
 	"""Exit button"""
 	exit_scale = (int(width / 3), int(height * 33 / 216))
 	exit = pygame.transform.scale(pygame.image.load("interface/exit.png"), exit_scale)
 	exitrect = exit.get_rect()
-	exitrect[0] = width / 3
-	exitrect[1] = (height * 115 / 216)
+	exitrect[0] = int(width / 3)
+	exitrect[1] = int(height * 115 / 216)
 
 	"""Settings button"""
 	settings_scale = (int(height * 21 / 216), int(height * 21 / 216))
 	settings = pygame.transform.scale(pygame.image.load("interface/settings.png"), settings_scale)
 	settingsrect = settings.get_rect()
 	settingsrect[0] = 0
-	settingsrect[1] = (height * 185 / 216)
+	settingsrect[1] = int(height * 185 / 216)
 
 	"""Rule button"""
 	rule_scale = settings_scale = (int(height * 21 / 216), int(height * 21 / 216))
 	rule = pygame.transform.scale(pygame.image.load("interface/rule.png"), rule_scale)
 	rulerect = rule.get_rect()
-	rule_offset = width - rule_scale[0]
+	rule_offset = int(width - rule_scale[0])
 	rulerect[0] = rule_offset
 	rulerect[1] = int(height * 185 / 216)
 
