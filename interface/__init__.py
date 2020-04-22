@@ -139,23 +139,37 @@ def settings_menu(com, backend):
 		pygame.display.flip()
 
 def rule_menu(com, backend):
+	"""DRAW RULE MENU INTERFACE"""
+	"""Background"""
 	BG_rule = pygame.transform.scale(pygame.image.load("interface/rule_menu.png"), size)
 	BG_rulerect = BG_rule.get_rect()
 
-	back = pygame.transform.scale(pygame.image.load("interface/back.png"), (int(height * 21 / 216), int(height * 21 / 216)))
+	"""Back button"""
+	back_scale = (int(height * 21 / 216), int(height * 21 / 216))
+	back = pygame.transform.scale(pygame.image.load("interface/back.png"), back_scale)
 	backrect = back.get_rect()
 	backrect[0] = 0
 	backrect[1] = int(height * 185 / 216)
 
 	while True:
+		"""MAINLOOP"""
 		for event in pygame.event.get():
+			"""EVENTS HANDLING"""
+
 			"""MOUSE EVENTS"""
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				if backrect.collidepoint(event.pos):
 					return None
+			"""KEYBOARD EVENTS"""
 			if event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_ESCAPE:
 					sys.exit()
+
+			"""OTHER EVENTS"""
+			if event.type == pygame.QUIT:
+				sys.exit()
+
+		"""RENDERING"""
 		screen.blit(BG_rule, BG_rulerect)
 		screen.blit(back, backrect)
 		pygame.display.flip()
@@ -461,10 +475,6 @@ def main_menu(com, backend):
 		for event in pygame.event.get():
 			"""EVENTS HANDLING"""
 
-			"""OTHER EVENTS"""
-			if event.type == pygame.QUIT:
-				sys.exit()
-
 			"""MOUSE EVENTS"""
 			if event.type == pygame.MOUSEBUTTONDOWN: 
 				if exitrect.collidepoint(event.pos):
@@ -480,6 +490,11 @@ def main_menu(com, backend):
 			if event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_ESCAPE:
 					sys.exit()
+
+			"""OTHER EVENTS"""
+			if event.type == pygame.QUIT:
+				sys.exit()
+
 
 		"""RENDERING"""
 		screen.blit(BG, BGrect)
