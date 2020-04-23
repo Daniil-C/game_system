@@ -33,8 +33,7 @@ def wait_menu(com, backend):
     backrect[0] = 0
     backrect[1] = int(height * 185 / 216)
 
-#   num = com.get_number()
-    num = 0
+    num = com.get_number()
     play = 0
     playrect = 0
     if num == 0:
@@ -61,7 +60,7 @@ def wait_menu(com, backend):
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if backrect.collidepoint(event.pos):
-#                   backend.exit()
+                    backend.exit()
                     return None
 
             """KEYBOARD EVENTS"""
@@ -77,8 +76,7 @@ def wait_menu(com, backend):
 
         """RENDERING"""
         screen.blit(BG, BGrect)
-#       players = backend.get_players_list()
-        players = [["num", 1], ["vfhkg", 3], ["cfc", 2]]
+        players = backend.get_players_list()
         p_size = (int(width / 3), int(height / 7))
         p_pos = (int(width * 2 / 3), 0)
         prect = pygame.Rect(p_pos[0], p_pos[1], p_size[0], p_size[1])
@@ -127,10 +125,10 @@ def settings_menu(com, backend):
         """Save ip and port"""
         nonlocal BG, BGrect, ip_text, port_text
         if checker(ip_text, port_text):
-#           backend.set_connection_params(ip_text, int(port_text))
+            backend.set_connection_params(ip_text, int(port_text))
             global SETTINGS
             SETTINGS = True
-#           com.is_connected = False
+            com.is_connected = False
             bg_name = "interface/BG_settings_saved.png"
             BG = pygame.transform.scale(pygame.image.load(bg_name), size)
             BGrect = BG.get_rect()
@@ -185,7 +183,7 @@ def settings_menu(com, backend):
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if backrect.collidepoint(event.pos):
-#                   backend.exit()
+                    backend.exit()
                     return None
                 if iprect.collidepoint(event.pos):
                     port_active = False
@@ -263,7 +261,7 @@ def rule_menu(com, backend):
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if backrect.collidepoint(event.pos):
-#                    backend.exit()
+                    backend.exit()
                     return None
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
@@ -318,10 +316,10 @@ def play_menu_2(com, backend):
         """Save Name"""
         nonlocal BG, BGrect, name_text
         if name_text.isalnum():
-#           backend.set_name(name_text)
+            backend.set_name(name_text)
             name_text = ""
             wait_menu(com, backend)
-#           backend.exit()
+            backend.exit()
             return True
         else:
             BG = pygame.transform.scale(pygame.image.load("interface/BG_name_bad.png"), size)
@@ -336,7 +334,7 @@ def play_menu_2(com, backend):
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if backrect.collidepoint(event.pos):
-#                   backend.exit()
+                    backend.exit()
                     return None
                 if namerect.collidepoint(event.pos):
                     name_active = not name_active
@@ -427,8 +425,8 @@ def connection(com, backend):
         BG = pygame.transform.scale(pygame.image.load(img), size)
         BGrect = BG.get_rect()
 
-#       if com.is_connected:
-#           return True
+        if com.is_connected:
+            return True
         if i == 19:
             return True
 
@@ -465,9 +463,8 @@ def play_menu(com, backend):
         return None
 
     """Start connection"""
-#   backend.start_game()
-#   num = com.get_number()
-    num = 0        # number of the player
+    backend.start_game()
+    num = com.get_number()
     if num == 0:
         """First player interface"""
         """Background"""
@@ -531,30 +528,30 @@ def play_menu(com, backend):
                 """MOUSE EVENTS"""
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if backrect.collidepoint(event.pos):
-#                       backend.exit()
+                        backend.exit()
                         return None
                     if mode1rect.collidepoint(event.pos):
-#                       backend.set_mode(4)
+                        backend.set_mode(4)
                         play_menu_2(com, backend)
                         return None
                     if mode2rect.collidepoint(event.pos):
-#                       backend.set_mode(4)
+                        backend.set_mode(4)
                         play_menu_2(com, backend)
                         return None
                     if mode3rect.collidepoint(event.pos):
-#                       backend.set_mode(4)
+                        backend.set_mode(4)
                         play_menu_2(com, backend)
                         return None
                     if mode4rect.collidepoint(event.pos):
-#                       backend.set_mode(4)
+                        backend.set_mode(4)
                         play_menu_2(com, backend)
                         return None
                     if mode5rect.collidepoint(event.pos):
-#                       backend.set_mode(5)
+                        backend.set_mode(5)
                         play_menu_2(com, backend)
                         return None
                     if mode6rect.collidepoint(event.pos):
-#                       backend.set_mode(6)
+                        backend.set_mode(6)
                         play_menu_2(com, backend)
                         return None
 
@@ -596,8 +593,8 @@ def play_menu(com, backend):
         backrect[0] = 0
         backrect[1] = int(height * 185 / 216)
 
-#       while not backend.end.upd():
-        for i in range(15):
+        while not backend.end.upd():
+#       for i in range(15):
             """MAINLOOP"""
             for event in pygame.event.get():
                 """EVENTS HANDLING"""
@@ -605,7 +602,7 @@ def play_menu(com, backend):
                 """MOUSE EVENTS"""
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if backrect.collidepoint(event.pos):
-#                       backend.exit()
+                        backend.exit()
                         return None
 
                 """KEYBOARD EVENTS"""
