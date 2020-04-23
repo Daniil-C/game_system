@@ -61,6 +61,12 @@ class Common(Monitor):
         """
         self.player.is_master = True
 
+    def set_player(self):
+        """
+        Sets player`s master role
+        """
+        self.player.is_master = False
+
     def get_name(self):
         """
         Returns player`s name
@@ -233,6 +239,8 @@ class Backend(threading.Thread):
                 # TODO
             if role == "MASTER":
                 self.common.set_master()
+            else:
+                self.common.set_player()
             self.common.set_number(player_num)
         else:
             raise Exception("Unexpected keyword. "
