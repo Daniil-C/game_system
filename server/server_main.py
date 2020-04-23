@@ -341,9 +341,10 @@ class CLI(Monitor):
         print("CLI started")
         while self.work:
             try:
-                cmdline = input("\x1b[1;32m>\x1b[0m$ ").split()
+                cmdline = input("\x1b[1;32m[%s]\x1b[0m$ " %
+                                self.game_st.state).split()
             except Exception as ex:
-                print("CLI: error:", str(ex))
+                print("error:", str(ex))
                 continue
 
             if not self.work:
@@ -361,18 +362,16 @@ class CLI(Monitor):
                     self.comm_start(cmdline)
                 elif cmdline[0] == "stop":
                     self.comm_stop()
-                elif cmdline[0] == "status":
-                    self.comm_status()
                 else:
-                    print("CLI: error: unknown command")
+                    print("error: unknown command")
             except Exception as ex:
-                print("CLI: error: " + str(ex))
+                print("error: " + str(ex))
 
     def completer(self, text, state):
         """
         Function for command completion.
         """
-        commands = ["help", "players", "start ", "status", "stop"]
+        commands = ["help", "players", "start ", "stop"]
         for i in commands:
             if i.startswith(text):
                 if state == 0:
@@ -384,12 +383,7 @@ class CLI(Monitor):
         """
         Execute 'help' command.
         """
-        print("CLI commands:")
-        print("\thelp")
-        print("\tplayers")
-        print("\tstart <card set number>")
-        print("\tstatus")
-        print("\tstop")
+        print("commands:\n\thelp\n\tplayers\n\tstart <card set>\n\tstop")
 
     def comm_players(self):
         """
@@ -397,7 +391,7 @@ class CLI(Monitor):
         """
         if self.players is not None:
             self.players.acquire()
-            print("CLI:", len(self.players), "player" +
+            print(len(self.players), "player" +
                   "s"*int(len(self.players) != 1))
             out = list()
             m_len = [len("number"), len("name"), len("score")]
@@ -420,7 +414,7 @@ class CLI(Monitor):
                     print(string.strip())
             self.players.release()
         else:
-            print("CLI: error: player list is not available")
+            print("error: player list is not available")
 
     def comm_start(self, cmdline):
         """
@@ -429,23 +423,17 @@ class CLI(Monitor):
         if len(cmdline) == 2:
             self.game_st.card_set = cmdline[1]
             self.game_st.state = "GAME"
-            print("CLI: Starting game.")
+            print("Starting game.")
         else:
-            print("CLI: error: expected start <card set>")
+            print("error: expected start <card set>")
 
     def comm_stop(self):
         """
         Execute 'stop' command.
         """
         self.game_st.state = "SHUTDOWN"
-        print("CLI: exit")
+        print("exit")
         self.work = False
-
-    def comm_status(self):
-        """
-        Execute 'status' command.
-        """
-        print(self.game_st.state)
 
 
 class PlayerList(Monitor):
