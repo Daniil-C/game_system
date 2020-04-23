@@ -143,6 +143,7 @@ class Backend(threading.Thread):
     def stop(self):
         self.conn.close()
         self.reader.join()
+        self.updater.join()
 
     def set_connection_params(self, ip, port):
         """
@@ -242,11 +243,6 @@ class Backend(threading.Thread):
         self.updater.join()
         self.conn.send("START_GAME {}".format(self.mode))
 
-    def exit(self):
-        """
-        Restarts menu
-        """
-        self.conn.close()
 
 
 class BackendInterface:
@@ -310,7 +306,7 @@ class BackendInterface:
         """
         Restarts menu
         """
-        d = {"method": "exit", "args": None}
+        d = {"method": "stop", "args": None}
         in_q.put(json.dumps(d))
 
 
