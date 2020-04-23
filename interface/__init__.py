@@ -1,9 +1,10 @@
 import sys
 import pygame
+import time
 
 pygame.init()
 
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((0, 0))#, pygame.FULLSCREEN)
 black = 0, 0, 0
 
 info = pygame.display.Info()
@@ -76,12 +77,12 @@ def wait_menu(com, backend):
 
         """RENDERING"""
         screen.blit(BG, BGrect)
-        players = backend.get_players_list()
+        players = com.get_players_list()
         p_size = (int(width / 3), int(height / 7))
         p_pos = (int(width * 2 / 3), 0)
         prect = pygame.Rect(p_pos[0], p_pos[1], p_size[0], p_size[1])
         for i in range(len(players)):
-            plr = str(i + 1) + ". " + players[i][0]
+            plr = str(i + 1) + ". " + players[i][1]
             player_box = font.render(plr, True, (0xAD, 0xE5, 0xF3))
             screen.blit(player_box, (prect[0] + w_shift, prect[1] + h_shift))
             pygame.draw.rect(screen, (0xAD, 0xE5, 0xF3), prect, 2)
@@ -324,7 +325,7 @@ def play_menu_2(com, backend):
         else:
             BG = pygame.transform.scale(pygame.image.load("interface/BG_name_bad.png"), size)
             BGrect = BG.get_rect()
-        return False
+            return False
 
     while True:
         """MAINLOOP"""
@@ -465,6 +466,9 @@ def play_menu(com, backend):
     """Start connection"""
     backend.start_game()
     num = com.get_number()
+    while num == -1:
+        time.sleep(1)
+        num = com.get_number()
     if num == 0:
         """First player interface"""
         """Background"""
@@ -694,6 +698,8 @@ def main_menu(com, backend):
 
 
 def init_interface(com, backend):
+    global SETTINGS
+    SETTINGS = com.ip is not None
     main_menu(com, backend)
 
 #init_interface(-1, -1)

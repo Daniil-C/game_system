@@ -119,6 +119,7 @@ class Backend(threading.Thread):
                 data = json.loads(s)
                 self.common.ip = data["ip"]
                 self.common.port = int(data["port"])
+                self.common.is_connected = True
         except Exception:
             pass
 
@@ -189,9 +190,12 @@ class Backend(threading.Thread):
             try:
                 mes = self.conn.get()
                 logging.debug(mes)
-                parsed = parse_message(mes, ",")
+                parsed = parse_message(parse_message(mes, " ")[1], ",")
+                logging.debug(parsed[0])
                 self.common.players_list = [i.split(";") for i in parsed]
-            except Exception:
+                time.sleep(1)
+            except Exception as ex:
+                logging.error(ex)
                 pass
         self.sock.settimeout(None)
 
@@ -205,7 +209,12 @@ class Backend(threading.Thread):
         """
         Starts the game
         """
-        self.connect()
+        try:
+            self.connect()
+        except Exception as ex:
+            logging.error(ex)
+            self.common.is_connected = False
+            return
         logging.info("Game started")
         mes = self.conn.get()
         logging.debug(mes)
