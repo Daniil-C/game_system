@@ -233,6 +233,12 @@ class Backend(threading.Thread):
         self.updater.join()
         self.conn.send("START_GAME {}".format(self.mode))
 
+    def exit(self):
+        """
+        Restarts menu
+        """
+        self.conn.close()
+
 
 class BackendInterface:
     """
@@ -289,6 +295,13 @@ class BackendInterface:
         Starts playing
         """
         d = {"method": "play", "args": None}
+        in_q.put(json.dumps(d))
+
+    def exit(self):
+        """
+        Restarts menu
+        """
+        d = {"method": "exit", "args": None}
         in_q.put(json.dumps(d))
 
 
