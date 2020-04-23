@@ -254,6 +254,7 @@ class Backend(threading.Thread):
         """
         Starts playing
         """
+        logging.debug("STARTING GAME")
         self.game_started = True
         self.updater.join()
         self.conn.send("START_GAME {}".format(self.mode))
