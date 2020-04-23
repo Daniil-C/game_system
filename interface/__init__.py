@@ -30,6 +30,17 @@ def wait_menu(com, backend):
 	backrect[0] = 0
 	backrect[1] = int(height * 185 / 216)
 
+#	num = com.get_number()
+	num = 0
+	play = 0
+	playrect = 0
+	if num == 0:
+		play_scale = (int(width / 3), int(height * 33 / 216))
+		play = pygame.transform.scale(pygame.image.load("interface/play.png"), play_scale)
+		playrect = play.get_rect()
+		playrect[0] = int(width / 3)
+		playrect[1] = int(height * 150 / 216)
+
 	screen_iter = 0
 
 	while True:
@@ -75,6 +86,8 @@ def wait_menu(com, backend):
 			pygame.draw.rect(screen, (0xAD, 0xE5, 0xF3), playersrect, 2)
 			playersrect[1] +=  int(height / 7)
 		screen.blit(back, backrect)
+		if num == 0:
+			screen.blit(play, playrect)
 		pygame.display.flip()
 
 
