@@ -36,6 +36,10 @@ class Common(Monitor):
         self.player = Player()
         self.players_list = []
 
+    def reset(self):
+        self.player = Player()
+        self.players_list = []
+
     def set_ip_port(self, ip, port):
         """
         Set connections params to connect to game server
@@ -264,6 +268,7 @@ class Backend(threading.Thread):
             self.updater.join()
         except Exception as ex:
             logging.error(ex)
+        self.common.reset()
 
 
 class BackendInterface:
