@@ -359,7 +359,8 @@ def play_menu_2(com, backend):
                 if name_active:
                     if event.key == pygame.K_RETURN:
                         name_active = False
-                        save_fun()
+                        if save_fun():
+                            return None
                     elif event.key == pygame.K_BACKSPACE:
                         name_text = name_text[:-1]
                     elif len(name_text) < 20:
