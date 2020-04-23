@@ -696,4 +696,4 @@ def main_menu(com, backend):
 def init_interface(com, backend):
     main_menu(com, backend)
 
-init_interface(-1, -1)
+#init_interface(-1, -1)
