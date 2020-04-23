@@ -532,7 +532,8 @@ class PlayerList(Monitor):
         """
         if data == "#PLAYER_LIST":
             data = "PLAYER_LIST " + ",".join([str(i.number) + ";" + i.name
-                                              for i in self])
+                                              for i in self
+                                              if i.get_broadcast])
         if data == "#SELF":
             data = "PLAYER " + str(info.number)
         for i in self:
