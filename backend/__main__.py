@@ -7,7 +7,7 @@ import logging
 import threading
 import time
 from multiprocessing import Queue
-# import interface
+import interface
 import json
 from connection import connection as Conn
 from monitor import Monitor
@@ -300,17 +300,17 @@ if __name__ == "__main__":
     back = Backend(com, in_q)
     back_int = BackendInterface(in_q)
     back.start()
-    back_int.set_connection_params("192.168.1.4", 7840)
+    # back_int.set_connection_params("192.168.1.4", 7840)
     # back_int.connect()
-    back_int.start_game()
-    back_int.set_name("Yar")
-    back_int.set_mode("Ariadna")
-    time.sleep(5)
-    back_int.play()
+    # back_int.start_game()
+    # back_int.set_name("Yar")
+    # back_int.set_mode("Ariadna")
+    # time.sleep(5)
+    # back_int.play()
     # q.close()
     # q.join_thread()
-    # interface.init_interface(com, back_int)
-    time.sleep(30)
+    interface.init_interface(com, back_int)
+    # time.sleep(30)
     back_int.stop()
     back.stop()
     back.join()
