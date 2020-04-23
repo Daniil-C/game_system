@@ -143,7 +143,10 @@ class Backend(threading.Thread):
     def stop(self):
         self.conn.close()
         self.reader.join()
-        self.updater.join()
+        try:
+            self.updater.join()
+        except Exception as ex:
+            logging.error(ex)
 
     def set_connection_params(self, ip, port):
         """
@@ -197,8 +200,8 @@ class Backend(threading.Thread):
                 time.sleep(1)
             except Exception as ex:
                 logging.error(ex)
-                pass
-        self.sock.settimeout(None)
+            finally:
+                self.sock.settimeout(None)
 
     def set_mode(self, mode):
         """
@@ -243,6 +246,16 @@ class Backend(threading.Thread):
         self.updater.join()
         self.conn.send("START_GAME {}".format(self.mode))
 
+    def exit(self):
+        """
+        Restarts menu
+        """
+        self.conn.close()
+        self.game_started = False
+        try:
+            self.updater.join()
+        except Exception as ex:
+            logging.error(ex)
 
 
 class BackendInterface:
@@ -306,7 +319,7 @@ class BackendInterface:
         """
         Restarts menu
         """
-        d = {"method": "stop", "args": None}
+        d = {"method": "exit", "args": None}
         in_q.put(json.dumps(d))
 
 

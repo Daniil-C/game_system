@@ -184,7 +184,7 @@ def settings_menu(com, backend):
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if backrect.collidepoint(event.pos):
-                    backend.exit()
+                    #backend.exit()
                     return None
                 if iprect.collidepoint(event.pos):
                     port_active = False
