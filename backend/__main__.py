@@ -211,7 +211,10 @@ class Backend(threading.Thread):
             except Exception as ex:
                 logging.error(ex)
             finally:
-                self.sock.settimeout(None)
+                try:
+                    self.sock.settimeout(None)
+                except Exception as ex:
+                    logging.error(ex)
 
     def set_mode(self, mode):
         """
