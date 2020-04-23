@@ -482,6 +482,8 @@ class PlayerList(Monitor):
                         self.game_st.state == "PLAYER_CONN"):
                     self.game_st.state = "ERROR"
                 self.players.remove(player)
+                if self.game_st.state == "PLAYER_CONN":
+                    self.broadcast("#PLAYER_LIST")
                 break
 
     def next_player(self, player):
@@ -552,6 +554,7 @@ class GameServer:
         self.resources = None
         self.cli = None
         self.current_player = None
+        self.session_id = 0
 
     def main(self):
         """
@@ -564,6 +567,7 @@ class GameServer:
         while self.game_state.state != "SHUTDOWN":
             self.prepare()
             work = True
+            self.logger.info("Starting session %d" % self.session_id)
             while work:
                 self.check_resource_server()
                 if (self.game_state.state != "PLAYER_CONN" and
@@ -610,6 +614,8 @@ class GameServer:
                 self.players.release()
 
             self.players.stop()
+            self.logger.info("Closing session %d" % self.session_id)
+            self.session_id += 1
 
         self.cli.stop()
 
