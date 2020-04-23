@@ -11,6 +11,73 @@ print(size)
 
 SETTINGS = False
 
+
+def wait_menu(com, backend):
+	"""Wait players"""
+	font_size = int(height / 10)
+	font = pygame.font.SysFont("Chilanka", font_size)
+	w_shift = int(height / 120)
+	h_shift = int(height / 14 - height / 20)
+	clock = pygame.time.Clock()
+	"""Background"""
+	BG = pygame.transform.scale(pygame.image.load("interface/wait_0.png"), size)
+	BGrect = BG.get_rect()
+
+	"""Back button"""
+	back_scale = (int(height * 21 / 216), int(height * 21 / 216))
+	back = pygame.transform.scale(pygame.image.load("interface/back.png"), back_scale)
+	backrect = back.get_rect()
+	backrect[0] = 0
+	backrect[1] = int(height * 185 / 216)
+
+	screen_iter = 0
+
+	while True:
+		"""MAINLOOP"""
+		n = screen_iter % 4
+		screen_iter += 1
+		img = "interface/wait_{}.png".format(str(n))
+		BG = pygame.transform.scale(pygame.image.load(img), size)
+		BGrect = BG.get_rect()
+
+		for event in pygame.event.get():
+			"""EVENTS HANDLING"""
+
+			"""MOUSE EVENTS"""
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				if backrect.collidepoint(event.pos):
+#					backend.exit()
+					return None
+
+			"""KEYBOARD EVENTS"""
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_ESCAPE:
+					sys.exit()
+
+			"""OTHER EVENTS"""
+			if event.type == pygame.QUIT:
+				sys.exit()
+
+		time_passed = clock.tick (2)
+
+		"""RENDERING"""
+		screen.blit(BG, BGrect)
+
+#		players = backend.get_players_list()
+		players = [["num", 1], ["vfhkg", 3], ["cfc", 2]]
+		playersbox_size = (int(width / 3), int(height / 7))
+		playersbox_pos = (int(width * 2 / 3), 0)
+		playersrect = pygame.Rect(playersbox_pos[0], playersbox_pos[1], playersbox_size[0], playersbox_size[1]) 
+		for i in range(len(players)):
+			plr = str(i + 1) + ". " + players[i][0]
+			player_box = font.render(plr, True, (0xAD, 0xE5, 0xF3))
+			screen.blit(player_box, (playersrect[0] + w_shift, playersrect[1] + h_shift))
+			pygame.draw.rect(screen, (0xAD, 0xE5, 0xF3), playersrect, 2)
+			playersrect[1] +=  int(height / 7)
+		screen.blit(back, backrect)
+		pygame.display.flip()
+
+
 def settings_menu(com, backend):
 	"""settings menu"""
 
@@ -45,8 +112,9 @@ def settings_menu(com, backend):
 		nonlocal BG, BGrect, ip_text, port_text
 #		if checker(ip_text, port_text) and  backend.set_connection_params(ip_text, int(port_text)):
 		if checker(ip_text, port_text):
-			global SETTINGS, TEST
+			global SETTINGS
 			SETTINGS = True
+#			com.is_connected = False
 			BG = pygame.transform.scale(pygame.image.load("interface/BG_settings_saved.png"), size)
 			BGrect = BG.get_rect()
 			ip_text = ""
@@ -143,6 +211,7 @@ def settings_menu(com, backend):
 		"""RENDERING"""
 		ip_color = active_color if ip_active else inactive_color
 		port_color = active_color if port_active else inactive_color
+
 		shift = int(height / 120)
 		screen.blit(BG, BGrect)
 		screen.blit(back, backrect)
@@ -234,14 +303,14 @@ def play_menu_2(com, backend):
 		nonlocal BG, BG, name_text
 		if name_text.isalnum():
 #			backend.set_name(name_text)
-			# go to waiting window
-			BG = pygame.transform.scale(pygame.image.load("interface/BG_settings_saved.png"), size)
-			BGrect = BG.get_rect()
 			name_text = ""
+			wait_menu(com, backend)
+#			backend.exit()
+			return True
 		else:
-			#TODO: make BG image
 			BG = pygame.transform.scale(pygame.image.load("interface/BG_name_bad.png"), size)
 			BGrect = BG.get_rect()
+		return False
 	
 	while True:
 		"""MAINLOOP"""
@@ -258,7 +327,8 @@ def play_menu_2(com, backend):
 				else:
 					name_active = False
 					if okrect.collidepoint(event.pos):
-						save_fun()
+						if save_fun():
+							return None
 
 			"""KEYBOARD EVENTS"""
 			if event.type == pygame.KEYDOWN:
@@ -290,9 +360,12 @@ def play_menu_2(com, backend):
 
 
 def disconnection():
+	"""Disdpaying if backend can't connect to server"""
+	"""Background"""
 	BG = pygame.transform.scale(pygame.image.load("interface/BG_disconnect.png"), size)
 	BGrect = BG.get_rect()
 
+	"""Ok button"""
 	ok_scale = (int(width / 3), int(height * 33 / 216))
 	ok = pygame.transform.scale(pygame.image.load("interface/ok.png"), ok_scale)
 	okrect = ok.get_rect()
@@ -319,7 +392,6 @@ def disconnection():
 				sys.exit()
 		
 		"""RENDERING"""
-
 		screen.blit(BG, BGrect)
 		screen.blit(ok, okrect)
 		pygame.display.flip()
@@ -335,11 +407,14 @@ def connection(com, backend):
 	for i in range(20):
 		"""MAINLOOP"""
 		n = i % 4
-		BG = pygame.transform.scale(pygame.image.load("interface/BG_{}.png".format(str(n))), size)
+		img = "interface/BG_{}.png".format(str(n))
+		BG = pygame.transform.scale(pygame.image.load(img), size)
 		BGrect = BG.get_rect()
 
 #		if com.is_connected:
 #			return True
+		if i == 19:
+			return True
 
 		for event in pygame.event.get():
 			"""EVENTS HANDLING"""
@@ -362,7 +437,6 @@ def connection(com, backend):
 	global SETTINGS
 	SETTINGS = False
 	return False
-
 
 
 def play_menu(com, backend):
