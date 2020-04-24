@@ -77,6 +77,7 @@ def wait_menu(com, backend):
 
         clock.tick(2)
         if not com.is_connected:
+            disconnection()
             return None
         """RENDERING"""
         screen.blit(BG, BGrect)
