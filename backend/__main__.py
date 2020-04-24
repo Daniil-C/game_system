@@ -212,8 +212,8 @@ class Backend(threading.Thread):
         while not self.game_started and not self.end:
             try:
                 mes = self.conn.get()
-                if mes is None:
-                    common.is_connected = False
+                if len(mes) == 0:
+                    self.common.is_connected = False
                     break
                 logging.debug(mes)
                 parsed = parse_message(parse_message(mes, " ")[1], ",")
@@ -244,8 +244,8 @@ class Backend(threading.Thread):
         logging.info("Game started")
         mes = self.conn.get()
         logging.debug(mes)
-        if mes is None:
-            common.is_connected = False
+        if len(mes) == 0:
+            self.common.is_connected = False
         parsed = parse_message(mes, " ")
         if parsed[0] == "VERSION":
             player_num = int(parsed[1])
