@@ -246,7 +246,6 @@ class Backend(threading.Thread):
         logging.debug(mes)
         if mes is None:
             common.is_connected = False
-            break
         parsed = parse_message(mes, " ")
         if parsed[0] == "VERSION":
             player_num = int(parsed[1])
