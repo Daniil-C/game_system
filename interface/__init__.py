@@ -76,7 +76,8 @@ def wait_menu(com, backend):
                 sys.exit()
 
         clock.tick(2)
-
+        if not com.is_connected:
+            return None
         """RENDERING"""
         screen.blit(BG, BGrect)
         players = com.get_players_list()
