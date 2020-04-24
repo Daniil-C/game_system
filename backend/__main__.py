@@ -22,6 +22,7 @@ class Player:
         self.is_master = False
         self.name = ""
         self.number = -1
+        self.is_leader = False
 
 
 class Common(Monitor):
@@ -35,10 +36,12 @@ class Common(Monitor):
         self.is_connected = False
         self.player = Player()
         self.players_list = []
+        self.game_started = False
 
     def reset(self):
         self.player = Player()
         self.players_list = []
+        self.game_started = False
 
     def set_ip_port(self, ip, port):
         """
@@ -270,6 +273,7 @@ class Backend(threading.Thread):
         """
         logging.debug("STARTING GAME")
         self.game_started = True
+        self.common.game_started = True
         self.updater.join()
         self.conn.send("START_GAME {}".format(self.mode))
 
