@@ -437,10 +437,10 @@ def connection(com, backend):
         BG = pygame.transform.scale(pygame.image.load(img), size)
         BGrect = BG.get_rect()
 
-        if com.is_connected:
+        if com.is_connected and com.get_number() != -1:
             return True
-        if i == 19:
-            return True
+        #if i == 19:
+            #return True
 
         for event in pygame.event.get():
             """EVENTS HANDLING"""
@@ -469,19 +469,20 @@ def connection(com, backend):
 
 def play_menu(com, backend):
     """DRAW PLAY MENU INTERFACE FOR MASTER (FIRST) PLAYER OR DOWNLOADING RESOURCES INTERFACE"""
-    while not SETTINGS:
+    if not SETTINGS:
         """If the player hasn't specified connection parameters"""
         settings_menu(com, backend)
         return None
+    backend.start_game()
     if not connection(com, backend):
         return None
 
     """Start connection"""
-    backend.start_game()
+    #num = com.get_number()
+    #connected = connection(com, backend)
+    #while num == -1 and connected:
+    #    connected = connection(com, backend)
     num = com.get_number()
-    while num == -1:
-        time.sleep(1)
-        num = com.get_number()
     if num == 0:
         """First player interface"""
         """Background"""
@@ -612,7 +613,7 @@ def play_menu(com, backend):
         backrect[0] = 0
         backrect[1] = int(height * 185 / 216)
 
-        while not backend.end.upd():
+        while not backend.end_upd():
 #       for i in range(15):
             """MAINLOOP"""
             for event in pygame.event.get():

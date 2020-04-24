@@ -118,7 +118,7 @@ class Backend(threading.Thread):
         self.common = common
         self.in_q = in_q
         self.version = "res_0.0"
-        self.end = 0
+        self.end = False
         self.reader = threading.Thread(target=Backend.read_queue, args=(self,))
         self.reader.start()
         self.game_started = False
@@ -129,7 +129,7 @@ class Backend(threading.Thread):
                 data = json.loads(s)
                 self.common.ip = data["ip"]
                 self.common.port = int(data["port"])
-                self.common.is_connected = True
+                self.common.is_connected = False
         except Exception:
             pass
 
@@ -142,7 +142,12 @@ class Backend(threading.Thread):
             logging.debug(data)
             data = json.loads(data)
             if data["method"] == "stop":
-                self.end = 1
+                self.end = True
+                try:
+                    self.conn.send("SHUTDOWN")
+                except Exception:
+                    pass
+                logging.debug("stopping")
             else:
                 if data["args"] is not None:
                     args = data["args"]
@@ -152,9 +157,12 @@ class Backend(threading.Thread):
 
     def stop(self):
         self.conn.close()
+        logging.debug("Closing socket")
         self.reader.join()
+        logging.debug("Closing reader")
         try:
             self.updater.join()
+            logging.debug("Closing updater")
         except Exception as ex:
             logging.error(ex)
 
@@ -183,6 +191,7 @@ class Backend(threading.Thread):
         self.sock.settimeout(timeout)
         self.sock.connect((self.common.ip, self.common.port))
         self.conn = Conn(self.sock)
+        self.common.is_connected = True
 
     def set_name(self, name):
         """
@@ -200,7 +209,7 @@ class Backend(threading.Thread):
         Updates players table
         """
         self.sock.settimeout(1)
-        while not self.game_started:
+        while not self.game_started and not self.end:
             try:
                 mes = self.conn.get()
                 logging.debug(mes)
