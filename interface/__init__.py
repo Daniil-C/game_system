@@ -16,10 +16,10 @@ SETTINGS = False
 
 def wait_menu(com, backend):
     """Wait players"""
-    font_size = int(height / 10)
+    font_size = int(height / 20)
     font = pygame.font.SysFont("Chilanka", font_size)
     w_shift = int(height / 120)
-    h_shift = int(height / 14 - height / 20)
+    h_shift = int(height / 14 - height / 40)
     clock = pygame.time.Clock()
     """Background"""
     bg_name = "interface/wait_0.png"
@@ -89,7 +89,7 @@ def wait_menu(com, backend):
             plr = str(i + 1) + ". " + players[i][1]
             player_box = font.render(plr, True, (0xAD, 0xE5, 0xF3))
             screen.blit(player_box, (prect[0] + w_shift, prect[1] + h_shift))
-            pygame.draw.rect(screen, (0xAD, 0xE5, 0xF3), prect, 2)
+            # pygame.draw.rect(screen, (0xAD, 0xE5, 0xF3), prect, 2)
             prect[1] += int(height / 7)
         screen.blit(back, backrect)
         if num == 0:
