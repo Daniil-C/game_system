@@ -16,8 +16,9 @@ class Resources(Monitor):
     """
     Information about game resources.
 
-    name: resources version name.
-    link: new resources version address.
+    Attributes:
+    name (str): resources version name.
+    link (str): new resources version address.
     """
     def __init__(self, res_name, res_link):
         Monitor.__init__(self)
@@ -28,8 +29,6 @@ class Resources(Monitor):
 class HTTPHandler(SimpleHTTPRequestHandler):
     """
     Handler for HTTP requests.
-
-    It allows to access files in file system.
     """
     def __init__(self, *args, **kwargs):
         SimpleHTTPRequestHandler.__init__(self, *args, **kwargs)
@@ -38,8 +37,8 @@ class HTTPHandler(SimpleHTTPRequestHandler):
         """
         Log message from request handler.
 
-        format: format string.
-        args: arguments for log message.
+        format (str): format string.
+        args (list): arguments for format string.
         """
         self.logger.info("HTTP: " + (format % args))
 
@@ -49,6 +48,12 @@ class HTTPHandler(SimpleHTTPRequestHandler):
 class ResourceServer(Monitor):
     """
     Server for resource pack downloading.
+
+    Attributes:
+    logger (Logger): logger for handling log messages.
+    server (HTTPServer): server object.
+    thread (Thread): thread for main server function.
+    active (bool): server state.
     """
     def __init__(self, logger):
         Monitor.__init__(self)
@@ -77,7 +82,7 @@ class ResourceServer(Monitor):
 
     def start(self):
         """
-        Start main server function.
+        Start main server function in new thread.
         """
         self.thread = threading.Thread(target=ResourceServer.main,
                                        args=(self,))
@@ -86,7 +91,7 @@ class ResourceServer(Monitor):
 
     def stop(self):
         """
-        Stop server.
+        Stop server thread.
         """
         self.server.shutdown()
         self.thread.join()
@@ -97,8 +102,9 @@ class GameState(Monitor):
     """
     Information about game state.
 
-    state: current game state.
-    card_set: current card set number.
+    Attributes:
+    state (str): current game state.
+    card_set (str): current card set number.
     """
     def __init__(self, initial_state):
         Monitor.__init__(self)
@@ -108,20 +114,27 @@ class GameState(Monitor):
 
 class Player(Monitor):
     """
-    Player class is used for player connection handling.
+    Player class is used for player information handling.
 
-    player_socket: socket, connected to player.
-    status: player status: MASTER or PLAYER.
-    conn: connection object, containing player_socket.
-    valid: is set to False if error occures.
-    name: player name.
-    res: Resources object.
-    game_st: GameState object.
-    score: current player score.
-    plist: PlayerList object, containing this Player object.
-    get_broadcast: will this player receive broadcast messages.
-    cards: list of player's cards.
-    number: player number.
+    Attributes:
+    player_socket (socket): socket, connected to player.
+    status (str): player status: MASTER or PLAYER.
+    state (str): current player state.
+    conn (connection): connection object, containing player_socket.
+    valid (bool): error indicator.
+    name (str): player name.
+    res (Resources): resource pack container.
+    game_st (GameState): game state container.
+    score (int): current player score.
+    plist (PlayerList): PlayerList object, containing this Player object.
+    get_broadcast (bool): will this player receive broadcast messages.
+    cards (list(int)): list of player's cards.
+    number (int): player number.
+    current_card (int): current player card.
+    selected_card (int): current selected card.
+    buffer (list(str)): list of messages waiting to be sent.
+    has_buffer (bool): is True if buffer is not empty.
+    has_turn (bool): is True if player is leader now.
     """
     def __init__(self, sock, status, res, game_st, plist, number,
                  logger):
@@ -151,7 +164,7 @@ class Player(Monitor):
 
     def stop(self):
         """
-        Disconnect.
+        Disconnect player.
         """
         self.valid = False
         if self.conn is not None:
@@ -159,11 +172,16 @@ class Player(Monitor):
             self.conn = None
 
     def verify(self):
+        """
+        Check if there is no errors in Player object.
+        """
         return self.valid and self.conn.status
 
     def send_message(self, data):
         """
         Put message into send buffer.
+
+        data (str): message.
         """
         self.buffer.append(data)
         self.has_buffer = True
@@ -301,6 +319,8 @@ class Player(Monitor):
     def log_message(self, message):
         """
         Print message into log file.
+
+        message (str): printed message.
         """
         self.logger.info("Player %d: %s.", self.number, message)
 
@@ -321,21 +341,21 @@ class CLI(Monitor):
 
     def start(self):
         """
-        Start thread.
+        Start thread for command line interface.
         """
         self.thread = threading.Thread(target=CLI.main, args=(self,))
         self.thread.start()
 
     def stop(self):
         """
-        Stop thread.
+        Stop command line interface thread.
         """
         self.work = False
         self.thread.join()
 
     def main(self):
         """
-        Main thread function.
+        Main command line interface function.
         """
         self.work = True
         print("CLI started")
@@ -370,6 +390,9 @@ class CLI(Monitor):
     def completer(self, text, state):
         """
         Function for command completion.
+
+        text (str): current input buffer.
+        state (int): match number.
         """
         commands = ["help", "players", "start ", "stop"]
         for i in commands:
@@ -489,6 +512,8 @@ class PlayerList(Monitor):
     def next_player(self, player):
         """
         Get next player in player sequence.
+
+        player (Player): current player.
         """
         p_idx = 0
         for i in range(len(self.players)):
@@ -507,7 +532,7 @@ class PlayerList(Monitor):
 
     def stop(self):
         """
-        Delete all Player objects.
+        Disconnect all players and delete all Player objects.
         """
         for i in range(len(self.players)):
             self.players[i].stop()
@@ -517,6 +542,9 @@ class PlayerList(Monitor):
     def add_player(self, res, sock):
         """
         Add player to PlayerList.
+
+        res (Resources): resource pack information.
+        sock (socket): player socket.
         """
         new_player = Player(sock, "PLAYER" if self.have_master else "MASTER",
                             res, self.game_st, self,
@@ -529,6 +557,9 @@ class PlayerList(Monitor):
     def broadcast(self, data, info=None):
         """
         Send broadcast message.
+
+        data (str): message text.
+        info (Player): additional info for #SELF message.
         """
         if data == "#PLAYER_LIST":
             data = "PLAYER_LIST " + ",".join([str(i.number) + ";" + i.name
