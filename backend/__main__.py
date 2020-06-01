@@ -225,8 +225,7 @@ class Backend(threading.Thread):
                 time.sleep(1)
             except Exception as ex:
                 logging.error(ex)
-            finally:
-                self.sock.settimeout(None)
+        self.sock.settimeout(None)
 
     def set_mode(self, mode):
         """
@@ -276,7 +275,6 @@ class Backend(threading.Thread):
         self.common.game_started = True
         self.updater.join()
         self.conn.send("START_GAME {}".format(self.mode))
-        logging.debug("Start message sent")
 
     def exit(self):
         """
