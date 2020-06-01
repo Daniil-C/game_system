@@ -19,7 +19,7 @@ def game(com, backend):
     bg_play = "interface/play_bg.png"
     BG = pygame.transform.scale(pygame.image.load(bg_play), size)
     BGrect = BG.get_rect()
-    //cards = com.player.cards
+    # cards = com.player.cards
     cards == ["34.png" for i in range(6)]
     card_pos = (int(width / 7 - height / 6), int(height * (1 / 4 + 1 / 20))
     cards_img = []
