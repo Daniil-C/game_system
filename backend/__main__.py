@@ -218,6 +218,10 @@ class Backend(threading.Thread):
                 if len(mes) == 0:
                     self.common.is_connected = False
                     break
+                if "BEGIN" in mes:
+                    self.game_started = True
+                    self.common.game_started = True
+                    break
                 logging.debug(mes)
                 parsed = parse_message(parse_message(mes, " ")[1], ",")
                 logging.debug(parsed[0])
