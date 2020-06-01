@@ -20,13 +20,13 @@ def game(com, backend):
     BG = pygame.transform.scale(pygame.image.load(bg_play), size)
     BGrect = BG.get_rect()
     # cards = com.player.cards
-    cards == ["34.png" for i in range(6)]
+    cards = ["34.png" for i in range(6)]
     card_pos = (int(width / 7 - height / 6), int(height * (1 / 4 + 1 / 20)))
     cards_img = []
     cards_rect = []
     cards_scale = (int(height / 6), int(height / 4))
     for i in cards:
-        name = "".join("interface/", i)
+        name = "".join(("interface/", i))
         cards_img.append(pygame.transform.scale(pygame.image.load(name), cards_scale))
         cards_rect.append(cards_img[-1].get_rect())
         cards_rect[-1][0] = card_pos[0]
