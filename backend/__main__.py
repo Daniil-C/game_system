@@ -276,6 +276,7 @@ class Backend(threading.Thread):
         self.common.game_started = True
         self.updater.join()
         self.conn.send("START_GAME {}".format(self.mode))
+        logging.debug("Start message sent")
 
     def exit(self):
         """
