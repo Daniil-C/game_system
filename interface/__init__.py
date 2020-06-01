@@ -14,12 +14,55 @@ print(size)
 SETTINGS = False
 
 
+def game(com, backend):
+    """Background"""
+    bg_play = "interface/play_bg_1.png"
+    BG = pygame.transform.scale(pygame.image.load(bg_play), size)
+    BGrect = BG.get_rect()
+    # cards = com.player.cards
+    cards = ["34.png" for i in range(6)]
+    card_pos = [int(width / 7 - height / 6), int(height * (1 - (1 / 4 + 1 / 20)))]
+    cards_img = []
+    cards_rect = []
+    cards_scale = (int(height / 6), int(height / 4))
+    for i in cards:
+        name = "".join(("interface/", i))
+        cards_img.append(pygame.transform.scale(pygame.image.load(name), cards_scale))
+        cards_rect.append(cards_img[-1].get_rect())
+        cards_rect[-1][0] = card_pos[0]
+        cards_rect[-1][1] = card_pos[1]
+        card_pos[0] += int(width / 7)
+    while True:
+        """MAINLOOP"""
+        for event in pygame.event.get():
+            """EVENTS HANDLING"""
+
+            """MOUSE EVENTS"""
+
+            """KEYBOARD EVENTS"""
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    backend.stop()
+                    sys.exit()
+
+            """OTHER EVENTS"""
+            if event.type == pygame.QUIT:
+                backend.stop()
+                sys.exit()
+
+        """RENDERING"""
+        screen.blit(BG, BGrect)
+        for i in range(len(cards_img)):
+            screen.blit(cards_img[i], cards_rect[i])
+        pygame.display.flip()
+
+
 def wait_menu(com, backend):
     """Wait players"""
-    font_size = int(height / 10)
+    font_size = int(height / 20)
     font = pygame.font.SysFont("Chilanka", font_size)
     w_shift = int(height / 120)
-    h_shift = int(height / 14 - height / 20)
+    h_shift = int(height / 14 - height / 40)
     clock = pygame.time.Clock()
     """Background"""
     bg_name = "interface/wait_0.png"
@@ -54,6 +97,9 @@ def wait_menu(com, backend):
         img = "interface/wait_{}.png".format(str(n))
         BG = pygame.transform.scale(pygame.image.load(img), size)
         BGrect = BG.get_rect()
+        if com.game_started:
+            game(com, backend)
+            return None
 
         for event in pygame.event.get():
             """EVENTS HANDLING"""
@@ -63,6 +109,11 @@ def wait_menu(com, backend):
                 if backrect.collidepoint(event.pos):
                     backend.exit()
                     return None
+                if num == 0 and playrect.collidepoint(event.pos):
+                    backend.play()
+                    game(com, backend)
+                    return None
+
 
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
@@ -89,7 +140,7 @@ def wait_menu(com, backend):
             plr = str(i + 1) + ". " + players[i][1]
             player_box = font.render(plr, True, (0xAD, 0xE5, 0xF3))
             screen.blit(player_box, (prect[0] + w_shift, prect[1] + h_shift))
-            pygame.draw.rect(screen, (0xAD, 0xE5, 0xF3), prect, 2)
+            # pygame.draw.rect(screen, (0xAD, 0xE5, 0xF3), prect, 2)
             prect[1] += int(height / 7)
         screen.blit(back, backrect)
         if num == 0:

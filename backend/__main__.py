@@ -22,6 +22,7 @@ class Player:
         self.is_master = False
         self.name = ""
         self.number = -1
+        self.is_leader = False
 
 
 class Common(Monitor):
@@ -35,10 +36,12 @@ class Common(Monitor):
         self.is_connected = False
         self.player = Player()
         self.players_list = []
+        self.game_started = False
 
     def reset(self):
         self.player = Player()
         self.players_list = []
+        self.game_started = False
 
     def set_ip_port(self, ip, port):
         """
@@ -215,6 +218,10 @@ class Backend(threading.Thread):
                 if len(mes) == 0:
                     self.common.is_connected = False
                     break
+                if "BEGIN" in mes:
+                    self.game_started = True
+                    self.common.game_started = True
+                    break
                 logging.debug(mes)
                 parsed = parse_message(parse_message(mes, " ")[1], ",")
                 logging.debug(parsed[0])
@@ -222,8 +229,7 @@ class Backend(threading.Thread):
                 time.sleep(1)
             except Exception as ex:
                 logging.error(ex)
-            finally:
-                self.sock.settimeout(None)
+        self.sock.settimeout(None)
 
     def set_mode(self, mode):
         """
@@ -270,6 +276,7 @@ class Backend(threading.Thread):
         """
         logging.debug("STARTING GAME")
         self.game_started = True
+        self.common.game_started = True
         self.updater.join()
         self.conn.send("START_GAME {}".format(self.mode))
 
