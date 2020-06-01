@@ -27,7 +27,7 @@ def game(com, backend):
     cards_scale = (int(height / 6), int(height / 4))
     for i in cards:
         name = "".join("interface/", i)
-        cards_img.append(pygame.transform.scale(pygame.image.load(name), cards_scale)
+        cards_img.append(pygame.transform.scale(pygame.image.load(name), cards_scale))
         cards_rect.append(cards_img[-1].get_rect())
         cards_rect[-1][0] = card_pos[0]
         cards_rect[-1][1] = card_pos[1]
