@@ -240,6 +240,7 @@ class Player(Monitor):
                 return
             if len(res) != 2 or res[0] != "START_GAME":
                 self.valid = False
+                self.log_message("expected START_GAME message")
                 return
             self.game_st.state = "GAME"
             self.game_st.card_set = res[1]
