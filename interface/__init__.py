@@ -16,7 +16,7 @@ SETTINGS = False
 
 def game(com, backend):
     """Background"""
-    bg_play = "interface/play_bg.png"
+    bg_play = "interface/play_bg_1.png"
     BG = pygame.transform.scale(pygame.image.load(bg_play), size)
     BGrect = BG.get_rect()
     # cards = com.player.cards
