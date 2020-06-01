@@ -14,6 +14,26 @@ print(size)
 SETTINGS = False
 
 
+def game(com, backend):
+    """Background"""
+    bg_play = "interface/play_bg.png"
+    BG = pygame.transform.scale(pygame.image.load(bg_play), size)
+    BGrect = BG.get_rect()
+    //cards = com.player.cards
+    cards == ["34.png" for i in range(6)]
+    card_pos = (int(width / 7 - height / 6), int(height * (1 / 4 + 1 / 20))
+    cards_img = []
+    cards_rect = []
+    cards_scale = (int(height / 6), int(height / 4))
+    for i in cards:
+        name = "".join("interface/", i)
+        cards_img.append(pygame.transform.scale(pygame.image.load(name), cards_scale)
+        cards_rect.append(cards_img[-1].get_rect())
+        cards_rect[-1][0] = card_pos[0]
+        cards_rect[-1][1] = card_pos[1]
+        card_pos[0] += int(width / 7)
+    
+
 def wait_menu(com, backend):
     """Wait players"""
     font_size = int(height / 20)
@@ -54,6 +74,9 @@ def wait_menu(com, backend):
         img = "interface/wait_{}.png".format(str(n))
         BG = pygame.transform.scale(pygame.image.load(img), size)
         BGrect = BG.get_rect()
+        if com.game_started:
+            game(com, backend)
+            return None
 
         for event in pygame.event.get():
             """EVENTS HANDLING"""
@@ -63,6 +86,11 @@ def wait_menu(com, backend):
                 if backrect.collidepoint(event.pos):
                     backend.exit()
                     return None
+                if num == 0 and playrect.collidepoint(event.pos):
+                    backend.play()
+                    game(com, backend)
+                    return None
+
 
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
