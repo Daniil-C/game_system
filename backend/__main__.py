@@ -23,6 +23,7 @@ class Player:
         self.name = ""
         self.number = -1
         self.is_leader = False
+        self.mode = ""
 
 
 class Common(Monitor):
@@ -100,9 +101,15 @@ class Common(Monitor):
 
     def get_players_list(self):
         """
-        Returns (ip, port)
+        Returns players list
         """
         return self.players_list
+
+    def get_mode(self):
+        """
+        Returns game mode
+        """
+        return self.mode
 
 
 def parse_message(message, sep):
@@ -219,6 +226,9 @@ class Backend(threading.Thread):
                     self.common.is_connected = False
                     break
                 if "BEGIN" in mes:
+                    parsed = parse_message(mes, " ")
+                    self.common.mode = mes[1]
+                    self.common.players_list = parse_message(mes[2], ",")
                     self.game_started = True
                     self.common.game_started = True
                     break
@@ -235,7 +245,7 @@ class Backend(threading.Thread):
         """
         Sets game mode
         """
-        self.mode = mode
+        self.common.mode = mode
 
     def start_game(self):
         """
@@ -278,7 +288,12 @@ class Backend(threading.Thread):
         self.game_started = True
         self.common.game_started = True
         self.updater.join()
-        self.conn.send("START_GAME {}".format(self.mode))
+        self.conn.send("START_GAME {}".format(self.common.mode))
+        mes = self.conn.get()
+        logging.debug(mes)
+        parsed = parse_message(mes, " ")
+        self.common.mode = mes[1]
+        self.common.players_list = parse_message(mes[2], ",")
 
     def exit(self):
         """
