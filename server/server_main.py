@@ -311,6 +311,8 @@ class Player(Monitor):
             self.state = "VER_WAIT"
         if self.state == "START_WAIT" and self.game_st.state == "GAME":
             self.state = "BEGIN_SYNC"
+        if self.state == "VER_WAIT" and self.game_st.state == "GAME":
+            self.valid = False
         if self.state == "WAIT_SELF_CARD" and self.has_turn:
             self.state = "SELF_SYNC"
             self.plist.broadcast("#SELF", self)
