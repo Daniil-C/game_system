@@ -227,11 +227,13 @@ class Backend(threading.Thread):
                 if len(mes) == 0:
                     self.common.is_connected = False
                     break
+                logging.debug(mes)
                 if "BEGIN" in mes:
                     parsed = parse_message(mes, " ")
-                    self.common.mode = mes[1]
+                    self.common.mode = parsed[1]
                     self.common.player.cards = parse_message(mes[2], ",")
-                    self.common.players_list = [i.split(";") for i in parse_message(mes[3], ",")]
+                    logging.debug(parsed[3])
+                    self.common.players_list = [[0, i.split(";")[1]] for i in parse_message(parsed[3], ",")]
                     self.game_started = True
                     self.common.game_started = True
                     self.conn.send("READY")
@@ -247,7 +249,6 @@ class Backend(threading.Thread):
                     else:
                         raise Exception("Wrong command")
                     break
-                logging.debug(mes)
                 parsed = parse_message(parse_message(mes, " ")[1], ",")
                 logging.debug(parsed[0])
                 self.common.players_list = [i.split(";") for i in parsed]
@@ -308,8 +309,8 @@ class Backend(threading.Thread):
         logging.debug(mes)
         parsed = parse_message(mes, " ")
         self.common.mode = mes[1]
-        self.common.player.cards = parse_message(mes[2], ",")
-        self.common.players_list = [i.split(";") for i in parse_message(mes[3], ",")]
+        self.common.player.cards = parse_message(parsed[2], ",")
+        self.common.players_list = [[0, i.split(";")[1]]  for i in parse_message(parsed[3], ",")]
         self.conn.send("READY")
         # Waining TURN from server
         mes = self.conn.get()
