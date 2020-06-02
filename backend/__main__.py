@@ -23,7 +23,7 @@ class Player:
         self.name = ""
         self.number = -1
         self.is_leader = False
-        self.mode = ""
+        
 
 
 class Common(Monitor):
@@ -38,6 +38,8 @@ class Common(Monitor):
         self.player = Player()
         self.players_list = []
         self.game_started = False
+        self.mode = ""
+        self.turn = -1
 
     def reset(self):
         self.player = Player()
@@ -231,6 +233,18 @@ class Backend(threading.Thread):
                     self.common.players_list = parse_message(mes[2], ",")
                     self.game_started = True
                     self.common.game_started = True
+                    self.conn.send("READY")
+                    # Waining TURN from server
+                    mes = self.conn.get()
+                    logging.debug(mes)
+                    if "TURN" in mes:
+                        parsed = parse_message(mes, " ")
+                        if int(parsed[1]) == self.common.player.number:
+                            self.common.turn = 1
+                        else:
+                            self.common.turn = 0
+                    else:
+                        raise Exception("Wrong command")
                     break
                 logging.debug(mes)
                 parsed = parse_message(parse_message(mes, " ")[1], ",")
@@ -294,6 +308,19 @@ class Backend(threading.Thread):
         parsed = parse_message(mes, " ")
         self.common.mode = mes[1]
         self.common.players_list = parse_message(mes[2], ",")
+        self.conn.send("READY")
+        # Waining TURN from server
+        mes = self.conn.get()
+        logging.debug(mes)
+        if "TURN" in mes:
+            parsed = parse_message(mes, " ")
+            if int(parsed[1]) == self.common.player.number:
+                self.common.turn = 1
+            else:
+                self.common.turn = 0
+        else:
+            raise Exception("Wrong command")
+
 
     def exit(self):
         """
