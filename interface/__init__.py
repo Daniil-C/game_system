@@ -5,6 +5,7 @@ import time
 pygame.init()
 
 screen = pygame.display.set_mode((0, 0))#, pygame.FULLSCREEN)
+#screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 black = 0, 0, 0
 
 info = pygame.display.Info()
@@ -21,23 +22,68 @@ def game(com, backend):
     BGrect = BG.get_rect()
     # cards = com.player.cards
     cards = ["34.png" for i in range(6)]
-    card_pos = [int(width / 7 - height / 6), int(height * (1 - (1 / 4 + 1 / 20)))]
+    card_pos = [int((width - height) / 7), int(height * (1 - (1 / 4 + 1 / 20)))]
     cards_img = []
     cards_rect = []
-    cards_scale = (int(height / 6), int(height / 4))
+    cards_size = (int(height / 6), int(height / 4))
     for i in cards:
         name = "".join(("interface/", i))
-        cards_img.append(pygame.transform.scale(pygame.image.load(name), cards_scale))
+        cards_img.append(pygame.transform.scale(pygame.image.load(name), cards_size))
         cards_rect.append(cards_img[-1].get_rect())
         cards_rect[-1][0] = card_pos[0]
         cards_rect[-1][1] = card_pos[1]
-        card_pos[0] += int(width / 7)
+        card_pos[0] += int((width - height) / 7 + height / 6)
+
+    # players = [["agronom", 5], ["jmg", 5], ["dannon", 5]] #TODO
+    while not com.get_list():
+        time.sleep(1)
+    players = com.get_players_list()
+    players_pos = [0, 0]
+
+    font_size = int(height / 30)
+    font = pygame.font.SysFont("Chilanka", font_size)
+    color = 0xFF, 0xFF, 0xFF
+
+    players_rect = []
+    players_size = (int(width / 6), int(height / 8))
+    players_text = []
+    players_score = []
+    for i in players:
+        players_rect.append(pygame.Rect(*players_pos, *players_size))
+        players_text.append(font.render(i[1], True, color))
+        i[0] = "".join(("Score: ", str(i[0])))
+        players_score.append(font.render(i[0], True, color))
+        players_pos[1] += int(height / 8)
+    rect_rect = pygame.Rect(0, 0, int(width / 6), int(height / 8) * len(players))
+    card = False
+    b_card = None
+    card_size = (int(height / 3), int(height / 2))
+    card_rect = []
+
+    pygame.time.set_timer(pygame.USEREVENT, 100)
+
     while True:
         """MAINLOOP"""
+
         for event in pygame.event.get():
             """EVENTS HANDLING"""
 
             """MOUSE EVENTS"""
+            if event.type == pygame.MOUSEMOTION:
+                a = 0
+            if event.type == pygame.USEREVENT:
+                if cards_rect[0].collidepoint(pygame.mouse.get_pos()):
+                    card = True
+                    name = "".join(("interface/", cards[0]))
+                    b_card = pygame.transform.scale(pygame.image.load(name), card_size)
+                    card_rect = b_card.get_rect()
+                    card_rect[0] = int(width / 2 - height / 6)
+                    card_rect[1] = int(height / 8)
+                elif BGrect.collidepoint(pygame.mouse.get_pos()):
+                    card = False
+                    b_card = None
+                    card_size = (int(height / 3), int(height / 2)) 
+                    card_rect = []
 
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
@@ -51,10 +97,18 @@ def game(com, backend):
                 sys.exit()
 
         """RENDERING"""
+        shift = int(height / 120)
         screen.blit(BG, BGrect)
         for i in range(len(cards_img)):
             screen.blit(cards_img[i], cards_rect[i])
+        for i in range(len(players)):
+            screen.blit(players_text[i], (players_rect[i][0] + shift, players_rect[i][1] + shift))
+            screen.blit(players_score[i], (players_rect[i][0] + shift, players_rect[i][1] + shift * 6))
+        pygame.draw.rect(screen, color, rect_rect, 2)
+        if card:
+            screen.blit(b_card, card_rect)
         pygame.display.flip()
+
 
 
 def wait_menu(com, backend):
