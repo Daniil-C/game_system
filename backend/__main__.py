@@ -40,6 +40,7 @@ class Common(Monitor):
         self.game_started = False
         self.mode = ""
         self.turn = -1
+        self.got_list = False
 
     def reset(self):
         self.player = Player()
@@ -112,6 +113,12 @@ class Common(Monitor):
         Returns game mode
         """
         return self.mode
+
+    def get_list(self):
+        """
+        Returns true if players list was received
+        """
+        return self.got_list
 
 
 def parse_message(message, sep):
@@ -234,6 +241,7 @@ class Backend(threading.Thread):
                     self.common.player.cards = parse_message(mes[2], ",")
                     logging.debug(parsed[3])
                     self.common.players_list = [[0, i.split(";")[1]] for i in parse_message(parsed[3], ",")]
+                    self.common.got_list = True
                     self.game_started = True
                     self.common.game_started = True
                     self.conn.send("READY")
@@ -311,6 +319,7 @@ class Backend(threading.Thread):
         self.common.mode = mes[1]
         self.common.player.cards = parse_message(parsed[2], ",")
         self.common.players_list = [[0, i.split(";")[1]]  for i in parse_message(parsed[3], ",")]
+        self.common.got_list = True
         self.conn.send("READY")
         # Waining TURN from server
         mes = self.conn.get()
