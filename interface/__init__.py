@@ -4,8 +4,8 @@ import time
 
 pygame.init()
 
-#screen = pygame.display.set_mode((0, 0))#, pygame.FULLSCREEN)
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((0, 0))#, pygame.FULLSCREEN)
+#screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 black = 0, 0, 0
 
 info = pygame.display.Info()
@@ -35,6 +35,8 @@ def game(com, backend):
         card_pos[0] += int((width - height) / 7 + height / 6)
 
     # players = [["agronom", 5], ["jmg", 5], ["dannon", 5]] #TODO
+    while not com.get_list():
+        time.sleep(1)
     players = com.get_players_list()
     players_pos = [0, 0]
 
@@ -48,9 +50,9 @@ def game(com, backend):
     players_score = []
     for i in players:
         players_rect.append(pygame.Rect(*players_pos, *players_size))
-        players_text.append(font.render(i[0], True, color))
-        i[1] = "".join(("Score: ", str(i[1])))
-        players_score.append(font.render(i[1], True, color))
+        players_text.append(font.render(i[1], True, color))
+        i[0] = "".join(("Score: ", str(i[0])))
+        players_score.append(font.render(i[0], True, color))
         players_pos[1] += int(height / 8)
     rect_rect = pygame.Rect(0, 0, int(width / 6), int(height / 8) * len(players))
     card = False
