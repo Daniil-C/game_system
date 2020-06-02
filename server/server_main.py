@@ -742,11 +742,17 @@ class GameServer:
         if cond == "BEGIN_SYNC":
             if len(self.players) > 0:
                 self.begin_game()
+                player_lst = ",".join([str(i.number) + ";" + i.name
+                                       for i in self.players
+                                       if i.get_broadcast])
                 for player in self.players:
                     player.state = "READY_WAIT"
                     player.send_message("BEGIN " +
                                         self.game_state.card_set + " " +
-                                        ",".join(map(str, player.cards)))
+                                        ",".join(map(str, player.cards)) +
+                                        " " + player_lst)
+
+
                 self.current_player = self.players.next_player(
                     self.players.players[randrange(len(
                         self.players.players))])
