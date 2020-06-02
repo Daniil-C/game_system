@@ -35,6 +35,8 @@ def game(com, backend):
         card_pos[0] += int((width - height) / 7 + height / 6)
 
     # players = [["agronom", 5], ["jmg", 5], ["dannon", 5]] #TODO
+    while not com.get_list():
+        time.sleep(1)
     players = com.get_players_list()
     players_pos = [0, 0]
 
