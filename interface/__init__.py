@@ -62,11 +62,13 @@ def game(com, backend):
     card_size = (int(height / 3), int(height / 2))
     card_rect = []
 
-    header_text = "choose a card" if leader else "wait for your turn"
+    header_text = "Choose a card" if leader else "Wait for your turn"
     h_font_size = int(height / 6)
     h_font = pygame.font.SysFont("Chilanka", h_font_size)
     h_color = 0xAD, 0xE5, 0xF3
     header = h_font.render(header_text, True, h_color)
+    h_rect = header.get_rect()
+    h_horison = h_rect[2]
 
     pygame.time.set_timer(pygame.USEREVENT, 100)
 
@@ -114,7 +116,7 @@ def game(com, backend):
             screen.blit(players_text[i], (players_rect[i][0] + shift, players_rect[i][1] + shift))
             screen.blit(players_score[i], (players_rect[i][0] + shift, players_rect[i][1] + shift * 6))
         pygame.draw.rect(screen, color, rect_rect, 2)
-        screen.blit(header, (int(width / 6) + shift, shift))
+        screen.blit(header, (int(width / 6) + int((width * 5 / 6 - h_horison) / 2), shift))
         if card:
             screen.blit(b_card, card_rect)
         pygame.display.flip()
