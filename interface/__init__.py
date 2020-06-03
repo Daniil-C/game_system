@@ -116,7 +116,7 @@ def game(com, backend):
             screen.blit(players_text[i], (players_rect[i][0] + shift, players_rect[i][1] + shift))
             screen.blit(players_score[i], (players_rect[i][0] + shift, players_rect[i][1] + shift * 6))
         pygame.draw.rect(screen, color, rect_rect, 2)
-        screen.blit(header, (int(width / 6) + int((width * 5 / 6 - h_horison) / 2), shift))
+        screen.blit(header, (int((width - h_horison) / 2), shift))
         if card:
             screen.blit(b_card, card_rect)
         pygame.display.flip()
