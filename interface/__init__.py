@@ -63,7 +63,7 @@ def game(com, backend):
     card_rect = []
 
     header_text = "Choose a card" if leader else "Wait for your turn"
-    h_font_size = int(height / 6)
+    h_font_size = int(height / 10)
     h_font = pygame.font.SysFont("Chilanka", h_font_size)
     h_color = 0xAD, 0xE5, 0xF3
     header = h_font.render(header_text, True, h_color)
