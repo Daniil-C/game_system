@@ -21,7 +21,7 @@ def game(com, backend):
     BG = pygame.transform.scale(pygame.image.load(bg_play), size)
     BGrect = BG.get_rect()
     # cards = com.player.cards
-    cards = ["34.png" for i in range(6)]
+    cards = ["34.png", "35.png", "36.png", "37.png", "38.png", "39.png"]
     card_pos = [int((width - height) / 7), int(height * (1 - (1 / 4 + 1 / 20)))]
     cards_img = []
     cards_rect = []
@@ -34,10 +34,10 @@ def game(com, backend):
         cards_rect[-1][1] = card_pos[1]
         card_pos[0] += int((width - height) / 7 + height / 6)
 
-    # players = [["agronom", 5], ["jmg", 5], ["dannon", 5]] #TODO
-    while not com.get_list():
-        time.sleep(1)
-    players = com.get_players_list()
+    players = [[5, "agronom", 5], [5, "jmg", 5], [5, "dannon", 5]] #TODO
+    #while not com.get_list():
+    #    time.sleep(1)
+    #players = com.get_players_list()
     players_pos = [0, 0]
 
     font_size = int(height / 30)
@@ -69,20 +69,21 @@ def game(com, backend):
             """EVENTS HANDLING"""
 
             """MOUSE EVENTS"""
-            if event.type == pygame.MOUSEMOTION:
-                a = 0
+
+            """USER EVENTS"""
             if event.type == pygame.USEREVENT:
-                if cards_rect[0].collidepoint(pygame.mouse.get_pos()):
-                    card = True
-                    name = "".join(("interface/", cards[0]))
-                    b_card = pygame.transform.scale(pygame.image.load(name), card_size)
-                    card_rect = b_card.get_rect()
-                    card_rect[0] = int(width / 2 - height / 6)
-                    card_rect[1] = int(height / 8)
-                elif BGrect.collidepoint(pygame.mouse.get_pos()):
+                for i in range(len(cards)):
+                    if cards_rect[i].collidepoint(pygame.mouse.get_pos()):
+                        card = True
+                        name = "".join(("interface/", cards[i]))
+                        b_card = pygame.transform.scale(pygame.image.load(name), card_size)
+                        card_rect = b_card.get_rect()
+                        card_rect[0] = int(width / 2 - height / 6)
+                        card_rect[1] = int(height / 8)
+                        break
+                else:
                     card = False
                     b_card = None
-                    card_size = (int(height / 3), int(height / 2)) 
                     card_rect = []
 
             """KEYBOARD EVENTS"""
