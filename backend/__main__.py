@@ -39,7 +39,7 @@ class Common(Monitor):
         self.players_list = []
         self.game_started = False
         self.mode = ""
-        self.turn = -1
+        self.turn = False
         self.got_list = False
 
     def reset(self):
@@ -241,7 +241,6 @@ class Backend(threading.Thread):
                     self.common.player.cards = parse_message(mes[2], ",")
                     logging.debug(parsed[3])
                     self.common.players_list = [[0, i.split(";")[1]] for i in parse_message(parsed[3], ",")]
-                    self.common.got_list = True
                     self.game_started = True
                     self.common.game_started = True
                     self.conn.send("READY")
@@ -250,12 +249,10 @@ class Backend(threading.Thread):
                     logging.debug(mes)
                     if "TURN" in mes:
                         parsed = parse_message(mes, " ")
-                        if int(parsed[1]) == self.common.player.number:
-                            self.common.turn = 1
-                        else:
-                            self.common.turn = 0
+                        self.common.turn = int(parsed[1]) == self.common.player.number
                     else:
                         raise Exception("Wrong command")
+                    self.common.got_list = True
                     break
                 parsed = parse_message(parse_message(mes, " ")[1], ",")
                 logging.debug(parsed[0])
@@ -319,19 +316,16 @@ class Backend(threading.Thread):
         self.common.mode = mes[1]
         self.common.player.cards = parse_message(parsed[2], ",")
         self.common.players_list = [[0, i.split(";")[1]]  for i in parse_message(parsed[3], ",")]
-        self.common.got_list = True
         self.conn.send("READY")
         # Waining TURN from server
         mes = self.conn.get()
         logging.debug(mes)
         if "TURN" in mes:
             parsed = parse_message(mes, " ")
-            if int(parsed[1]) == self.common.player.number:
-                self.common.turn = 1
-            else:
-                self.common.turn = 0
+            self.common.turn = int(parsed[1]) == self.common.player.number
         else:
             raise Exception("Wrong command")
+        self.common.got_list = True
 
 
     def exit(self):
