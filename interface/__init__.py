@@ -4,8 +4,8 @@ import time
 
 pygame.init()
 
-screen = pygame.display.set_mode((0, 0))#, pygame.FULLSCREEN)
-#screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+#screen = pygame.display.set_mode((0, 0))#, pygame.FULLSCREEN)
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 black = 0, 0, 0
 
 info = pygame.display.Info()
@@ -17,10 +17,11 @@ SETTINGS = False
 
 def game(com, backend):
     """Background"""
+    leader = True #TODO
     bg_play = "interface/play_bg_1.png"
     BG = pygame.transform.scale(pygame.image.load(bg_play), size)
     BGrect = BG.get_rect()
-    # cards = com.player.cards
+    # cards = com.player.cards #TODO
     cards = ["34.png", "35.png", "36.png", "37.png", "38.png", "39.png"]
     card_pos = [int((width - height) / 7), int(height * (1 - (1 / 4 + 1 / 20)))]
     cards_img = []
@@ -34,7 +35,7 @@ def game(com, backend):
         cards_rect[-1][1] = card_pos[1]
         card_pos[0] += int((width - height) / 7 + height / 6)
 
-    players = [[5, "agronom", 5], [5, "jmg", 5], [5, "dannon", 5]] #TODO
+    players = [[5, "agronom", 5], [5, "jmg", 5], [5, "dannon", 5]]
     #while not com.get_list():
     #    time.sleep(1)
     #players = com.get_players_list()
@@ -60,6 +61,12 @@ def game(com, backend):
     card_size = (int(height / 3), int(height / 2))
     card_rect = []
 
+    header_text = "choose a card" if leader else "wait for your turn"
+    h_font_size = int(height / 6)
+    h_font = pygame.font.SysFont("Chilanka", h_font_size)
+    h_color = 0xAD, 0xE5, 0xF3
+    header = h_font.render(header_text, True, h_color)
+
     pygame.time.set_timer(pygame.USEREVENT, 100)
 
     while True:
@@ -79,7 +86,7 @@ def game(com, backend):
                         b_card = pygame.transform.scale(pygame.image.load(name), card_size)
                         card_rect = b_card.get_rect()
                         card_rect[0] = int(width / 2 - height / 6)
-                        card_rect[1] = int(height / 8)
+                        card_rect[1] = int(height / 6)
                         break
                 else:
                     card = False
@@ -106,6 +113,7 @@ def game(com, backend):
             screen.blit(players_text[i], (players_rect[i][0] + shift, players_rect[i][1] + shift))
             screen.blit(players_score[i], (players_rect[i][0] + shift, players_rect[i][1] + shift * 6))
         pygame.draw.rect(screen, color, rect_rect, 2)
+        screen.blit(header, (int(width / 6) + shift, shift))
         if card:
             screen.blit(b_card, card_rect)
         pygame.display.flip()
