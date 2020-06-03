@@ -4,8 +4,8 @@ import time
 
 pygame.init()
 
-#screen = pygame.display.set_mode((0, 0))#, pygame.FULLSCREEN)
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((0, 0))#, pygame.FULLSCREEN)
+#screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 black = 0, 0, 0
 
 info = pygame.display.Info()
@@ -17,7 +17,10 @@ SETTINGS = False
 
 def game(com, backend):
     """Background"""
-    leader = True #TODO
+    while not com.get_list():
+        time.sleep(1)
+    leader = False #TODO
+    leader = com.turn
     bg_play = "interface/play_bg_1.png"
     BG = pygame.transform.scale(pygame.image.load(bg_play), size)
     BGrect = BG.get_rect()
@@ -36,9 +39,7 @@ def game(com, backend):
         card_pos[0] += int((width - height) / 7 + height / 6)
 
     players = [[5, "agronom", 5], [5, "jmg", 5], [5, "dannon", 5]]
-    #while not com.get_list():
-    #    time.sleep(1)
-    #players = com.get_players_list()
+    players = com.get_players_list()
     players_pos = [0, 0]
 
     font_size = int(height / 30)
