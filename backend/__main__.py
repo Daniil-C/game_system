@@ -163,18 +163,19 @@ class Backend(Monitor):
             pass
 
     def start(self):
-        if self.thr_collector is None:
+        if self.collector_thread is None:
             self.collector_thread = threading.Thread(target=Backend.thr_collector, args=(self,))
             self.collector_thread.start()
 
     def join(self):
-        self.end = True
-        if self.thr_collector is not None:
+        if self.collector_thread is not None:
             self.collector_thread.join()
             self.collector_thread = None
+        else:
+            print("No collector thread found!")
         self.stop()
 
-    def thr_collector():
+    def thr_collector(self):
         while not self.end:
             time.sleep(2)
             for i in self.tasks:
@@ -259,7 +260,8 @@ class Backend(Monitor):
                                         args=(self,))
         self.updater.start()
         self.updater.join()
-        self.game()
+        if self.begin_message:
+            self.game()
 
     def game(self):
         """
@@ -475,7 +477,6 @@ if __name__ == "__main__":
     back.start()
     int_thr = threading.Thread(target=interface.init_interface, args=(com, back_int))
     int_thr.start()
-    back_int.stop()
-    back.stop()
-    int_thr.join()
     back.join()
+    back_int.stop()
+    int_thr.join()
