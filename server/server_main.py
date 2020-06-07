@@ -325,7 +325,7 @@ class Player(Monitor):
 
         message (str): printed message.
         """
-        self.logger.info("Player %d: %s.", self.number, message)
+        self.logger.info("Player %d,%s: %s.", self.number, self.name, message)
 
 
 class CLI(Monitor):
