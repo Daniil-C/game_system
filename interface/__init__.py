@@ -953,12 +953,14 @@ def main_menu(com, backend):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
-                    sys.exit()
+                    #sys.exit()
+                    pygame.quit()
 
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
-                sys.exit()
+                #sys.exit()
+                pygame.quit()
 
         """RENDERING"""
         screen.blit(BG, BGrect)
