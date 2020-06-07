@@ -955,12 +955,14 @@ def main_menu(com, backend):
                     backend.stop()
                     #sys.exit()
                     pygame.quit()
+                    return None
 
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
                 #sys.exit()
                 pygame.quit()
+                return None
 
         """RENDERING"""
         screen.blit(BG, BGrect)
@@ -975,5 +977,6 @@ def init_interface(com, backend):
     global SETTINGS
     SETTINGS = com.ip is not None
     main_menu(com, backend)
+    return 
 
 #init_interface(-1, -1)
