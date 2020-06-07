@@ -113,10 +113,10 @@ def set_association(com, backend):
 
 def game(com, backend):
     """Background"""
-    #while not com.get_list():
-    #    time.sleep(1)
-    leader = True #TODO
-    #leader = com.turn
+    while not com.got_list:
+        time.sleep(1)
+    leader = False #TODO
+    leader = com.turn
     bg_play = "interface/play_bg_1.png"
     BG = pygame.transform.scale(pygame.image.load(bg_play), size)
     BGrect = BG.get_rect()
