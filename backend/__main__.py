@@ -9,6 +9,8 @@ import time
 from multiprocessing import Queue
 import interface
 import json
+import wget
+import os
 from connection import connection as Conn
 from monitor import Monitor
 
@@ -41,6 +43,10 @@ class Common(Monitor):
         self.mode = ""
         self.turn = False
         self.got_list = False
+        self.updated = False
+        self.card = 0
+        self.acc = ""
+        self.got_acc = False
 
     def reset(self):
         self.player = Player()
@@ -114,11 +120,11 @@ class Common(Monitor):
         """
         return self.mode
 
-    def get_list(self):
+    def updated(self):
         """
-        Returns true if players list was received
+        Returns whether udating is finished
         """
-        return self.got_list
+        return self.updated
 
 
 def parse_message(message, sep):
@@ -128,12 +134,12 @@ def parse_message(message, sep):
     return message.split(sep)
 
 
-class Backend(threading.Thread):
+class Backend(Monitor):
     """
     This class is a backend service of game
     """
     def __init__(self, common, in_q):
-        threading.Thread.__init__(self)
+        Monitor.__init__(self)
         self.common = common
         self.in_q = in_q
         self.version = "res_0.0"
@@ -141,6 +147,10 @@ class Backend(threading.Thread):
         self.reader = threading.Thread(target=Backend.read_queue, args=(self,))
         self.reader.start()
         self.game_started = False
+        self.begin_message = ""
+        self.collector_thread = None
+        self.tasks = []
+        self.conn = None
 
         try:
             with open("config.txt", "r") as f:
@@ -151,6 +161,32 @@ class Backend(threading.Thread):
                 self.common.is_connected = False
         except Exception:
             pass
+
+    def start(self):
+        if self.thr_collector is None:
+            self.collector_thread = threading.Thread(target=Backend.thr_collector, args=(self,))
+            self.collector_thread.start()
+
+    def join(self):
+        self.end = True
+        if self.thr_collector is not None:
+            self.collector_thread.join()
+            self.collector_thread = None
+        self.stop()
+
+    def thr_collector():
+        while not self.end:
+            time.sleep(2)
+            for i in self.tasks:
+                if not i.is_alive():
+                    i.join()
+                    self.tasks.remove(i)
+                    break
+        for i in self.tasks:
+            i.join()
+
+    def queue_request_wrapper(self, fun, args):
+        self.__getattribute__(fun)(*args)
 
     def read_queue(self):
         """
@@ -168,14 +204,14 @@ class Backend(threading.Thread):
                     pass
                 logging.debug("stopping")
             else:
-                if data["args"] is not None:
-                    args = data["args"]
-                    self.__getattribute__(data["method"])(*args)
-                else:
-                    self.__getattribute__(data["method"])()
+                thread = threading.Thread(target=self.queue_request_wrapper, args=(data["method"], data["args"]))
+                thread.start()
+                self.tasks.append(thread)
 
     def stop(self):
-        self.conn.close()
+        self.end = True
+        if self.conn is not None:
+            self.conn.close()
         logging.debug("Closing socket")
         self.reader.join()
         logging.debug("Closing reader")
@@ -222,6 +258,42 @@ class Backend(threading.Thread):
         self.updater = threading.Thread(target=Backend.get_players_list,
                                         args=(self,))
         self.updater.start()
+        self.updater.join()
+        self.game()
+
+    def game(self):
+        """
+        Provides game logic
+        """
+        self.game_started = True
+        self.common.game_started = True
+        mes = self.begin_message
+        logging.debug(mes)
+        parsed = parse_message(mes, " ")
+        self.common.mode = parsed[1]
+        self.common.player.cards = parse_message(mes[2], ",")
+        logging.debug(parsed[3])
+        self.common.players_list = [[0, i.split(";")[1]] for i in parse_message(parsed[3], ",")]
+        self.game_started = True
+        self.common.game_started = True
+        self.common.got_list = True
+        self.conn.send("READY")
+        # Waining TURN from server
+        while self.turn():
+            pass
+        # End game logic; no any connection left.
+
+    def turn(self):            
+        mes = self.conn.get()
+        logging.debug(mes)
+        if "TURN" in mes:
+            parsed = parse_message(mes, " ")
+            self.common.turn = int(parsed[1]) == self.common.player.number
+        else:
+            return False
+        self.common.got_list = True
+
+
 
     def get_players_list(self):
         """
@@ -236,23 +308,7 @@ class Backend(threading.Thread):
                     break
                 logging.debug(mes)
                 if "BEGIN" in mes:
-                    parsed = parse_message(mes, " ")
-                    self.common.mode = parsed[1]
-                    self.common.player.cards = parse_message(mes[2], ",")
-                    logging.debug(parsed[3])
-                    self.common.players_list = [[0, i.split(";")[1]] for i in parse_message(parsed[3], ",")]
-                    self.game_started = True
-                    self.common.game_started = True
-                    self.conn.send("READY")
-                    # Waining TURN from server
-                    mes = self.conn.get()
-                    logging.debug(mes)
-                    if "TURN" in mes:
-                        parsed = parse_message(mes, " ")
-                        self.common.turn = int(parsed[1]) == self.common.player.number
-                    else:
-                        raise Exception("Wrong command")
-                    self.common.got_list = True
+                    self.begin_message = mes
                     break
                 parsed = parse_message(parse_message(mes, " ")[1], ",")
                 logging.debug(parsed[0])
@@ -288,10 +344,16 @@ class Backend(threading.Thread):
             player_num = int(parsed[1])
             role = parsed[2]
             version = parsed[3]
-            # url = parsed[4]
+            url = parsed[4]
             if version != self.version:
                 logging.debug("Versions are different")
-                # TODO
+                path = os.path.join(os.getcwd(), "resources")
+                bar = ""
+                filename = wget.download(url, path, bar=bar)
+                logging.debug(filename)
+                self.common.updated = True
+            else:
+                self.common.updated = True
             if role == "MASTER":
                 self.common.set_master()
             else:
@@ -306,26 +368,7 @@ class Backend(threading.Thread):
         Starts playing
         """
         logging.debug("STARTING GAME")
-        self.game_started = True
-        self.common.game_started = True
-        self.updater.join()
         self.conn.send("START_GAME {}".format(self.common.mode))
-        mes = self.conn.get()
-        logging.debug(mes)
-        parsed = parse_message(mes, " ")
-        self.common.mode = mes[1]
-        self.common.player.cards = parse_message(parsed[2], ",")
-        self.common.players_list = [[0, i.split(";")[1]]  for i in parse_message(parsed[3], ",")]
-        self.conn.send("READY")
-        # Waining TURN from server
-        mes = self.conn.get()
-        logging.debug(mes)
-        if "TURN" in mes:
-            parsed = parse_message(mes, " ")
-            self.common.turn = int(parsed[1]) == self.common.player.number
-        else:
-            raise Exception("Wrong command")
-        self.common.got_list = True
 
 
     def exit(self):
@@ -339,6 +382,21 @@ class Backend(threading.Thread):
         except Exception as ex:
             logging.error(ex)
         self.common.reset()
+
+    def set_card(self, card_num):
+        """
+        Select card
+        """
+        self.common.card = card_num
+
+    def set_acc(self,  acc):
+        """
+        Select accociation
+        """ 
+        self.common.acc = acc
+        mes = "TURN {} {}".format(self.common.card, self.common.acc)
+        self.conn.send(mes)
+        logging.debug(mes)
 
 
 class BackendInterface:
@@ -360,7 +418,7 @@ class BackendInterface:
         """
         Connect to the server
         """
-        d = {"method": "connect", "args": None}
+        d = {"method": "connect", "args": []}
         in_q.put(json.dumps(d))
 
     def set_name(self, name):
@@ -381,29 +439,30 @@ class BackendInterface:
         """
         Starts the game
         """
-        d = {"method": "start_game", "args": None}
+        d = {"method": "start_game", "args": []}
         in_q.put(json.dumps(d))
 
     def stop(self):
         """
         Stops the game
         """
-        d = {"method": "stop", "args": None}
+        d = {"method": "stop", "args": []}
         in_q.put(json.dumps(d))
 
     def play(self):
         """
         Starts playing
         """
-        d = {"method": "play", "args": None}
+        d = {"method": "play", "args": []}
         in_q.put(json.dumps(d))
 
     def exit(self):
         """
         Restarts menu
         """
-        d = {"method": "exit", "args": None}
+        d = {"method": "exit", "args": []}
         in_q.put(json.dumps(d))
+
 
 
 if __name__ == "__main__":
@@ -414,17 +473,9 @@ if __name__ == "__main__":
     back = Backend(com, in_q)
     back_int = BackendInterface(in_q)
     back.start()
-    # back_int.set_connection_params("192.168.1.4", 7840)
-    # back_int.connect()
-    # back_int.start_game()
-    # back_int.set_name("Yar")
-    # back_int.set_mode("Ariadna")
-    # time.sleep(5)
-    # back_int.play()
-    # q.close()
-    # q.join_thread()
-    interface.init_interface(com, back_int)
-    # time.sleep(30)
+    int_thr = threading.Thread(target=interface.init_interface, args=(com, back_int))
+    int_thr.start()
     back_int.stop()
     back.stop()
+    int_thr.join()
     back.join()

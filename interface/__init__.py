@@ -17,7 +17,7 @@ SETTINGS = False
 
 def game(com, backend):
     """Background"""
-    while not com.get_list():
+    while not com.got_list:
         time.sleep(1)
     leader = False #TODO
     leader = com.turn
