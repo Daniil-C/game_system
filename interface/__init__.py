@@ -17,10 +17,10 @@ SETTINGS = False
 
 def game(com, backend):
     """Background"""
-    while not com.get_list():
-        time.sleep(1)
+    #while not com.get_list():
+    #    time.sleep(1)
     leader = False #TODO
-    leader = com.turn
+    #leader = com.turn
     bg_play = "interface/play_bg_1.png"
     BG = pygame.transform.scale(pygame.image.load(bg_play), size)
     BGrect = BG.get_rect()
@@ -39,7 +39,7 @@ def game(com, backend):
         card_pos[0] += int((width - height) / 7 + height / 6)
 
     players = [[5, "agronom", 5], [5, "jmg", 5], [5, "dannon", 5]]
-    players = com.get_players_list()
+    #players = com.get_players_list()
     players_pos = [0, 0]
 
     font_size = int(height / 30)
@@ -61,6 +61,8 @@ def game(com, backend):
     b_card = None
     card_size = (int(height / 3), int(height / 2))
     card_rect = []
+    key_pressed = [False for i in range(len(cards))]
+    pressed = False
 
     header_text = "choose a card" if leader else "wait for your turn"
     h_font_size = int(height / 6)
@@ -79,7 +81,7 @@ def game(com, backend):
             """MOUSE EVENTS"""
 
             """USER EVENTS"""
-            if event.type == pygame.USEREVENT:
+            if event.type == pygame.USEREVENT and not pressed:
                 for i in range(len(cards)):
                     if cards_rect[i].collidepoint(pygame.mouse.get_pos()):
                         card = True
@@ -99,6 +101,35 @@ def game(com, backend):
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
                     sys.exit()
+                else:
+                    for i in range(len(cards_rect)):
+                        atr = "K_" + str(i + 1)
+                        if event.key == pygame.__getattribute__(atr):
+                            key_pressed[i] = True
+                            pressed = True 
+                            card = True
+                            name = "".join(("interface/", cards[i]))
+                            b_card = pygame.transform.scale(pygame.image.load(name), card_size)
+                            card_rect = b_card.get_rect()
+                            card_rect[0] = int(width / 2 - height / 6)
+                            card_rect[1] = int(height / 6)
+                            break
+                    else:
+                        card = False
+                        b_card = None
+                        card_rect = []
+            elif event.type == pygame.KEYUP:
+                for i in range(len(cards_rect)):
+                    atr = "K_" + str(i + 1)
+                    if event.key == pygame.__getattribute__(atr):
+                        key_pressed[i] = False
+                        pressed = False
+                        for j in key_pressed:
+                            pressed = pressed or j
+                        if not pressed:
+                            card = False
+                            b_card = None
+                            card_rect = []
 
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
@@ -666,27 +697,27 @@ def play_menu(com, backend):
                         backend.exit()
                         return None
                     if mode1rect.collidepoint(event.pos):
-                        backend.set_mode(4)
+                        backend.set_mode("imaginarium")
                         play_menu_2(com, backend)
                         return None
                     if mode2rect.collidepoint(event.pos):
-                        backend.set_mode(4)
+                        backend.set_mode("ariadna")
                         play_menu_2(com, backend)
                         return None
                     if mode3rect.collidepoint(event.pos):
-                        backend.set_mode(4)
+                        backend.set_mode("himera")
                         play_menu_2(com, backend)
                         return None
                     if mode4rect.collidepoint(event.pos):
-                        backend.set_mode(4)
+                        backend.set_mode("odissey")
                         play_menu_2(com, backend)
                         return None
                     if mode5rect.collidepoint(event.pos):
-                        backend.set_mode(5)
+                        backend.set_mode("pandora")
                         play_menu_2(com, backend)
                         return None
                     if mode6rect.collidepoint(event.pos):
-                        backend.set_mode(6)
+                        backend.set_mode("persephone")
                         play_menu_2(com, backend)
                         return None
 
