@@ -87,6 +87,7 @@ def set_association(com, backend):
                     if event.key == pygame.K_RETURN:
                         name_active = False
                         #backend.set_association(name_text)
+                        print(name_text)
                     elif event.key == pygame.K_BACKSPACE:
                         name_text = name_text[:-1]
                     elif len(name_text) < 68:
