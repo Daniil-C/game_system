@@ -17,11 +17,15 @@ SETTINGS = False
 
 def game(com, backend):
     """Background"""
+    while not com.got_list:
+        time.sleep(1)
+    leader = False #TODO
+    leader = com.turn
     bg_play = "interface/play_bg_1.png"
     BG = pygame.transform.scale(pygame.image.load(bg_play), size)
     BGrect = BG.get_rect()
-    # cards = com.player.cards
-    cards = ["34.png" for i in range(6)]
+    # cards = com.player.cards #TODO
+    cards = ["34.png", "35.png", "36.png", "37.png", "38.png", "39.png"]
     card_pos = [int((width - height) / 7), int(height * (1 - (1 / 4 + 1 / 20)))]
     cards_img = []
     cards_rect = []
@@ -34,9 +38,7 @@ def game(com, backend):
         cards_rect[-1][1] = card_pos[1]
         card_pos[0] += int((width - height) / 7 + height / 6)
 
-    # players = [["agronom", 5], ["jmg", 5], ["dannon", 5]] #TODO
-    while not com.get_list():
-        time.sleep(1)
+    players = [[5, "agronom", 5], [5, "jmg", 5], [5, "dannon", 5]]
     players = com.get_players_list()
     players_pos = [0, 0]
 
@@ -60,6 +62,14 @@ def game(com, backend):
     card_size = (int(height / 3), int(height / 2))
     card_rect = []
 
+    header_text = "Choose a card" if leader else "Wait for your turn"
+    h_font_size = int(height / 10)
+    h_font = pygame.font.SysFont("Chilanka", h_font_size)
+    h_color = 0xAD, 0xE5, 0xF3
+    header = h_font.render(header_text, True, h_color)
+    h_rect = header.get_rect()
+    h_horison = h_rect[2]
+
     pygame.time.set_timer(pygame.USEREVENT, 100)
 
     while True:
@@ -69,20 +79,21 @@ def game(com, backend):
             """EVENTS HANDLING"""
 
             """MOUSE EVENTS"""
-            if event.type == pygame.MOUSEMOTION:
-                a = 0
+
+            """USER EVENTS"""
             if event.type == pygame.USEREVENT:
-                if cards_rect[0].collidepoint(pygame.mouse.get_pos()):
-                    card = True
-                    name = "".join(("interface/", cards[0]))
-                    b_card = pygame.transform.scale(pygame.image.load(name), card_size)
-                    card_rect = b_card.get_rect()
-                    card_rect[0] = int(width / 2 - height / 6)
-                    card_rect[1] = int(height / 8)
-                elif BGrect.collidepoint(pygame.mouse.get_pos()):
+                for i in range(len(cards)):
+                    if cards_rect[i].collidepoint(pygame.mouse.get_pos()):
+                        card = True
+                        name = "".join(("interface/", cards[i]))
+                        b_card = pygame.transform.scale(pygame.image.load(name), card_size)
+                        card_rect = b_card.get_rect()
+                        card_rect[0] = int(width / 2 - height / 6)
+                        card_rect[1] = int(height / 6)
+                        break
+                else:
                     card = False
                     b_card = None
-                    card_size = (int(height / 3), int(height / 2)) 
                     card_rect = []
 
             """KEYBOARD EVENTS"""
@@ -105,6 +116,7 @@ def game(com, backend):
             screen.blit(players_text[i], (players_rect[i][0] + shift, players_rect[i][1] + shift))
             screen.blit(players_score[i], (players_rect[i][0] + shift, players_rect[i][1] + shift * 6))
         pygame.draw.rect(screen, color, rect_rect, 2)
+        screen.blit(header, (int((width - h_horison) / 2), shift))
         if card:
             screen.blit(b_card, card_rect)
         pygame.display.flip()
