@@ -179,6 +179,13 @@ def game_wait(com, backend):
     rect_rect = pygame.Rect(0, 0, int(width / 6), int(height / 8) * len(players))
 
     while True:
+        complite = True
+        for i in players:
+            complite = complite and i[3]
+        if complite:
+            vote(com, backend)
+            if EXIT:
+                return None
         """MAINLOOP"""
         for event in pygame.event.get():
             """EVENTS HANDLING"""
