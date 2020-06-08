@@ -89,6 +89,7 @@ def game_wait(com, backend):
             players_pos[1] += int(height / 8)
             screen.blit(players_text[i], (players_rect[i][0] + shift, players_rect[i][1] + shift))
             screen.blit(players_score[i], (players_rect[i][0] + shift, players_rect[i][1] + shift * 6))
+        color = 0xFF, 0xFF, 0xFF
         pygame.draw.rect(screen, color, rect_rect, 2)
         screen.blit(header, (int(width / 6) + shift, shift))
         pygame.display.flip()
