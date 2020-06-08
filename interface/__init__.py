@@ -18,6 +18,7 @@ TURN = True
 
 def game_wait(com, backend):
     """Wait when all players choose his card"""
+    global EXIT
     bg_play = "interface/play_bg.png"
     BG = pygame.transform.scale(pygame.image.load(bg_play), size)
     BGrect = BG.get_rect()
@@ -34,22 +35,21 @@ def game_wait(com, backend):
     players = [[5, "agronom", 5], [5, "jmg", 5], [5, "dannon", 5]]
     players = com.get_vote_list()
     players_pos = [0, 0]
-
     font_size = int(height / 30)
     font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
     color_good = 0x00, 0xFF, 0x00
     color_bad = 0xFF, 0x00, 0x00
-
+    score = 0
     players_rect = []
     players_size = (int(width / 6), int(height / 8))
     players_text = []
     players_score = []
     for i in players:
         players_rect.append(pygame.Rect(*players_pos, *players_size))
-        color = color_good if i[2] else color_bad
+        color = color_good if i[3] else color_bad
         players_text.append(font.render(i[1], True, color))
-        i[0] = "".join(("Score: ", str(i[0])))
-        players_score.append(font.render(i[0], True, color))
+        score = "".join(("Score: ", str(i[0])))
+        players_score.append(font.render(score, True, color))
         players_pos[1] += int(height / 8)
     rect_rect = pygame.Rect(0, 0, int(width / 6), int(height / 8) * len(players))
 
@@ -82,13 +82,14 @@ def game_wait(com, backend):
         players = com.get_vote_list()
         players_pos = [0, 0]
         for i in range(len(players)):
-            color = color_good if players[i][2] else color_bad
+            color = color_good if players[i][3] else color_bad
             players_text[i] = font.render(players[i][1], True, color)
-            players[i][0] = "".join(("Score: ", str(players[i][0])))
-            players_score[i] = font.render(players[i][0], True, color)
+            score = "".join(("Score: ", str(players[i][0])))
+            players_score[i] = font.render(score, True, color)
             players_pos[1] += int(height / 8)
             screen.blit(players_text[i], (players_rect[i][0] + shift, players_rect[i][1] + shift))
             screen.blit(players_score[i], (players_rect[i][0] + shift, players_rect[i][1] + shift * 6))
+        color = 0xFF, 0xFF, 0xFF
         pygame.draw.rect(screen, color, rect_rect, 2)
         screen.blit(header, (int(width / 6) + shift, shift))
         pygame.display.flip()
@@ -226,7 +227,7 @@ def game(com, backend):
             card_pos[0] += int((width - height) / 7 + height / 6)
 
         players = [[5, "agronom", 5], [5, "jmg", 5], [5, "dannon", 5]]
-        players = com.get_players_list()
+        players = com.get_players_list().copy()
         players_pos = [0, 0]
 
         font_size = int(height / 30)
@@ -239,11 +240,11 @@ def game(com, backend):
         players_text = []
         players_score = []
         for i in players:
-            color = color_leader if i[2] else color_else
+            color = color_leader if i[3] else color_else
             players_rect.append(pygame.Rect(*players_pos, *players_size))
             players_text.append(font.render(i[1], True, color))
-            i[0] = "".join(("Score: ", str(i[0])))
-            players_score.append(font.render(i[0], True, color))
+            score = "".join(("Score: ", str(i[0])))
+            players_score.append(font.render(score, True, color))
             players_pos[1] += int(height / 8)
         rect_rect = pygame.Rect(0, 0, int(width / 6), int(height / 8) * len(players))
         card = False
@@ -264,7 +265,7 @@ def game(com, backend):
         while True:
             """MAINLOOP"""
             breaker = False
-            if not leader and com.got_ass:
+            if (not leader) and com.got_ass:
                 choose_flg = True
                 header_text = "choose a card"
                 header = h_font.render(header_text, True, h_color)
@@ -282,7 +283,7 @@ def game(com, backend):
                                 if EXIT:
                                     return None
                             else:
-                                game_wait(com_backend)
+                                game_wait(com, backend)
                                 if EXIT:
                                     return None
                                 else:
@@ -357,6 +358,7 @@ def game(com, backend):
             for i in range(len(players)):
                 screen.blit(players_text[i], (players_rect[i][0] + shift, players_rect[i][1] + shift))
                 screen.blit(players_score[i], (players_rect[i][0] + shift, players_rect[i][1] + shift * 6))
+            color = color_else
             pygame.draw.rect(screen, color, rect_rect, 2)
             screen.blit(header, (int(width / 6) + shift, shift))
             if card:
