@@ -13,8 +13,10 @@ size = width, height = info.current_w, info.current_h
 print(size)
 
 SETTINGS = False
+EXIT = False
 
 def set_association(com, backend):
+    global EXIT
     bg_play = "interface/play_bg.png"
     BG = pygame.transform.scale(pygame.image.load(bg_play), size)
     BGrect = BG.get_rect()
@@ -30,7 +32,7 @@ def set_association(com, backend):
     header_rect[0] = int(width / 2 - w / 2)
     card_size = (int(height / 3), int(height / 2))
     name = "interface/34.png" #TODO
-    #name = "".join(("interface/", str(com.get_card()), ".png"))
+    name = "".join(("interface/", str(com.get_card()), ".png"))
     b_card = pygame.transform.scale(pygame.image.load(name), card_size)
     card_rect = b_card.get_rect()
     card_rect[0] = int(width / 2 - height / 6)
@@ -75,7 +77,7 @@ def set_association(com, backend):
                 else:
                     name_active = False
                     if okrect.collidepoint(event.pos):
-                        #backend.set_association(name_text)
+                        backend.set_ass(name_text)
                         pass
 
             """KEYBOARD EVENTS"""
@@ -83,11 +85,12 @@ def set_association(com, backend):
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
                     pygame.quit()
+                    EXIT = True
                     return None
                 if name_active:
                     if event.key == pygame.K_RETURN:
                         name_active = False
-                        #backend.set_association(name_text)
+                        backend.set_ass(name_text)
                         print(name_text)
                     elif event.key == pygame.K_BACKSPACE:
                         name_text = name_text[:-1]
@@ -98,6 +101,7 @@ def set_association(com, backend):
             if event.type == pygame.QUIT:
                 backend.stop()
                 pygame.quit()
+                EXIT = True
                 return None
 
         """RENDERING"""
@@ -115,6 +119,7 @@ def set_association(com, backend):
 
 def game(com, backend):
     """Background"""
+    global EXIT
     while not com.got_list:
         time.sleep(1)
     leader = False #TODO
@@ -137,7 +142,7 @@ def game(com, backend):
         card_pos[0] += int((width - height) / 7 + height / 6)
 
     players = [[5, "agronom", 5], [5, "jmg", 5], [5, "dannon", 5]]
-    #players = com.get_players_list()
+    players = com.get_players_list()
     players_pos = [0, 0]
 
     font_size = int(height / 30)
@@ -180,8 +185,10 @@ def game(com, backend):
             if event.type == pygame.MOUSEBUTTONDOWN and leader:
                 for i in range(len(cards)):
                     if cards_rect[i].collidepoint(event.pos):
-                        # backend.set_card(cards[i])
+                        backend.set_card(cards[i])
                         set_association(com, backend)
+                        if EXIT:
+                            return None
                         print("gooooooood")
 
 
@@ -206,6 +213,7 @@ def game(com, backend):
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
                     pygame.quit()
+                    EXIT = True
                     return None
                 else:
                     for i in range(len(cards_rect)):
@@ -241,6 +249,7 @@ def game(com, backend):
             if event.type == pygame.QUIT:
                 backend.stop()
                 pygame.quit()
+                EXIT = True
                 return None
 
         """RENDERING"""
@@ -261,6 +270,7 @@ def game(com, backend):
 
 def wait_menu(com, backend):
     """Wait players"""
+    global EXIT
     font_size = int(height / 20)
     font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
     w_shift = int(height / 120)
@@ -322,12 +332,14 @@ def wait_menu(com, backend):
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
                     pygame.quit()
+                    EXIT = True
                     return None
 
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
                 pygame.quit()
+                EXIT = True
                 return None
 
         clock.tick(2)
@@ -354,6 +366,7 @@ def wait_menu(com, backend):
 
 def settings_menu(com, backend):
     """settings menu"""
+    global EXIT
 
     def checker(IP, PORT):
         """Check data in settings fields"""
@@ -462,6 +475,7 @@ def settings_menu(com, backend):
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
                     pygame.quit()
+                    EXIT = True
                     return None
                 if ip_active:
                     if event.key == pygame.K_RETURN:
@@ -485,6 +499,7 @@ def settings_menu(com, backend):
             if event.type == pygame.QUIT:
                 backend.stop()
                 pygame.quit()
+                EXIT = True
                 return None
 
         """RENDERING"""
@@ -507,6 +522,7 @@ def settings_menu(com, backend):
 def rule_menu(com, backend):
     """DRAW RULE MENU INTERFACE"""
     """Background"""
+    global EXIT
     BG_rule = pygame.transform.scale(pygame.image.load("interface/rule_menu.png"), size)
     BG_rulerect = BG_rule.get_rect()
 
@@ -532,12 +548,14 @@ def rule_menu(com, backend):
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
                     pygame.quit()
+                    EXIT = True
                     return None
 
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
                 pygame.quit()
+                EXIT = True
                 return None
 
         """RENDERING"""
@@ -549,6 +567,7 @@ def rule_menu(com, backend):
 def play_menu_2(com, backend):
     """DRAW NAME INSERTION INTERFACE"""
     """Background"""
+    global EXIT
     BG = pygame.transform.scale(pygame.image.load("interface/BG_name.png"), size)
     BGrect = BG.get_rect()
 
@@ -617,6 +636,7 @@ def play_menu_2(com, backend):
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
                     pygame.quit()
+                    EXIT = True
                     return None
                 if name_active:
                     if event.key == pygame.K_RETURN:
@@ -632,6 +652,7 @@ def play_menu_2(com, backend):
             if event.type == pygame.QUIT:
                 backend.stop()
                 pygame.quit()
+                EXIT = True
                 return None
 
         """RENDERING"""
@@ -649,6 +670,7 @@ def play_menu_2(com, backend):
 def disconnection():
     """Disdpaying if backend can't connect to server"""
     """Background"""
+    global EXIT
     BG = pygame.transform.scale(pygame.image.load("interface/BG_disconnect.png"), size)
     BGrect = BG.get_rect()
 
@@ -674,12 +696,14 @@ def disconnection():
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
                     pygame.quit()
+                    EXIT = True
                     return None
 
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
                 pygame.quit()
+                EXIT = True
                 return None
 
         """RENDERING"""
@@ -690,6 +714,7 @@ def disconnection():
 
 def connection(com, backend):
     """Wait to connection"""
+    global EXIT
     clock = pygame.time.Clock()
     """Background"""
     BG = pygame.transform.scale(pygame.image.load("interface/BG_0.png"), size)
@@ -715,12 +740,14 @@ def connection(com, backend):
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
                     pygame.quit()
+                    EXIT = True
                     return None
 
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
                 pygame.quit()
+                EXIT = True
                 return None
 
         clock.tick(2)
@@ -736,6 +763,7 @@ def connection(com, backend):
 
 def play_menu(com, backend):
     """DRAW PLAY MENU INTERFACE FOR MASTER (FIRST) PLAYER OR DOWNLOADING RESOURCES INTERFACE"""
+    global EXIT,  SETTINGS
     if not SETTINGS:
         """If the player hasn't specified connection parameters"""
         settings_menu(com, backend)
@@ -845,12 +873,14 @@ def play_menu(com, backend):
                     if event.key == pygame.K_ESCAPE:
                         backend.stop()
                         pygame.quit()
+                        EXIT = True
                         return None
 
                 """OTHER EVENTS"""
                 if event.type == pygame.QUIT:
                     backend.stop()
                     pygame.quit()
+                    EXIT = True
                     return None
 
             """RENDERING"""
@@ -899,12 +929,14 @@ def play_menu(com, backend):
                     if event.key == pygame.K_ESCAPE:
                         backend.stop()
                         pygame.quit()
+                        EXIT = True
                         return None
 
                 """OTHER EVENTS"""
                 if event.type == pygame.QUIT:
                     backend.stop()
                     pygame.quit()
+                    EXIT = True
                     return None
 
             clock.tick(1)
@@ -920,6 +952,7 @@ def play_menu(com, backend):
 def main_menu(com, backend):
     """DRAW MAIN MENU INTERFACE"""
     """Background"""
+    global EXIT
     BG = pygame.transform.scale(pygame.image.load("interface/BG.png"), size)
     BGrect = BG.get_rect()
 
@@ -962,25 +995,34 @@ def main_menu(com, backend):
                 if exitrect.collidepoint(event.pos):
                     backend.stop()
                     pygame.quit()
+                    EXIT = True
                     return None
                 elif settingsrect.collidepoint(event.pos):
                     settings_menu(com, backend)
+                    if EXIT:
+                        return None
                 elif rulerect.collidepoint(event.pos):
                     rule_menu(com, backend)
+                    if EXIT:
+                        return None
                 elif playrect.collidepoint(event.pos):
                     play_menu(com, backend)
+                    if EXIT:
+                        return None
 
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
                     pygame.quit()
+                    EXIT = True
                     return None
 
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
                 pygame.quit()
+                EXIT = True
                 return None
 
         """RENDERING"""
