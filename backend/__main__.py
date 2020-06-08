@@ -308,7 +308,7 @@ class Backend(Monitor):
         self.common.mode = parsed[1]
         self.common.player.cards = parse_message(mes[2], ",")
         logging.debug(parsed[3])
-        self.common.players_list = [[i.split(";")[0], 0, i.split(";")[1]]
+        self.common.players_list = [[0, i.split(";")[1], i.split(";")[0]]
                                     for i in parse_message(parsed[3], ",")]
         self.game_started = True
         self.common.game_started = True
