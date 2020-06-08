@@ -43,7 +43,8 @@ def vote(com, backend):
         cards_rect.append(cards_img[-1].get_rect())
         cards_rect[-1][0] = card_pos[0]
         cards_rect[-1][1] = card_pos[1]
-        card_pos[0] += int((width - height) / 7 + height / 6)
+        card_pos[0] += int((width - height * len(cards) / 6) / (len(cards) + 1) + height / 6)
+
 
 
 def game_wait(com, backend):
@@ -299,6 +300,12 @@ def game(com, backend):
                 choose_flg = True
                 header_text = "choose a card"
                 header = h_font.render(header_text, True, h_color)
+                assoc_text = com.ass
+                a_font_size = int(height / 30)
+                a_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", a_font_size)
+                a_color = 0xAD, 0xE5, 0xF3
+                assoc = a_font.render(assoc_text, True, a_color)
+                a_rect = assoc.get_rect()
 
             for event in pygame.event.get():
                 """EVENTS HANDLING"""
@@ -391,6 +398,8 @@ def game(com, backend):
             color = color_else
             pygame.draw.rect(screen, color, rect_rect, 2)
             screen.blit(header, (int(width / 6) + shift, shift))
+            if choose_flg:
+                screen.blit(assoc, (int(width - a_rect) / 2, int(height / 6 + 2 * shift)))
             if card:
                 screen.blit(b_card, card_rect)
             pygame.display.flip()
