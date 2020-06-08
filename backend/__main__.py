@@ -352,7 +352,7 @@ class Backend(Monitor):
             return False
         mes = self.conn.get()
         logging.debug(mes)
-        self.common.vote_list = players_list
+        self.common.vote_list = self.players_list
         for i in self.common.vote_list:
             i[-1] = False
         while not mes.startswith("VOTE"):
