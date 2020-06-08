@@ -329,7 +329,7 @@ class Backend(Monitor):
             parsed = parse_message(mes, " ")
             self.common.turn = int(parsed[1]) == self.common.player.number
             for i in self.common.players_list:
-                i.append(i[0] == int(parsed[1]))
+                i.append(i[-1] == int(parsed[1]))
                 logging.debug(i)
         else:
             return False
