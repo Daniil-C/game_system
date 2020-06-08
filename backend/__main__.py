@@ -328,6 +328,8 @@ class Backend(Monitor):
         if mes.startswith("TURN"):
             parsed = parse_message(mes, " ")
             self.common.turn = int(parsed[1]) == self.common.player.number
+            for i in self.common.players_list:
+                i.append(i[0] == int(parsed[1]))
         else:
             return False
         self.common.got_list = True
@@ -343,6 +345,7 @@ class Backend(Monitor):
         mes = self.conn.get()
         logging.debug(mes)
         #while not mes.startswith("VOTE"):
+
 
 
     def get_players_list(self):
