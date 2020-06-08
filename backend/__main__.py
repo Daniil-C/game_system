@@ -363,6 +363,8 @@ class Backend(Monitor):
                     break
             else:
                 return False
+            mes = self.conn.get()
+            logging.debug(mes)
 
 
     def get_players_list(self):
