@@ -319,7 +319,6 @@ class Backend(Monitor):
                                     for i in parse_message(parsed[3], ",")]
         self.game_started = True
         self.common.game_started = True
-        self.common.got_list = True
         self.conn.send("READY")
         # Waining TURN from server
         while self.turn():
