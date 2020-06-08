@@ -16,6 +16,36 @@ SETTINGS = False
 EXIT = False
 TURN = True
 
+def vote(com, backend):
+    global EXIT
+    bg_play = "interface/play_bg.png"
+    BG = pygame.transform.scale(pygame.image.load(bg_play), size)
+    BGrect = BG.get_rect()
+    header_text = "Guess leader's card"
+    h_font_size = int(height / 8)
+    h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
+    h_color = 0xAD, 0xE5, 0xF3
+    header = h_font.render(header_text, True, h_color)
+    header_rect = header.get_rect()
+    shift = int(height / 120)
+    header_rect[1] = shift
+    w = header_rect[2]
+    header_rect[0] = int(width / 2 - w / 2)
+    # cards = com.player.cards #TODO
+    cards = [34, 35, 36, 37, 38, 39]
+    card_pos = [int((width - height * len(cards) / 6) / (len(cards) + 1)), int(height * 0.7)]
+    cards_img = []
+    cards_rect = []
+    cards_size = (int(height / 6), int(height / 4))
+    for i in cards:
+        name = "".join(("interface/", str(i), ".png"))
+        cards_img.append(pygame.transform.scale(pygame.image.load(name), cards_size))
+        cards_rect.append(cards_img[-1].get_rect())
+        cards_rect[-1][0] = card_pos[0]
+        cards_rect[-1][1] = card_pos[1]
+        card_pos[0] += int((width - height) / 7 + height / 6)
+
+
 def game_wait(com, backend):
     """Wait when all players choose his card"""
     global EXIT
@@ -214,7 +244,7 @@ def game(com, backend):
         BGrect = BG.get_rect()
         # cards = com.player.cards #TODO
         cards = [34, 35, 36, 37, 38, 39]
-        card_pos = [int((width - height) / 7), int(height * (1 - (1 / 4 + 1 / 20)))]
+        card_pos = [int((width - height * len(cards) / 6) / (len(cards) + 1)), int(height * 0.7)]
         cards_img = []
         cards_rect = []
         cards_size = (int(height / 6), int(height / 4))
@@ -224,10 +254,10 @@ def game(com, backend):
             cards_rect.append(cards_img[-1].get_rect())
             cards_rect[-1][0] = card_pos[0]
             cards_rect[-1][1] = card_pos[1]
-            card_pos[0] += int((width - height) / 7 + height / 6)
+            card_pos[0] += int((width - height * len(cards) / 6) / (len(cards) + 1) + height / 6)
 
-        players = [[5, "agronom", 5], [5, "jmg", 5], [5, "dannon", 5]]
-        players = com.get_players_list().copy()
+        players = [[5, "agronom", 5, True], [5, "jmg", 5, False], [5, "dannon", 5, False]]
+        players = com.get_players_list()
         players_pos = [0, 0]
 
         font_size = int(height / 30)
