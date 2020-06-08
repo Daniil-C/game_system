@@ -79,7 +79,7 @@ def game_wait(com, backend):
         shift = int(height / 120)
         screen.blit(BG, BGrect)
 
-        players = com.get_vote_list().copy()
+        players = com.get_vote_list()
         players_pos = [0, 0]
         for i in range(len(players)):
             color = color_good if players[i][3] else color_bad
