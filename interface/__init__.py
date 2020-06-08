@@ -46,7 +46,7 @@ def game_wait(com, backend):
     players_score = []
     for i in players:
         players_rect.append(pygame.Rect(*players_pos, *players_size))
-        color = color_good if i[2] else color_bad
+        color = color_good if i[3] else color_bad
         players_text.append(font.render(i[1], True, color))
         i[0] = "".join(("Score: ", str(i[0])))
         players_score.append(font.render(i[0], True, color))
@@ -82,7 +82,7 @@ def game_wait(com, backend):
         players = com.get_vote_list()
         players_pos = [0, 0]
         for i in range(len(players)):
-            color = color_good if players[i][2] else color_bad
+            color = color_good if players[i][3] else color_bad
             players_text[i] = font.render(players[i][1], True, color)
             players[i][0] = "".join(("Score: ", str(players[i][0])))
             players_score[i] = font.render(players[i][0], True, color)
@@ -239,7 +239,7 @@ def game(com, backend):
         players_text = []
         players_score = []
         for i in players:
-            color = color_leader if i[2] else color_else
+            color = color_leader if i[3] else color_else
             players_rect.append(pygame.Rect(*players_pos, *players_size))
             players_text.append(font.render(i[1], True, color))
             i[0] = "".join(("Score: ", str(i[0])))
