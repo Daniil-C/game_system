@@ -45,8 +45,8 @@ class Common(Monitor):
         self.got_list = False
         self.updated = False
         self.card = 0
-        self.acc = ""
-        self.got_acc = False
+        self.ass = ""
+        self.got_ass = False
 
     def reset(self):
         self.player = Player()
@@ -391,12 +391,12 @@ class Backend(Monitor):
         """
         self.common.card = card_num
 
-    def set_acc(self,  acc):
+    def set_ass(self,  ass):
         """
-        Select accociation
+        Select association
         """ 
-        self.common.acc = acc
-        mes = "TURN {} {}".format(self.common.card, self.common.acc)
+        self.common.ass = ass
+        mes = "TURN {} {}".format(self.common.card, self.common.ass)
         self.conn.send(mes)
         logging.debug(mes)
 
@@ -463,6 +463,20 @@ class BackendInterface:
         Restarts menu
         """
         d = {"method": "exit", "args": []}
+        in_q.put(json.dumps(d))
+
+    def set_card(self, card_num):
+        """
+        Select card
+        """
+        d = {"method": "set_card", "args": [card_num]}
+        in_q.put(json.dumps(d)) 
+
+    def set_ass(self,  ass):
+        """
+        Select association
+        """ 
+        d = {"method": "set_ass", "args": [ass]}
         in_q.put(json.dumps(d))
 
 
