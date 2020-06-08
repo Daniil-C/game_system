@@ -357,7 +357,7 @@ class Backend(Monitor):
             i[-1] = False
         while not mes.startswith("VOTE"):
             if mes.startswith("PLAYER"):
-                parsed = parse_message(" ")
+                parsed = parse_message(mes," ")
             for i in self.common.vote_list:
                 if i[-2] == parsed[1]:
                     i[-1] = True
