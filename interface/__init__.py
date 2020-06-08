@@ -20,7 +20,7 @@ def set_association(com, backend):
     BGrect = BG.get_rect()
     header_text = "Enter your association"
     h_font_size = int(height / 8)
-    h_font = pygame.font.SysFont("Chilanka", h_font_size)
+    h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
     h_color = 0xAD, 0xE5, 0xF3
     header = h_font.render(header_text, True, h_color)
     header_rect = header.get_rect()
@@ -42,7 +42,7 @@ def set_association(com, backend):
     backrect[0] = 0
     backrect[1] = int(height * 185 / 216)
     font_size = int(height / 30)
-    font = pygame.font.SysFont("Chilanka", font_size)
+    font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
     name_active = False
     name_text = ""
 
@@ -139,7 +139,7 @@ def game(com, backend):
     players_pos = [0, 0]
 
     font_size = int(height / 30)
-    font = pygame.font.SysFont("Chilanka", font_size)
+    font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
     color = 0xFF, 0xFF, 0xFF
 
     players_rect = []
@@ -162,7 +162,7 @@ def game(com, backend):
 
     header_text = "choose a card" if leader else "wait for your turn"
     h_font_size = int(height / 6)
-    h_font = pygame.font.SysFont("Chilanka", h_font_size)
+    h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
     h_color = 0xAD, 0xE5, 0xF3
     header = h_font.render(header_text, True, h_color)
 
@@ -258,7 +258,7 @@ def game(com, backend):
 def wait_menu(com, backend):
     """Wait players"""
     font_size = int(height / 20)
-    font = pygame.font.SysFont("Chilanka", font_size)
+    font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
     w_shift = int(height / 120)
     h_shift = int(height / 14 - height / 40)
     clock = pygame.time.Clock()
@@ -395,7 +395,7 @@ def settings_menu(com, backend):
 
     """Text"""
     font_size = int(height / 30)
-    font = pygame.font.SysFont("Chilanka", font_size)
+    font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
     ip_active = False
     port_active = False
     inactive_color = 0xFF, 0xFF, 0xFF
@@ -551,7 +551,7 @@ def play_menu_2(com, backend):
 
     """Text"""
     font_size = int(height / 30)
-    font = pygame.font.SysFont("Chilanka", font_size)
+    font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
     name_active = False
     name_text = ""
 
