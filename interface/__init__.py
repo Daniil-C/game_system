@@ -118,6 +118,7 @@ def set_association(com, backend):
 
 
 def game(com, backend):
+    global EXIT
     """Background"""
     global EXIT
     while not com.got_list:
@@ -269,6 +270,7 @@ def game(com, backend):
 
 
 def wait_menu(com, backend):
+    global EXIT
     """Wait players"""
     global EXIT
     font_size = int(height / 20)
@@ -521,6 +523,7 @@ def settings_menu(com, backend):
 
 def rule_menu(com, backend):
     """DRAW RULE MENU INTERFACE"""
+    global EXIT
     """Background"""
     global EXIT
     BG_rule = pygame.transform.scale(pygame.image.load("interface/rule_menu.png"), size)
@@ -566,6 +569,7 @@ def rule_menu(com, backend):
 
 def play_menu_2(com, backend):
     """DRAW NAME INSERTION INTERFACE"""
+    global EXIT
     """Background"""
     global EXIT
     BG = pygame.transform.scale(pygame.image.load("interface/BG_name.png"), size)
@@ -669,6 +673,7 @@ def play_menu_2(com, backend):
 
 def disconnection():
     """Disdpaying if backend can't connect to server"""
+    global EXIT
     """Background"""
     global EXIT
     BG = pygame.transform.scale(pygame.image.load("interface/BG_disconnect.png"), size)
@@ -951,6 +956,7 @@ def play_menu(com, backend):
 
 def main_menu(com, backend):
     """DRAW MAIN MENU INTERFACE"""
+    global EXIT
     """Background"""
     global EXIT
     BG = pygame.transform.scale(pygame.image.load("interface/BG.png"), size)
@@ -1038,5 +1044,6 @@ def init_interface(com, backend):
     global SETTINGS
     SETTINGS = com.ip is not None
     main_menu(com, backend)
+    return 
 
 #init_interface(-1, -1)
