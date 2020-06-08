@@ -7,10 +7,10 @@ import logging
 import threading
 import time
 from multiprocessing import Queue
-import interface
 import json
-import wget
 import os
+import wget
+import interface
 from connection import connection as Conn
 from monitor import Monitor
 
@@ -25,7 +25,6 @@ class Player:
         self.name = ""
         self.number = -1
         self.is_leader = False
-        
 
 
 class Common(Monitor):
@@ -49,6 +48,9 @@ class Common(Monitor):
         self.got_ass = False
 
     def reset(self):
+        """
+        Resets game
+        """
         self.player = Player()
         self.players_list = []
         self.game_started = False
@@ -132,6 +134,13 @@ class Common(Monitor):
         """
         return self.card
 
+    def get_ass(self):
+        """
+        Returns chosen association
+        """
+        return self.ass
+
+
 def parse_message(message, sep):
     """
     Parse mmessage by spaces
@@ -143,10 +152,10 @@ class Backend(Monitor):
     """
     This class is a backend service of game
     """
-    def __init__(self, common, in_q):
+    def __init__(self, common, inp_q):
         Monitor.__init__(self)
         self.common = common
-        self.in_q = in_q
+        self.in_q = inp_q
         self.version = "res_0.0"
         self.end = False
         self.reader = threading.Thread(target=Backend.read_queue, args=(self,))
@@ -168,11 +177,20 @@ class Backend(Monitor):
             pass
 
     def start(self):
+        """
+        Starts backend
+        """
         if self.collector_thread is None:
-            self.collector_thread = threading.Thread(target=Backend.thr_collector, args=(self,))
+            self.collector_thread = threading.Thread(
+                target=Backend.thr_collector,
+                args=(self,)
+            )
             self.collector_thread.start()
 
     def join(self):
+        """
+        Joining all threads
+        """
         if self.collector_thread is not None:
             self.collector_thread.join()
             self.collector_thread = None
@@ -181,6 +199,9 @@ class Backend(Monitor):
         self.stop()
 
     def thr_collector(self):
+        """
+        Thread collector
+        """
         while not self.end:
             time.sleep(2)
             for i in self.tasks:
@@ -192,6 +213,9 @@ class Backend(Monitor):
             i.join()
 
     def queue_request_wrapper(self, fun, args):
+        """
+        Wraps target function
+        """
         self.__getattribute__(fun)(*args)
 
     def read_queue(self):
@@ -210,11 +234,15 @@ class Backend(Monitor):
                     pass
                 logging.debug("stopping")
             else:
-                thread = threading.Thread(target=self.queue_request_wrapper, args=(data["method"], data["args"]))
+                thread = threading.Thread(target=self.queue_request_wrapper,
+                                          args=(data["method"], data["args"]))
                 thread.start()
                 self.tasks.append(thread)
 
     def stop(self):
+        """
+        Stops programm
+        """
         self.end = True
         if self.conn is not None:
             self.conn.close()
@@ -280,7 +308,8 @@ class Backend(Monitor):
         self.common.mode = parsed[1]
         self.common.player.cards = parse_message(mes[2], ",")
         logging.debug(parsed[3])
-        self.common.players_list = [[0, i.split(";")[1]] for i in parse_message(parsed[3], ",")]
+        self.common.players_list = [[0, i.split(";")[1]]
+                                    for i in parse_message(parsed[3], ",")]
         self.game_started = True
         self.common.game_started = True
         self.common.got_list = True
@@ -290,16 +319,30 @@ class Backend(Monitor):
             pass
         # End game logic; no any connection left.
 
-    def turn(self):            
+    def turn(self):
+        """
+        Provides turn logic
+        """
         mes = self.conn.get()
         logging.debug(mes)
-        if "TURN" in mes:
+        if mes.startswith("TURN"):
             parsed = parse_message(mes, " ")
             self.common.turn = int(parsed[1]) == self.common.player.number
         else:
             return False
         self.common.got_list = True
-
+        mes = self.conn.get()
+        logging.debug(mes)
+        if mes.startswith("ASSOC"):
+            self.common.ass = parse_message(mes, " ")[1]
+            self.common.got_ass = True
+        elif mes.startswith("TURN"):
+            return True
+        else:
+            return False
+        mes = self.conn.get()
+        logging.debug(mes)
+        #while not mes.startswith("VOTE"):
 
 
     def get_players_list(self):
@@ -314,7 +357,7 @@ class Backend(Monitor):
                     self.common.is_connected = False
                     break
                 logging.debug(mes)
-                if "BEGIN" in mes:
+                if mes.startswith("BEGIN"):
                     self.begin_message = mes
                     break
                 parsed = parse_message(parse_message(mes, " ")[1], ",")
@@ -355,8 +398,8 @@ class Backend(Monitor):
             if version != self.version:
                 logging.debug("Versions are different")
                 path = os.path.join(os.getcwd(), "resources")
-                bar = ""
-                filename = wget.download(url, path, bar=bar)
+                get_bar = ""
+                filename = wget.download(url, path, bar=get_bar)
                 logging.debug(filename)
                 self.common.updated = True
             else:
@@ -377,7 +420,6 @@ class Backend(Monitor):
         logging.debug("STARTING GAME")
         self.conn.send("START_GAME {}".format(self.common.mode))
 
-
     def exit(self):
         """
         Restarts menu
@@ -395,11 +437,15 @@ class Backend(Monitor):
         Select card
         """
         self.common.card = card_num
+        if not self.common.is_leader:
+            mes = "CARD {}".format(self.common.card)
+            self.conn.send(mes)
+            logging.debug(mes)
 
-    def set_ass(self,  ass):
+    def set_ass(self, ass):
         """
         Select association
-        """ 
+        """
         self.common.ass = ass
         mes = "TURN {} {}".format(self.common.card, self.common.ass)
         self.conn.send(mes)
@@ -410,80 +456,79 @@ class BackendInterface:
     """
     This class provides interface between frondtend and backend
     """
-    def __init__(self, in_q):
+    def __init__(self, inp_q):
         threading.Thread.__init__(self)
-        self.in_q = in_q
+        self.in_q = inp_q
 
     def set_connection_params(self, ip, port):
         """
         Set connections params to connect to game server
         """
         d = {"method": "set_connection_params", "args": [ip, port]}
-        in_q.put(json.dumps(d))
+        self.in_q.put(json.dumps(d))
 
     def connect(self):
         """
         Connect to the server
         """
         d = {"method": "connect", "args": []}
-        in_q.put(json.dumps(d))
+        self.in_q.put(json.dumps(d))
 
     def set_name(self, name):
         """
         Sets player`s name
         """
         d = {"method": "set_name", "args": [name]}
-        in_q.put(json.dumps(d))
+        self.in_q.put(json.dumps(d))
 
     def set_mode(self, mode):
         """
         Sets game mode
         """
         d = {"method": "set_mode", "args": [str(mode)]}
-        in_q.put(json.dumps(d))
+        self.in_q.put(json.dumps(d))
 
     def start_game(self):
         """
         Starts the game
         """
         d = {"method": "start_game", "args": []}
-        in_q.put(json.dumps(d))
+        self.in_q.put(json.dumps(d))
 
     def stop(self):
         """
         Stops the game
         """
         d = {"method": "stop", "args": []}
-        in_q.put(json.dumps(d))
+        self.in_q.put(json.dumps(d))
 
     def play(self):
         """
         Starts playing
         """
         d = {"method": "play", "args": []}
-        in_q.put(json.dumps(d))
+        self.in_q.put(json.dumps(d))
 
     def exit(self):
         """
         Restarts menu
         """
         d = {"method": "exit", "args": []}
-        in_q.put(json.dumps(d))
+        self.in_q.put(json.dumps(d))
 
     def set_card(self, card_num):
         """
         Select card
         """
         d = {"method": "set_card", "args": [card_num]}
-        in_q.put(json.dumps(d)) 
+        self.in_q.put(json.dumps(d))
 
-    def set_ass(self,  ass):
+    def set_ass(self, ass):
         """
         Select association
-        """ 
+        """
         d = {"method": "set_ass", "args": [ass]}
-        in_q.put(json.dumps(d))
-
+        self.in_q.put(json.dumps(d))
 
 
 if __name__ == "__main__":
