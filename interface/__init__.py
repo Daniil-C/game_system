@@ -241,9 +241,9 @@ def game(com, backend):
         for i in players:
             color = color_leader if i[3] else color_else
             players_rect.append(pygame.Rect(*players_pos, *players_size))
-            players_text.append(font.render(i[2], True, color))
-            i[1] = "".join(("Score: ", str(i[1])))
-            players_score.append(font.render(i[1], True, color))
+            players_text.append(font.render(i[1], True, color))
+            i[0] = "".join(("Score: ", str(i[0])))
+            players_score.append(font.render(i[0], True, color))
             players_pos[1] += int(height / 8)
         rect_rect = pygame.Rect(0, 0, int(width / 6), int(height / 8) * len(players))
         card = False
