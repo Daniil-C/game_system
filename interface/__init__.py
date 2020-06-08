@@ -82,7 +82,8 @@ def set_association(com, backend):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
-                    sys.exit()
+                    pygame.quit()
+                    return None
                 if name_active:
                     if event.key == pygame.K_RETURN:
                         name_active = False
@@ -96,7 +97,8 @@ def set_association(com, backend):
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
-                sys.exit()
+                pygame.quit()
+                return None
 
         """RENDERING"""
         name_color = active_color if name_active else inactive_color
@@ -203,7 +205,8 @@ def game(com, backend):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
-                    sys.exit()
+                    pygame.quit()
+                    return None
                 else:
                     for i in range(len(cards_rect)):
                         atr = "K_" + str(i + 1)
@@ -237,7 +240,8 @@ def game(com, backend):
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
-                sys.exit()
+                pygame.quit()
+                return None
 
         """RENDERING"""
         shift = int(height / 120)
@@ -317,12 +321,14 @@ def wait_menu(com, backend):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
-                    sys.exit()
+                    pygame.quit()
+                    return None
 
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
-                sys.exit()
+                pygame.quit()
+                return None
 
         clock.tick(2)
         if not com.is_connected:
@@ -455,7 +461,8 @@ def settings_menu(com, backend):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
-                    sys.exit()
+                    pygame.quit()
+                    return None
                 if ip_active:
                     if event.key == pygame.K_RETURN:
                         ip_active = False
@@ -477,7 +484,8 @@ def settings_menu(com, backend):
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
-                sys.exit()
+                pygame.quit()
+                return None
 
         """RENDERING"""
         ip_color = active_color if ip_active else inactive_color
@@ -523,12 +531,14 @@ def rule_menu(com, backend):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
-                    sys.exit()
+                    pygame.quit()
+                    return None
 
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
-                sys.exit()
+                pygame.quit()
+                return None
 
         """RENDERING"""
         screen.blit(BG_rule, BG_rulerect)
@@ -606,7 +616,8 @@ def play_menu_2(com, backend):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
-                    sys.exit()
+                    pygame.quit()
+                    return None
                 if name_active:
                     if event.key == pygame.K_RETURN:
                         name_active = False
@@ -620,7 +631,8 @@ def play_menu_2(com, backend):
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
-                sys.exit()
+                pygame.quit()
+                return None
 
         """RENDERING"""
         name_color = active_color if name_active else inactive_color
@@ -661,12 +673,14 @@ def disconnection():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
-                    sys.exit()
+                    pygame.quit()
+                    return None
 
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
-                sys.exit()
+                pygame.quit()
+                return None
 
         """RENDERING"""
         screen.blit(BG, BGrect)
@@ -700,12 +714,14 @@ def connection(com, backend):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
-                    sys.exit()
+                    pygame.quit()
+                    return None
 
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
-                sys.exit()
+                pygame.quit()
+                return None
 
         clock.tick(2)
 
@@ -828,12 +844,14 @@ def play_menu(com, backend):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         backend.stop()
-                        sys.exit()
+                        pygame.quit()
+                        return None
 
                 """OTHER EVENTS"""
                 if event.type == pygame.QUIT:
                     backend.stop()
-                    sys.exit()
+                    pygame.quit()
+                    return None
 
             """RENDERING"""
             screen.blit(BG, BGrect)
@@ -880,12 +898,14 @@ def play_menu(com, backend):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         backend.stop()
-                        sys.exit()
+                        pygame.quit()
+                        return None
 
                 """OTHER EVENTS"""
                 if event.type == pygame.QUIT:
                     backend.stop()
-                    sys.exit()
+                    pygame.quit()
+                    return None
 
             clock.tick(1)
 
@@ -941,7 +961,8 @@ def main_menu(com, backend):
             if event.type == pygame.MOUSEBUTTONDOWN: 
                 if exitrect.collidepoint(event.pos):
                     backend.stop()
-                    sys.exit()
+                    pygame.quit()
+                    return None
                 elif settingsrect.collidepoint(event.pos):
                     settings_menu(com, backend)
                 elif rulerect.collidepoint(event.pos):
@@ -953,12 +974,14 @@ def main_menu(com, backend):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     backend.stop()
-                    sys.exit()
+                    pygame.quit()
+                    return None
 
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
-                sys.exit()
+                pygame.quit()
+                return None
 
         """RENDERING"""
         screen.blit(BG, BGrect)
