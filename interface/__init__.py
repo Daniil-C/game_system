@@ -32,7 +32,7 @@ def set_association(com, backend):
     header_rect[0] = int(width / 2 - w / 2)
     card_size = (int(height / 3), int(height / 2))
     name = "interface/34.png" #TODO
-    #name = "".join(("interface/", str(com.get_card()), ".png"))
+    name = "".join(("interface/", str(com.get_card()), ".png"))
     b_card = pygame.transform.scale(pygame.image.load(name), card_size)
     card_rect = b_card.get_rect()
     card_rect[0] = int(width / 2 - height / 6)
@@ -77,7 +77,7 @@ def set_association(com, backend):
                 else:
                     name_active = False
                     if okrect.collidepoint(event.pos):
-                        #backend.set_association(name_text)
+                        backend.set_ass(name_text)
                         pass
 
             """KEYBOARD EVENTS"""
@@ -90,7 +90,7 @@ def set_association(com, backend):
                 if name_active:
                     if event.key == pygame.K_RETURN:
                         name_active = False
-                        #backend.set_association(name_text)
+                        backend.set_ass(name_text)
                         print(name_text)
                     elif event.key == pygame.K_BACKSPACE:
                         name_text = name_text[:-1]
@@ -120,6 +120,7 @@ def set_association(com, backend):
 def game(com, backend):
     global EXIT
     """Background"""
+    global EXIT
     while not com.got_list:
         time.sleep(1)
     leader = False #TODO
@@ -185,8 +186,10 @@ def game(com, backend):
             if event.type == pygame.MOUSEBUTTONDOWN and leader:
                 for i in range(len(cards)):
                     if cards_rect[i].collidepoint(event.pos):
-                        # backend.set_card(cards[i])
+                        backend.set_card(cards[i])
                         set_association(com, backend)
+                        if EXIT:
+                            return None
                         print("gooooooood")
 
 
@@ -269,6 +272,7 @@ def game(com, backend):
 def wait_menu(com, backend):
     global EXIT
     """Wait players"""
+    global EXIT
     font_size = int(height / 20)
     font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
     w_shift = int(height / 120)
@@ -521,6 +525,7 @@ def rule_menu(com, backend):
     """DRAW RULE MENU INTERFACE"""
     global EXIT
     """Background"""
+    global EXIT
     BG_rule = pygame.transform.scale(pygame.image.load("interface/rule_menu.png"), size)
     BG_rulerect = BG_rule.get_rect()
 
@@ -566,6 +571,7 @@ def play_menu_2(com, backend):
     """DRAW NAME INSERTION INTERFACE"""
     global EXIT
     """Background"""
+    global EXIT
     BG = pygame.transform.scale(pygame.image.load("interface/BG_name.png"), size)
     BGrect = BG.get_rect()
 
@@ -669,6 +675,7 @@ def disconnection():
     """Disdpaying if backend can't connect to server"""
     global EXIT
     """Background"""
+    global EXIT
     BG = pygame.transform.scale(pygame.image.load("interface/BG_disconnect.png"), size)
     BGrect = BG.get_rect()
 
@@ -761,7 +768,7 @@ def connection(com, backend):
 
 def play_menu(com, backend):
     """DRAW PLAY MENU INTERFACE FOR MASTER (FIRST) PLAYER OR DOWNLOADING RESOURCES INTERFACE"""
-    global EXIT
+    global EXIT,  SETTINGS
     if not SETTINGS:
         """If the player hasn't specified connection parameters"""
         settings_menu(com, backend)
@@ -951,6 +958,7 @@ def main_menu(com, backend):
     """DRAW MAIN MENU INTERFACE"""
     global EXIT
     """Background"""
+    global EXIT
     BG = pygame.transform.scale(pygame.image.load("interface/BG.png"), size)
     BGrect = BG.get_rect()
 
