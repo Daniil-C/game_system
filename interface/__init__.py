@@ -355,8 +355,8 @@ def game(com, backend):
             for i in range(len(cards_img)):
                 screen.blit(cards_img[i], cards_rect[i])
             for i in range(len(players)):
-                screen.blit(players_text[i], (players_rect[i][1] + shift, players_rect[i][2] + shift))
-                screen.blit(players_score[i], (players_rect[i][1] + shift, players_rect[i][2] + shift * 6))
+                screen.blit(players_text[i], (players_rect[i][0] + shift, players_rect[i][1] + shift))
+                screen.blit(players_score[i], (players_rect[i][0] + shift, players_rect[i][1] + shift * 6))
             color = color_else
             pygame.draw.rect(screen, color, rect_rect, 2)
             screen.blit(header, (int(width / 6) + shift, shift))
