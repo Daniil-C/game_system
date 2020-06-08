@@ -46,6 +46,7 @@ class Common(Monitor):
         self.card = 0
         self.ass = ""
         self.got_ass = False
+        self.vote_list = []
 
     def reset(self):
         """
@@ -139,6 +140,12 @@ class Common(Monitor):
         Returns chosen association
         """
         return self.ass
+
+    def get_vote_list(self):
+        """
+        Returns voted players list
+        """
+        return self.vote_list
 
 
 def parse_message(message, sep):
@@ -345,8 +352,18 @@ class Backend(Monitor):
             return False
         mes = self.conn.get()
         logging.debug(mes)
-        #while not mes.startswith("VOTE"):
-
+        self.common.vote_list = players_list
+        for i in self.common.vote_list:
+            i[-1] = False
+        while not mes.startswith("VOTE"):
+            if mes.startswith("PLAYER"):
+                parsed = parse_message(" ")
+            for i in self.common.vote_list:
+                if i[-2] == parsed[1]:
+                    i[-1] = True
+                    break
+            else:
+                return False
 
 
     def get_players_list(self):
