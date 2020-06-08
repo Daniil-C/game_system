@@ -126,6 +126,11 @@ class Common(Monitor):
         """
         return self.updated
 
+    def get_card(self):
+        """
+        Returns chosen card
+        """
+        return self.card
 
 def parse_message(message, sep):
     """
