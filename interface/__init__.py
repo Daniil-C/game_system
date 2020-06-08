@@ -142,7 +142,7 @@ def game(com, backend):
         card_pos[0] += int((width - height) / 7 + height / 6)
 
     players = [[5, "agronom", 5], [5, "jmg", 5], [5, "dannon", 5]]
-    #players = com.get_players_list()
+    players = com.get_players_list()
     players_pos = [0, 0]
 
     font_size = int(height / 30)
