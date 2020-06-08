@@ -325,12 +325,25 @@ class Backend(Monitor):
         """
         mes = self.conn.get()
         logging.debug(mes)
-        if "TURN" in mes:
+        if mes.startswith("TURN"):
             parsed = parse_message(mes, " ")
             self.common.turn = int(parsed[1]) == self.common.player.number
         else:
             return False
         self.common.got_list = True
+        mes = self.conn.get()
+        logging.debug(mes)
+        if mes.startswith("ASSOC"):
+            self.common.ass = parse_message(mes, " ")[1]
+            self.common.got_ass = True
+        elif mes.startswith("TURN"):
+            return True
+        else:
+            return False
+        mes = self.conn.get()
+        logging.debug(mes)
+        #while not mes.startswith("VOTE"):
+
 
     def get_players_list(self):
         """
@@ -344,7 +357,7 @@ class Backend(Monitor):
                     self.common.is_connected = False
                     break
                 logging.debug(mes)
-                if "BEGIN" in mes:
+                if mes.startswith("BEGIN"):
                     self.begin_message = mes
                     break
                 parsed = parse_message(parse_message(mes, " ")[1], ",")
@@ -424,6 +437,10 @@ class Backend(Monitor):
         Select card
         """
         self.common.card = card_num
+        if not self.common.is_leader:
+            mes = "CARD {}".format(self.common.card)
+            self.conn.send(mes)
+            logging.debug(mes)
 
     def set_ass(self, ass):
         """
