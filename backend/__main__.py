@@ -330,6 +330,7 @@ class Backend(Monitor):
             self.common.turn = int(parsed[1]) == self.common.player.number
             for i in self.common.players_list:
                 i.append(i[0] == int(parsed[1]))
+                logging.debug(i)
         else:
             return False
         self.common.got_list = True
@@ -440,7 +441,7 @@ class Backend(Monitor):
         Select card
         """
         self.common.card = card_num
-        if not self.common.is_leader:
+        if not self.common.player.is_leader:
             mes = "CARD {}".format(self.common.card)
             self.conn.send(mes)
             logging.debug(mes)
