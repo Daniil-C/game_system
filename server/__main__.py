@@ -13,7 +13,7 @@ if __name__ == "__main__":
         print("Environment variables, used by server:\nHOST_IP\nPORT\n\
 RESOURCES_VERSION\nRESOURCEPACK\nLOG_FILE")
         sys.exit(0)
-    logging.basicConfig(format="%(asctime)-15s %(message)s",
+    logging.basicConfig(format="[%(asctime)-15s] %(message)s",
                         filename=env.get_log_file())
     LOGGER = logging.getLogger("Game server")
     LOGGER.setLevel("INFO")
