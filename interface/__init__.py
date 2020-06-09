@@ -16,6 +16,132 @@ SETTINGS = False
 EXIT = False
 TURN = True
 
+def vote(com, backend):
+    global EXIT
+    leader = com.turn
+    bg_play = "interface/play_bg.png"
+    BG = pygame.transform.scale(pygame.image.load(bg_play), size)
+    BGrect = BG.get_rect()
+    header_text = "Guess leader's card"
+    h_font_size = int(height / 8)
+    h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
+    h_color = 0xAD, 0xE5, 0xF3
+    header = h_font.render(header_text, True, h_color)
+    header_rect = header.get_rect()
+    shift = int(height / 120)
+    header_rect[1] = shift
+    w = header_rect[2]
+    header_rect[0] = int(width / 2 - w / 2)
+    # cards = com.vote_cards #TODO
+    cards = [34, 35, 36, 37, 38, 39]
+    card_pos = [int((width - height * len(cards) / 6) / (len(cards) + 1)), int(height * 0.7)]
+    cards_img = []
+    cards_rect = []
+    cards_size = (int(height / 6), int(height / 4))
+    for i in cards:
+        name = "".join(("interface/", str(i), ".png"))
+        cards_img.append(pygame.transform.scale(pygame.image.load(name), cards_size))
+        cards_rect.append(cards_img[-1].get_rect())
+        cards_rect[-1][0] = card_pos[0]
+        cards_rect[-1][1] = card_pos[1]
+        card_pos[0] += int((width - height * len(cards) / 6) / (len(cards) + 1) + height / 6)
+    assoc_text = com.ass
+    a_font_size = int(height / 30)
+    a_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", a_font_size)
+    a_color = 0xAD, 0xE5, 0xF3
+    assoc = a_font.render(assoc_text, True, a_color)
+    a_rect = assoc.get_rect()
+    card = False
+    b_card = None
+    card_size = (int(height / 3), int(height / 2))
+    card_rect = []
+    key_pressed = [False for i in range(len(cards))]
+    pressed = False
+    pygame.time.set_timer(pygame.USEREVENT, 100)
+
+    while True:
+        """MAINLOOP"""
+        for event in pygame.event.get():
+            """EVENTS HANDLING"""
+
+            """MOUSE EVENTS"""
+            if event.type == pygame.MOUSEBUTTONDOWN and not leader:
+                for i in range(len(cards)):
+                    if cards_rect[i].collidepoint(event.pos):
+                        backend.set_card(cards[i])
+
+            """USER EVENTS"""
+            if event.type == pygame.USEREVENT and not pressed:
+                for i in range(len(cards)):
+                    if cards_rect[i].collidepoint(pygame.mouse.get_pos()):
+                        card = True
+                        name = "".join(("interface/", str(cards[i]), ".png"))
+                        b_card = pygame.transform.scale(pygame.image.load(name), card_size)
+                        card_rect = b_card.get_rect()
+                        card_rect[0] = int(width / 2 - height / 6)
+                        card_rect[1] = int(height / 6)
+                        break
+                else:
+                    card = False
+                    b_card = None
+                    card_rect = []
+
+            """KEYBOARD EVENTS"""
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    backend.stop()
+                    pygame.quit()
+                    EXIT = True
+                    return None
+                else:
+                    for i in range(len(cards_rect)):
+                        atr = "K_" + str(i + 1)
+                        if event.key == pygame.__getattribute__(atr):
+                            key_pressed[i] = True
+                            pressed = True 
+                            card = True
+                            name = "".join(("interface/", str(cards[i]), ".png"))
+                            b_card = pygame.transform.scale(pygame.image.load(name), card_size)
+                            card_rect = b_card.get_rect()
+                            card_rect[0] = int(width / 2 - height / 6)
+                            card_rect[1] = int(height / 6)
+                            break
+                    else:
+                        card = False
+                        b_card = None
+                        card_rect = []
+            elif event.type == pygame.KEYUP:
+                for i in range(len(cards_rect)):
+                    atr = "K_" + str(i + 1)
+                    if event.key == pygame.__getattribute__(atr):
+                        key_pressed[i] = False
+                        pressed = False
+                        for j in key_pressed:
+                            pressed = pressed or j
+                        if not pressed:
+                            card = False
+                            b_card = None
+                            card_rect = []
+
+            """OTHER EVENTS"""
+            if event.type == pygame.QUIT:
+                backend.stop()
+                pygame.quit()
+                EXIT = True
+                return None
+
+        """RENDERING"""
+        shift = int(height / 120)
+        screen.blit(BG, BGrect)
+        for i in range(len(cards_img)):
+            screen.blit(cards_img[i], cards_rect[i])
+        screen.blit(header, (int(width / 6) + shift, shift))
+        screen.blit(assoc, (int(width - a_rect[2]) / 2, int(height / 6 + 2 * shift)))
+        if card:
+            screen.blit(b_card, card_rect)
+        pygame.display.flip()
+
+
 def game_wait(com, backend):
     """Wait when all players choose his card"""
     global EXIT
@@ -54,6 +180,10 @@ def game_wait(com, backend):
     rect_rect = pygame.Rect(0, 0, int(width / 6), int(height / 8) * len(players))
 
     while True:
+        if com.vote_time:
+            vote(com, backend)
+            if EXIT:
+                return None
         """MAINLOOP"""
         for event in pygame.event.get():
             """EVENTS HANDLING"""
@@ -214,7 +344,7 @@ def game(com, backend):
         BGrect = BG.get_rect()
         # cards = com.player.cards #TODO
         cards = [34, 35, 36, 37, 38, 39]
-        card_pos = [int((width - height) / 7), int(height * (1 - (1 / 4 + 1 / 20)))]
+        card_pos = [int((width - height * len(cards) / 6) / (len(cards) + 1)), int(height * 0.7)]
         cards_img = []
         cards_rect = []
         cards_size = (int(height / 6), int(height / 4))
@@ -224,10 +354,10 @@ def game(com, backend):
             cards_rect.append(cards_img[-1].get_rect())
             cards_rect[-1][0] = card_pos[0]
             cards_rect[-1][1] = card_pos[1]
-            card_pos[0] += int((width - height) / 7 + height / 6)
+            card_pos[0] += int((width - height * len(cards) / 6) / (len(cards) + 1) + height / 6)
 
-        players = [[5, "agronom", 5], [5, "jmg", 5], [5, "dannon", 5]]
-        players = com.get_players_list().copy()
+        players = [[5, "agronom", 5, True], [5, "jmg", 5, False], [5, "dannon", 5, False]]
+        players = com.get_players_list()
         players_pos = [0, 0]
 
         font_size = int(height / 30)
@@ -259,6 +389,9 @@ def game(com, backend):
         h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
         h_color = 0xAD, 0xE5, 0xF3
         header = h_font.render(header_text, True, h_color)
+        assoc = None
+        assoc_text = None
+        a_rect = None
 
         pygame.time.set_timer(pygame.USEREVENT, 100)
 
@@ -269,6 +402,12 @@ def game(com, backend):
                 choose_flg = True
                 header_text = "choose a card"
                 header = h_font.render(header_text, True, h_color)
+                assoc_text = com.ass
+                a_font_size = int(height / 30)
+                a_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", a_font_size)
+                a_color = 0xAD, 0xE5, 0xF3
+                assoc = a_font.render(assoc_text, True, a_color)
+                a_rect = assoc.get_rect()
 
             for event in pygame.event.get():
                 """EVENTS HANDLING"""
@@ -361,6 +500,8 @@ def game(com, backend):
             color = color_else
             pygame.draw.rect(screen, color, rect_rect, 2)
             screen.blit(header, (int(width / 6) + shift, shift))
+            if (not leader) and choose_flg:
+                screen.blit(assoc, (int(width - a_rect[2]) / 2, int(height / 6 + 2 * shift)))
             if card:
                 screen.blit(b_card, card_rect)
             pygame.display.flip()
