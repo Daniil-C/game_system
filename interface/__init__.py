@@ -1138,8 +1138,19 @@ def play_menu(com, backend):
         progress_rect = progress.get_rect()
         progress_rect[1] = int(height * 2 / 3)
         screen_iter = 0
+        n = 0
         pygame.time.set_timer(pygame.USEREVENT, 1000)
         while not com.updated:
+            if RESIZE:
+                img = "interface/wait_{}.png".format(str(n))
+                BG = pygame.transform.scale(pygame.image.load(img), size)
+                BGrect = BG.get_rect()
+                mul = com.get_progress()
+                p_size = (int(width * mul), int(height / 6))
+                progress = pygame.transform.scale(pygame.image.load("interface/bar.png"), p_size)
+                progress_rect = progress.get_rect()
+                progress_rect[1] = int(height * 2 / 3)
+
             """MAINLOOP"""
             for event in pygame.event.get():
                 """EVENTS HANDLING"""
@@ -1175,6 +1186,9 @@ def play_menu(com, backend):
                     pygame.quit()
                     EXIT = True
                     return None
+                if event.type == pygame.VIDEORESIZE:
+                    check_resize(event)
+
 
             if not com.is_connected:
                 disconnection()
