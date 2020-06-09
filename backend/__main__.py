@@ -11,7 +11,6 @@ import json
 import os
 import wget
 import interface
-from zipfile import ZipFile
 from connection import connection as Conn
 from monitor import Monitor
 
@@ -50,8 +49,6 @@ class Common(Monitor):
         self.vote_list = []
         self.vote_cards = []
         self.vote_time = False
-        self.coef_mutex = threading.Semaphore(1)
-        self.coef = 0
 
     def reset(self):
         """
@@ -151,15 +148,6 @@ class Common(Monitor):
         Returns voted players list
         """
         return self.vote_list
-
-    def get_progress(self):
-        """
-        Returns coef of downloaded archive
-        """
-        self.coef_mutex.acquire()
-        coef = self.coef
-        self.coef_mutex.release()
-        return coef
 
 
 def parse_message(message, sep):
@@ -370,7 +358,7 @@ class Backend(Monitor):
             i[-1] = False
         while not mes.startswith("VOTE") and mes:
             if mes.startswith("PLAYER"):
-                parsed = parse_message(mes, " ")
+                parsed = parse_message(mes," ")
             for i in self.common.vote_list:
                 if i[-2] == parsed[1]:
                     i[-1] = True
@@ -380,13 +368,14 @@ class Backend(Monitor):
             mes = self.conn.get()
             logging.debug(mes)
         else:
-            parsed = parse_message(parse_message(mes, " ")[1], ",")
+            parsed = parse_message(parse_message(mes," ")[1], ",")
             parsed.remove(str(self.common.card))
             self.common.vote_cards = [str(self.common.card)].append(
                 [int(i) for i in parsed]
             )
             self.common.vote_time = True
             logging.debug("Vote time")
+
 
     def get_players_list(self):
         """
@@ -441,17 +430,9 @@ class Backend(Monitor):
             if version != self.version:
                 logging.debug("Versions are different")
                 path = os.path.join(os.getcwd(), "resources")
-                filepath = os.path.join(path, "{}.zip".format(version))
-
-                def get_bar(curr, total, num):
-                    self.common.coef_mutex.acquire()
-                    self.common.coef = curr / total
-                    self.common.coef_mutex.release()
-                filename = wget.download(url, out=filepath, bar=get_bar)
+                get_bar = ""
+                filename = wget.download(url, path, bar=get_bar)
                 logging.debug(filename)
-                with ZipFile(filepath, 'r') as zip_ref:
-                    zip_ref.extractall(path)
-                logging.debug("Download ended")
                 self.common.updated = True
             else:
                 self.common.updated = True
