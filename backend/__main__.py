@@ -9,8 +9,10 @@ import time
 from multiprocessing import Queue
 import json
 import os
+import sys
 import wget
 import interface
+from zipfile import ZipFile
 from connection import connection as Conn
 from monitor import Monitor
 
@@ -49,6 +51,8 @@ class Common(Monitor):
         self.vote_list = []
         self.vote_cards = []
         self.vote_time = False
+        self.coef_mutex = threading.Semaphore(1)
+        self.coef = 0
 
     def reset(self):
         """
@@ -149,6 +153,15 @@ class Common(Monitor):
         """
         return self.vote_list
 
+    def get_progress(self):
+        """
+        Returns coef of downloaded archive
+        """
+        self.coef_mutex.acquire()
+        coef = self.coef
+        self.coef_mutex.release()
+        return coef
+
 
 def parse_message(message, sep):
     """
@@ -181,6 +194,7 @@ class Backend(Monitor):
                 data = json.loads(s)
                 self.common.ip = data["ip"]
                 self.common.port = int(data["port"])
+                self.version = data["version"]
                 self.common.is_connected = False
         except Exception:
             pass
@@ -275,7 +289,7 @@ class Backend(Monitor):
             self.sock.close()
             self.common.is_connected = True
             with open("config.txt", "w") as f:
-                data = {"ip": ip, "port": port}
+                data = {"ip": ip, "port": port, "version": self.version}
                 f.write(json.dumps(data))
         except Exception as e:
             logging.error("Error while connection: {}".format(e))
@@ -315,7 +329,7 @@ class Backend(Monitor):
         logging.debug(mes)
         parsed = parse_message(mes, " ")
         self.common.mode = parsed[1]
-        self.common.player.cards = parse_message(mes[2], ",")
+        self.common.player.cards = parse_message(parsed[2], ",")
         logging.debug(parsed[3])
         self.common.players_list = [[0, i.split(";")[1], i.split(";")[0]]
                                     for i in parse_message(parsed[3], ",")]
@@ -345,7 +359,7 @@ class Backend(Monitor):
         mes = self.conn.get()
         logging.debug(mes)
         if mes.startswith("ASSOC"):
-            self.common.ass = parse_message(mes, " ")[1]
+            self.common.ass = mes.split(" ", maxsplit=1)[1]
             self.common.got_ass = True
         elif mes.startswith("TURN"):
             return True
@@ -358,7 +372,7 @@ class Backend(Monitor):
             i[-1] = False
         while not mes.startswith("VOTE") and mes:
             if mes.startswith("PLAYER"):
-                parsed = parse_message(mes," ")
+                parsed = parse_message(mes, " ")
             for i in self.common.vote_list:
                 if i[-2] == parsed[1]:
                     i[-1] = True
@@ -368,14 +382,13 @@ class Backend(Monitor):
             mes = self.conn.get()
             logging.debug(mes)
         else:
-            parsed = parse_message(parse_message(mes," ")[1], ",")
+            parsed = parse_message(parse_message(mes, " ")[1], ",")
             parsed.remove(str(self.common.card))
-            self.common.vote_cards = [str(self.common.card)].append(
-                [int(i) for i in parsed]
-            )
+            self.common.vote_cards = [self.common.card]
+            self.common.vote_cards.extend([int(i) for i in parsed])
+            logging.debug(self.common.vote_cards)
             self.common.vote_time = True
             logging.debug("Vote time")
-
 
     def get_players_list(self):
         """
@@ -429,10 +442,25 @@ class Backend(Monitor):
             url = parsed[4]
             if version != self.version:
                 logging.debug("Versions are different")
-                path = os.path.join(os.getcwd(), "resources")
-                get_bar = ""
-                filename = wget.download(url, path, bar=get_bar)
+                if "resources" not in os.listdir(os.path.join(os.path.dirname(sys.argv[0]), "..")):
+                    os.mkdir(os.path.join(os.path.dirname(sys.argv[0]), "../resources"))
+                path = os.path.join(os.path.dirname(sys.argv[0]), "../resources")
+                filepath = os.path.join(path, "{}.zip".format(version))
+
+                def get_bar(curr, total, num):
+                    self.common.coef_mutex.acquire()
+                    self.common.coef = curr / total
+                    self.common.coef_mutex.release()
+                filename = wget.download(url, out=filepath, bar=get_bar)
                 logging.debug(filename)
+                with ZipFile(filename, 'r') as zip_ref:
+                    zip_ref.extractall(path)
+                os.remove(filename)
+                logging.debug("Download ended")
+                self.version = version
+                with open("config.txt", "w") as f:
+                    data = {"ip": self.common.ip, "port": self.common.port, "version": self.version}
+                    f.write(json.dumps(data))
                 self.common.updated = True
             else:
                 self.common.updated = True
