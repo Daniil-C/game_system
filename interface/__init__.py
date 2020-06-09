@@ -1044,12 +1044,14 @@ def play_menu(com, backend):
         """First player interface"""
         bg_img = pygame.image.load("interface/BG_main.png")
         back_img = pygame.image.load("interface/back.png")
-        mode1_img = pygame.image.load("interface/classic.png")
-        mode2_img = pygame.image.load("interface/ariadna.png")
-        mode3_img = pygame.image.load("interface/himera.png")
-        mode4_img = pygame.image.load("interface/Odiseya.png")
-        mode5_img = pygame.image.load("interface/pandora.png")
-        mode6_img = pygame.image.load("interface/persefona.png")
+        mode_img = []
+        mode_img.append(pygame.image.load("interface/classic.png"))
+        mode_img.append(pygame.image.load("interface/ariadna.png"))
+        mode_img.append(pygame.image.load("interface/himera.png"))
+        mode_img.append(pygame.image.load("interface/Odiseya.png"))
+        mode_img.append(pygame.image.load("interface/pandora.png"))
+        mode_img.append(pygame.image.load("interface/persefona.png"))
+        selected_mode = ["imaginarium", "ariadna", "himera", "odissey", "pandora", "persephone"]
         while True:
             if RESIZE:
                 """Background"""
@@ -1067,39 +1069,23 @@ def play_menu(com, backend):
                 h = int(height / 5)
                 m = min(w, h)
                 mode_size = (m, m)
-                w_pos = int((width - m * 3) / 4)
-                h_pos = int((height - m * 2) / 3)
+                w_shift = int((width - m * 3) / 4)
+                w_pos = w_shift
+                h_shift = int((height - m * 2) / 3)
+                h_pos = h_shift
 
-                """Mode 1 button"""
-                mode1 = pygame.transform.scale(mode1_img, mode_size)
-                mode1rect = mode1.get_rect()
-                mode1rect[0] = w_pos
-                mode1rect[1] = h_pos
-                """Mode 2 button"""
-                mode2 = pygame.transform.scale(mode2_img, mode_size)
-                mode2rect = mode2.get_rect()
-                mode2rect[0] = w_pos * 2 + m 
-                mode2rect[1] = h_pos
-                """Mode 3 button"""
-                mode3 = pygame.transform.scale(mode3_img, mode_size)
-                mode3rect = mode3.get_rect()
-                mode3rect[0] = w_pos * 3 + m * 2
-                mode3rect[1] = h_pos
-                """Mode 4 button"""
-                mode4 = pygame.transform.scale(mode4_img, mode_size)
-                mode4rect = mode4.get_rect()
-                mode4rect[0] = w_pos
-                mode4rect[1] = h_pos * 2 + m
-                """Mode 5 button"""
-                mode5 = pygame.transform.scale(mode5_img, mode_size)
-                mode5rect = mode5.get_rect()
-                mode5rect[0] = w_pos * 2 + m
-                mode5rect[1] = h_pos * 2 + m
-                """Mode 6 button"""
-                mode6 = pygame.transform.scale(mode6_img, mode_size)
-                mode6rect = mode6.get_rect()
-                mode6rect[0] = w_pos * 3 + m * 2
-                mode6rect[1] = h_pos * 2 + m
+                """Mods buttons"""
+                mode = []
+                mode_rect = []
+                for i in range(len(mode_img)):
+                    mode.append(pygame.transform.scale(mode_img[i], mode_size))
+                    mode_rect.append(mode[i].get_rect())
+                    mode_rect[i][0] = w_pos
+                    mode_rect[i][1] = h_pos
+                    w_pos += w_shift + m
+                    if i == 2:
+                        w_pos = w_shift
+                        h_pos += h_shift + m
 
                 RESIZE = False
 
@@ -1111,30 +1097,11 @@ def play_menu(com, backend):
                     if backrect.collidepoint(event.pos):
                         backend.exit()
                         return None
-                    if mode1rect.collidepoint(event.pos):
-                        backend.set_mode("imaginarium")
-                        play_menu_2(com, backend)
-                        return None
-                    if mode2rect.collidepoint(event.pos):
-                        backend.set_mode("ariadna")
-                        play_menu_2(com, backend)
-                        return None
-                    if mode3rect.collidepoint(event.pos):
-                        backend.set_mode("himera")
-                        play_menu_2(com, backend)
-                        return None
-                    if mode4rect.collidepoint(event.pos):
-                        backend.set_mode("odissey")
-                        play_menu_2(com, backend)
-                        return None
-                    if mode5rect.collidepoint(event.pos):
-                        backend.set_mode("pandora")
-                        play_menu_2(com, backend)
-                        return None
-                    if mode6rect.collidepoint(event.pos):
-                        backend.set_mode("persephone")
-                        play_menu_2(com, backend)
-                        return None
+                    for i in range(len(mode_rect)):
+                        if mode_rect[i].collidepoint(event.pos):
+                            backend.set_mode(selected_mode[i])
+                            play_menu_2(com, backend)
+                            return None
                 """KEYBOARD EVENTS"""
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -1154,37 +1121,9 @@ def play_menu(com, backend):
             """RENDERING"""
             screen.blit(BG, BGrect)
             screen.blit(back, backrect)
-            screen.blit(mode1, mode1rect)
-            screen.blit(mode2, mode2rect)
-            screen.blit(mode3, mode3rect)
-            screen.blit(mode4, mode4rect)
-            screen.blit(mode5, mode5rect)
-            screen.blit(mode6, mode6rect)
+            for i in range(len(mode)):
+                screen.blit(mode[i], mode_rect[i])
             pygame.display.flip()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     elif num > 0:
         """Not first player"""
