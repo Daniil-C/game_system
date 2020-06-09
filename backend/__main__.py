@@ -47,6 +47,8 @@ class Common(Monitor):
         self.ass = ""
         self.got_ass = False
         self.vote_list = []
+        self.vote_cards = []
+        self.vote_time = False
 
     def reset(self):
         """
@@ -354,7 +356,7 @@ class Backend(Monitor):
         self.common.vote_list = self.common.players_list
         for i in self.common.vote_list:
             i[-1] = False
-        while not mes.startswith("VOTE"):
+        while not mes.startswith("VOTE") and mes:
             if mes.startswith("PLAYER"):
                 parsed = parse_message(mes," ")
             for i in self.common.vote_list:
@@ -365,6 +367,13 @@ class Backend(Monitor):
                 return False
             mes = self.conn.get()
             logging.debug(mes)
+        else:
+            parsed = parse_message(parse_message(mes," ")[1], ",")
+            parsed.remove(str(self.common.card))
+            self.common.vote_cards = [str(self.common.card)].append(
+                [int(i) for i in parsed]
+            )
+            self.vote_time = True
 
 
     def get_players_list(self):
