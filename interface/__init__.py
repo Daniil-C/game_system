@@ -31,7 +31,7 @@ def vote(com, backend):
     header_rect[1] = shift
     w = header_rect[2]
     header_rect[0] = int(width / 2 - w / 2)
-    # cards = com.player.cards #TODO
+    # cards = com.vote_cards #TODO
     cards = [34, 35, 36, 37, 38, 39]
     card_pos = [int((width - height * len(cards) / 6) / (len(cards) + 1)), int(height * 0.7)]
     cards_img = []
@@ -179,10 +179,7 @@ def game_wait(com, backend):
     rect_rect = pygame.Rect(0, 0, int(width / 6), int(height / 8) * len(players))
 
     while True:
-        complite = True
-        for i in players:
-            complite = complite and i[3]
-        if complite:
+        if com.vote_time:
             vote(com, backend)
             if EXIT:
                 return None
