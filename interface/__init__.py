@@ -973,7 +973,7 @@ def connection(com, backend):
         BG = pygame.transform.scale(pygame.image.load(img), size)
         BGrect = BG.get_rect()
 
-        if com.is_connected and com.get_number() != -1:
+        if com.is_connected:
             return True
         #if i == 19:
             #return True
