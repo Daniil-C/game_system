@@ -442,7 +442,7 @@ class Backend(Monitor):
                 logging.debug("Versions are different")
                 path = os.path.join(os.getcwd(), "resources")
                 filepath = os.path.join(path, "{}.zip".format(version))
-                
+
                 def get_bar(curr, total, num):
                     self.common.coef_mutex.acquire()
                     self.common.coef = curr / total
@@ -451,6 +451,7 @@ class Backend(Monitor):
                 logging.debug(filename)
                 with ZipFile(filepath, 'r') as zip_ref:
                     zip_ref.extractall(path)
+                logging.debug("Download ended")
                 self.common.updated = True
             else:
                 self.common.updated = True
