@@ -18,6 +18,7 @@ TURN = True
 
 def vote(com, backend):
     global EXIT
+    leader = com.turn
     bg_play = "interface/play_bg.png"
     BG = pygame.transform.scale(pygame.image.load(bg_play), size)
     BGrect = BG.get_rect()
@@ -135,7 +136,7 @@ def vote(com, backend):
         for i in range(len(cards_img)):
             screen.blit(cards_img[i], cards_rect[i])
         screen.blit(header, (int(width / 6) + shift, shift))
-        screen.blit(assoc, (int(width - a_rect) / 2, int(height / 6 + 2 * shift)))
+        screen.blit(assoc, (int(width - a_rect[2]) / 2, int(height / 6 + 2 * shift)))
         if card:
             screen.blit(b_card, card_rect)
         pygame.display.flip()
@@ -388,6 +389,9 @@ def game(com, backend):
         h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
         h_color = 0xAD, 0xE5, 0xF3
         header = h_font.render(header_text, True, h_color)
+        assoc = None
+        assoc_text = None
+        a_rect = None
 
         pygame.time.set_timer(pygame.USEREVENT, 100)
 
@@ -496,8 +500,8 @@ def game(com, backend):
             color = color_else
             pygame.draw.rect(screen, color, rect_rect, 2)
             screen.blit(header, (int(width / 6) + shift, shift))
-            if choose_flg:
-                screen.blit(assoc, (int(width - a_rect) / 2, int(height / 6 + 2 * shift)))
+            if (not leader) and choose_flg:
+                screen.blit(assoc, (int(width - a_rect[2]) / 2, int(height / 6 + 2 * shift)))
             if card:
                 screen.blit(b_card, card_rect)
             pygame.display.flip()
