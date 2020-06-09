@@ -442,7 +442,7 @@ class Backend(Monitor):
             url = parsed[4]
             if version != self.version:
                 logging.debug("Versions are different")
-                if "resources" not in os.path.join(os.path.dirname(sys.argv[0]), ".."):
+                if "resources" not in os.listdir(os.path.join(os.path.dirname(sys.argv[0]), "..")):
                     os.mkdir(os.path.join(os.path.dirname(sys.argv[0]), "../resources"))
                 path = os.path.join(os.path.dirname(sys.argv[0]), "../resources")
                 filepath = os.path.join(path, "{}.zip".format(version))
@@ -453,8 +453,9 @@ class Backend(Monitor):
                     self.common.coef_mutex.release()
                 filename = wget.download(url, out=filepath, bar=get_bar)
                 logging.debug(filename)
-                with ZipFile(filepath, 'r') as zip_ref:
+                with ZipFile(filename, 'r') as zip_ref:
                     zip_ref.extractall(path)
+                os.remove(filename)
                 logging.debug("Download ended")
                 self.version = version
                 with open("config.txt", "w") as f:
