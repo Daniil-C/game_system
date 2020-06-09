@@ -18,6 +18,7 @@ TURN = True
 
 def vote(com, backend):
     global EXIT
+    leader = com.turn
     bg_play = "interface/play_bg.png"
     BG = pygame.transform.scale(pygame.image.load(bg_play), size)
     BGrect = BG.get_rect()
