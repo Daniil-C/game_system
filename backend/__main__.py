@@ -453,6 +453,10 @@ class Backend(Monitor):
                 with ZipFile(filepath, 'r') as zip_ref:
                     zip_ref.extractall(path)
                 logging.debug("Download ended")
+                self.version = version
+                with open("config.txt", "w") as f:
+                    data = {"ip": ip, "port": port, "version": self.version}
+                    f.write(json.dumps(data))
                 self.common.updated = True
             else:
                 self.common.updated = True
