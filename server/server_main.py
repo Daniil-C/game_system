@@ -7,6 +7,9 @@ import readline
 from select import select
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from random import shuffle, randrange
+import os
+import sys
+import gettext
 from monitor import Monitor
 from connection import connection
 import server.environment as env
@@ -338,6 +341,8 @@ class CLI(Monitor):
         self.game_st = game_st
         readline.set_completer(self.completer)
         readline.set_completer_delims("")
+        gettext.install("server", os.path.dirname(sys.argv[0]),
+                        names=("ngettext",))
         readline.parse_and_bind("tab: complete")
         self.thread = None
         self.work = False
@@ -409,7 +414,7 @@ class CLI(Monitor):
         """
         Execute 'help' command.
         """
-        print("commands:\n\thelp\n\tplayers\n\tstart <card set>\n\tstop")
+        print(_("commands") + ":\n\nhelp\nplayers\nstart <card set>\nstop")
 
     def comm_players(self):
         """
@@ -417,10 +422,11 @@ class CLI(Monitor):
         """
         if self.players is not None:
             self.players.acquire()
-            print(len(self.players), "player" +
-                  "s"*int(len(self.players) != 1))
+            print(len(self.players), ngettext("player", "players",
+                                              int(len(self.players))))
             out = list()
-            m_len = [len("number"), len("name"), len("score")]
+            str_num, str_name, str_score = _("number"), _("name"), _("score")
+            m_len = [len(str_num), len(str_name), len(str_score)]
             for i in self.players:
                 out.append((str(i.number), i.name, str(i.score),
                             i.status == "MASTER"))
@@ -428,19 +434,19 @@ class CLI(Monitor):
                          max(m_len[1], len(i.name)),
                          max(m_len[2], len(str(i.score)))]
             if len(out) > 0:
-                print("number" + " "*(m_len[0] - len("number")),
-                      "name" + " "*(m_len[1] - len("name")),
-                      "score" + " "*(m_len[2] - len("score")))
+                print(str_num + " "*(m_len[0] - len(str_num)),
+                      str_name + " "*(m_len[1] - len(str_name)),
+                      str_score + " "*(m_len[2] - len(str_score)))
                 for i in out:
                     string = ""
                     for idx in range(3):
                         string += i[idx] + " "*(m_len[idx] - len(i[idx]) + 1)
                     if i[3]:
-                        string += "master"
+                        string += _("master")
                     print(string.strip())
             self.players.release()
         else:
-            print("error: player list is not available")
+            print(_("error: player list is not available"))
 
     def comm_start(self, cmdline):
         """
@@ -449,16 +455,16 @@ class CLI(Monitor):
         if len(cmdline) == 2:
             self.game_st.card_set = cmdline[1]
             self.game_st.state = "GAME"
-            print("Starting game.")
+            print(_("Starting game."))
         else:
-            print("error: expected start <card set>")
+            print(_("error: expected start <card set>"))
 
     def comm_stop(self):
         """
         Execute 'stop' command.
         """
         self.game_st.state = "SHUTDOWN"
-        print("exit")
+        print(_("exit"))
         self.work = False
 
 
