@@ -1161,7 +1161,7 @@ def play_menu(com, backend):
 
                 """MOUSE EVENTS"""
                 if event.type == pygame.MOUSEBUTTONDOWN:
-
+                    pass
                 """USER EVENTS"""
                     if event.type == pygame.USEREVENT:
                         n = screen_iter % 4
