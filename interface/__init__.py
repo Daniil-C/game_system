@@ -1131,23 +1131,28 @@ def play_menu(com, backend):
         return None
     else:
         """Download interface"""
-        bg_name = "interface/wait_0.png"
+        bg_img = []
+        for i in range(4):
+            bg_name = "interface/wait_{}.png".format(str(i))
+            bg_img.append(pygame.image.load(bg_name))
         BG = pygame.transform.scale(pygame.image.load(bg_name), size)
         BGrect = BG.get_rect()
-        progress = pygame.transform.scale(pygame.image.load("interface/bar.png"), (0, int(height / 6)))
+        progress_img = pygame.image.load("interface/bar.png")
+        progress = pygame.transform.scale(progress_img, (0, int(height / 6)))
         progress_rect = progress.get_rect()
         progress_rect[1] = int(height * 2 / 3)
         screen_iter = 0
         n = 0
+
         pygame.time.set_timer(pygame.USEREVENT, 1000)
+
         while not com.updated:
             if RESIZE:
-                img = "interface/wait_{}.png".format(str(n))
-                BG = pygame.transform.scale(pygame.image.load(img), size)
+                BG = pygame.transform.scale(bg_img[n], size)
                 BGrect = BG.get_rect()
                 mul = com.get_progress()
                 p_size = (int(width * mul), int(height / 6))
-                progress = pygame.transform.scale(pygame.image.load("interface/bar.png"), p_size)
+                progress = pygame.transform.scale(progress_img, p_size)
                 progress_rect = progress.get_rect()
                 progress_rect[1] = int(height * 2 / 3)
 
@@ -1162,16 +1167,13 @@ def play_menu(com, backend):
                 if event.type == pygame.USEREVENT:
                     n = screen_iter % 4
                     screen_iter += 1
-                    img = "interface/wait_{}.png".format(str(n))
-                    BG = pygame.transform.scale(pygame.image.load(img), size)
+                    BG = pygame.transform.scale(bg_img[n], size)
                     BGrect = BG.get_rect()
                     mul = com.get_progress()
                     p_size = (int(width * mul), int(height / 6))
-                    progress = pygame.transform.scale(pygame.image.load("interface/bar.png"), p_size)
+                    progress = pygame.transform.scale(progress_img, p_size)
                     progress_rect = progress.get_rect()
                     progress_rect[1] = int(height * 2 / 3)
-                        
-
                 """KEYBOARD EVENTS"""
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -1179,7 +1181,6 @@ def play_menu(com, backend):
                         pygame.quit()
                         EXIT = True
                         return None
-
                 """OTHER EVENTS"""
                 if event.type == pygame.QUIT:
                     backend.stop()
@@ -1189,14 +1190,15 @@ def play_menu(com, backend):
                 if event.type == pygame.VIDEORESIZE:
                     check_resize(event)
 
-
             if not com.is_connected:
                 disconnection()
                 return None
+
             """RENDERING"""
             screen.blit(BG, BGrect)
             screen.blit(progress, progress_rect)
             pygame.display.flip()
+
 
 def main_menu(com, backend):
     """DRAW MAIN MENU INTERFACE"""
