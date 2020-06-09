@@ -1,11 +1,15 @@
 import sys
 import pygame
 import time
+import os
 
+
+#os.environ['SDL_VIDEO_WINDOW_POS'] = "0,0"
 pygame.init()
 
-screen = pygame.display.set_mode((0, 0))#, pygame.FULLSCREEN)
-#screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+size = width, height = pygame.display.Info().current_w, pygame.display.Info().current_h
+screen = pygame.display.set_mode((0, 0), pygame.RESIZABLE)#, pygame.FULLSCREEN)
+#screen = pygame.display.set_mode(size, pygame.NOFRAME)
 black = 0, 0, 0
 
 info = pygame.display.Info()
@@ -15,6 +19,17 @@ print(size)
 SETTINGS = False
 EXIT = False
 TURN = True
+RESIZE = False
+
+def check_resize(event):
+    global size
+    global width
+    global height
+    global RESIZE
+    size = event.size
+    width = event.w
+    height = event.h
+    RESIZE = True
 
 def vote(com, backend):
     global EXIT
@@ -1205,9 +1220,8 @@ def play_menu(com, backend):
 
 def main_menu(com, backend):
     """DRAW MAIN MENU INTERFACE"""
-    global EXIT
+    global EXIT, RESIZE
     """Background"""
-    global EXIT
     BG = pygame.transform.scale(pygame.image.load("interface/BG.png"), size)
     BGrect = BG.get_rect()
 
@@ -1241,10 +1255,46 @@ def main_menu(com, backend):
     rulerect[1] = int(height * 185 / 216)
 
     while True:
+        if RESIZE:
+            """Background"""
+            BG = pygame.transform.scale(pygame.image.load("interface/BG.png"), size)
+            BGrect = BG.get_rect()
+
+            """Play button"""
+            play_scale = (int(width / 3), int(height * 33 / 216))
+            play = pygame.transform.scale(pygame.image.load("interface/play.png"), play_scale)
+            playrect = play.get_rect()
+            playrect[0] = int(width / 3)
+            playrect[1] = int(height * 64 / 216)
+
+            """Exit button"""
+            exit_scale = (int(width / 3), int(height * 33 / 216))
+            exit = pygame.transform.scale(pygame.image.load("interface/exit.png"), exit_scale)
+            exitrect = exit.get_rect()
+            exitrect[0] = int(width / 3)
+            exitrect[1] = int(height * 115 / 216)
+
+            """Settings button"""
+            settings_scale = (int(height * 21 / 216), int(height * 21 / 216))
+            settings = pygame.transform.scale(pygame.image.load("interface/settings.png"), settings_scale)
+            settingsrect = settings.get_rect()
+            settingsrect[0] = 0
+            settingsrect[1] = int(height * 185 / 216)
+
+            """Rule button"""
+            rule_scale = settings_scale = (int(height * 21 / 216), int(height * 21 / 216))
+            rule = pygame.transform.scale(pygame.image.load("interface/rule.png"), rule_scale)
+            rulerect = rule.get_rect()
+            rule_offset = int(width - rule_scale[0])
+            rulerect[0] = rule_offset
+            rulerect[1] = int(height * 185 / 216)
+
+            RESIZE = False
+
+
         """MAINLOOP"""
         for event in pygame.event.get():
             """EVENTS HANDLING"""
-
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN: 
                 if exitrect.collidepoint(event.pos):
@@ -1279,6 +1329,8 @@ def main_menu(com, backend):
                 pygame.quit()
                 EXIT = True
                 return None
+            if event.type == pygame.VIDEORESIZE:
+                check_resize(event)
 
         """RENDERING"""
         screen.blit(BG, BGrect)
