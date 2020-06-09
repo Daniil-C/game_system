@@ -359,7 +359,7 @@ class Backend(Monitor):
         mes = self.conn.get()
         logging.debug(mes)
         if mes.startswith("ASSOC"):
-            self.common.ass = mes.split(" ", maxsplite=1)[1]
+            self.common.ass = mes.split(" ", maxsplit=1)[1]
             self.common.got_ass = True
         elif mes.startswith("TURN"):
             return True
