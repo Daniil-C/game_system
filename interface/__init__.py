@@ -463,7 +463,7 @@ def game(com, backend):
                                 key_pressed[i] = True
                                 pressed = True 
                                 card = True
-                                name = "".join(("interface/", str(cards[i]), ".png"))
+                                name = "".join(("resources/", mode, "/", str(cards[i]), ".png"))
                                 b_card = pygame.transform.scale(pygame.image.load(name), card_size)
                                 card_rect = b_card.get_rect()
                                 card_rect[0] = int(width / 2 - height / 6)
