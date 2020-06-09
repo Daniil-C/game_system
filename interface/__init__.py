@@ -135,7 +135,7 @@ def vote(com, backend):
         for i in range(len(cards_img)):
             screen.blit(cards_img[i], cards_rect[i])
         screen.blit(header, (int(width / 6) + shift, shift))
-        screen.blit(assoc, (int(width - a_rect) / 2, int(height / 6 + 2 * shift)))
+        screen.blit(assoc, (int(width - a_rect[2]) / 2, int(height / 6 + 2 * shift)))
         if card:
             screen.blit(b_card, card_rect)
         pygame.display.flip()
