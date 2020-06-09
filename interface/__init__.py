@@ -1149,7 +1149,7 @@ def play_menu(com, backend):
         bg_name = "interface/wait_0.png"
         BG = pygame.transform.scale(pygame.image.load(bg_name), size)
         BGrect = BG.get_rect()
-        progress = pygame.transform.scale(pygame.image.load("interface/bar"), (0, int(height / 6)))
+        progress = pygame.transform.scale(pygame.image.load("interface/bar.png"), (0, int(height / 6)))
         progress_rect = progress.get_rect()
         progress_rect[1] = int(height * 2 / 3)
         screen_iter = 0
@@ -1163,17 +1163,17 @@ def play_menu(com, backend):
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     pass
                 """USER EVENTS"""
-                    if event.type == pygame.USEREVENT:
-                        n = screen_iter % 4
-                        screen_iter += 1
-                        img = "interface/wait_{}.png".format(str(n))
-                        BG = pygame.transform.scale(pygame.image.load(img), size)
-                        BGrect = BG.get_rect()
-                        mul = com.get_progress()
-                        p_size = (int(width * mul), int(height / 6))
-                        progress = pygame.transform.scale(pygame.image.load("interface/bar), p_size)
-                        progress_rect = progress.get_rect()
-                        progress_rect[1] = int(height * 2 / 3)
+                if event.type == pygame.USEREVENT:
+                    n = screen_iter % 4
+                    screen_iter += 1
+                    img = "interface/wait_{}.png".format(str(n))
+                    BG = pygame.transform.scale(pygame.image.load(img), size)
+                    BGrect = BG.get_rect()
+                    mul = com.get_progress()
+                    p_size = (int(width * mul), int(height / 6))
+                    progress = pygame.transform.scale(pygame.image.load("interface/bar.png"), p_size)
+                    progress_rect = progress.get_rect()
+                    progress_rect[1] = int(height * 2 / 3)
                         
 
                 """KEYBOARD EVENTS"""
