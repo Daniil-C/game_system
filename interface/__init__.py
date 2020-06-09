@@ -19,6 +19,7 @@ TURN = True
 def vote(com, backend):
     global EXIT
     leader = com.turn
+    mode = com.mode
     bg_play = "interface/play_bg.png"
     BG = pygame.transform.scale(pygame.image.load(bg_play), size)
     BGrect = BG.get_rect()
@@ -345,6 +346,7 @@ def game(com, backend):
         BG = pygame.transform.scale(pygame.image.load(bg_play), size)
         BGrect = BG.get_rect()
         cards = com.player.cards #TODO
+        print(cards)
         #cards = [34, 35, 36, 37, 38, 39]
         card_pos = [int((width - height * len(cards) / 6) / (len(cards) + 1)), int(height * 0.7)]
         cards_img = []
