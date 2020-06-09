@@ -193,6 +193,7 @@ class Backend(Monitor):
                 data = json.loads(s)
                 self.common.ip = data["ip"]
                 self.common.port = int(data["port"])
+                self.version = data["version"]
                 self.common.is_connected = False
         except Exception:
             pass
@@ -287,7 +288,7 @@ class Backend(Monitor):
             self.sock.close()
             self.common.is_connected = True
             with open("config.txt", "w") as f:
-                data = {"ip": ip, "port": port}
+                data = {"ip": ip, "port": port, "version": self.version}
                 f.write(json.dumps(data))
         except Exception as e:
             logging.error("Error while connection: {}".format(e))
