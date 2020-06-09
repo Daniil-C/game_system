@@ -384,9 +384,8 @@ class Backend(Monitor):
         else:
             parsed = parse_message(parse_message(mes, " ")[1], ",")
             parsed.remove(str(self.common.card))
-            self.common.vote_cards = [str(self.common.card)].append(
-                [int(i) for i in parsed]
-            )
+            self.common.vote_cards = [self.common.card]
+            self.common.vote_cards.extend([int(i) for i in parsed])
             logging.debug(self.common.vote_cards)
             self.common.vote_time = True
             logging.debug("Vote time")
