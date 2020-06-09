@@ -359,7 +359,7 @@ class Backend(Monitor):
         mes = self.conn.get()
         logging.debug(mes)
         if mes.startswith("ASSOC"):
-            self.common.ass = parse_message(mes, " ")[1]
+            self.common.ass = mes.split(" ", maxsplite=1)[1]
             self.common.got_ass = True
         elif mes.startswith("TURN"):
             return True
@@ -387,6 +387,7 @@ class Backend(Monitor):
             self.common.vote_cards = [str(self.common.card)].append(
                 [int(i) for i in parsed]
             )
+            logging.debug(self.common.vote_cards)
             self.common.vote_time = True
             logging.debug("Vote time")
 
