@@ -1025,81 +1025,87 @@ def connection(com, backend):
 
 def play_menu(com, backend):
     """DRAW PLAY MENU INTERFACE FOR MASTER (FIRST) PLAYER OR DOWNLOADING RESOURCES INTERFACE"""
-    global EXIT,  SETTINGS
+    global EXIT,  SETTINGS, RESIZE
+    RESIZE = True
+
     if not SETTINGS:
         """If the player hasn't specified connection parameters"""
         settings_menu(com, backend)
         return None
+
     backend.start_game()
     if not connection(com, backend):
         return None
 
     """Start connection"""
-    #num = com.get_number()
-    #connected = connection(com, backend)
-    #while num == -1 and connected:
-    #    connected = connection(com, backend)
     num = com.get_number()
+
     if num == 0:
         """First player interface"""
-        """Background"""
-        BG = pygame.transform.scale(pygame.image.load("interface/BG_main.png"), size)
-        BGrect = BG.get_rect()
-
-        """Back button"""
-        back_scale = (int(height * 21 / 216), int(height * 21 / 216))
-        back = pygame.transform.scale(pygame.image.load("interface/back.png"), back_scale)
-        backrect = back.get_rect()
-        backrect[0] = 0
-        backrect[1] = int(height * 185 / 216)
-
-        """Mode 1 button"""
-        mode1_scale = (int(width / 6), int(width / 6))
-        mode1 = pygame.transform.scale(pygame.image.load("interface/classic.png"), mode1_scale)
-        mode1rect = mode1.get_rect()
-        mode1rect[0] = int(width / 8)
-        mode1rect[1] = int(height * 29 / 216)
-
-        """Mode 2 button"""
-        mode2_scale = (int(width / 6), int(width / 6))
-        mode2 = pygame.transform.scale(pygame.image.load("interface/ariadna.png"), mode2_scale)
-        mode2rect = mode2.get_rect()
-        mode2rect[0] = int(width * 5 / 12)
-        mode2rect[1] = int(height * 29 / 216)
-
-        """Mode 3 button"""
-        mode3_scale = (int(width / 6), int(width / 6))
-        mode3 = pygame.transform.scale(pygame.image.load("interface/himera.png"), mode3_scale)
-        mode3rect = mode3.get_rect()
-        mode3rect[0] = int(width * 17 / 24)
-        mode3rect[1] = int(height * 29 / 216)
-
-        """Mode 4 button"""
-        mode4_scale = (int(width / 6), int(width / 6))
-        mode4 = pygame.transform.scale(pygame.image.load("interface/Odiseya.png"), mode4_scale)
-        mode4rect = mode4.get_rect()
-        mode4rect[0] = int(width / 8)
-        mode4rect[1] = int(height * 122 / 216)
-
-        """Mode 5 button"""
-        mode5_scale = (int(width / 6), int(width / 6))
-        mode5 = pygame.transform.scale(pygame.image.load("interface/pandora.png"), mode5_scale)
-        mode5rect = mode5.get_rect()
-        mode5rect[0] = int(width * 5 / 12)
-        mode5rect[1] = int(height * 122 / 216)
-
-        """Mode 6 button"""
-        mode6_scale = (int(width / 6), int(width / 6))
-        mode6 = pygame.transform.scale(pygame.image.load("interface/persefona.png"), mode6_scale)
-        mode6rect = mode6.get_rect()
-        mode6rect[0] = int(width * 17 / 24)
-        mode6rect[1] = int(height * 122 / 216)
-
+        bg_img = pygame.image.load("interface/BG_main.png")
+        back_img = pygame.image.load("interface/back.png")
+        mode1_img = pygame.image.load("interface/classic.png")
+        mode2_img = pygame.image.load("interface/ariadna.png")
+        mode3_img = pygame.image.load("interface/himera.png")
+        mode4_img = pygame.image.load("interface/Odiseya.png")
+        mode5_img = pygame.image.load("interface/pandora.png")
+        mode6_img = pygame.image.load("interface/persefona.png")
         while True:
+            if RESIZE:
+                """Background"""
+                BG = pygame.transform.scale(bg_img, size)
+                BGrect = BG.get_rect()
+                """Back button"""
+                icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
+                back_scale = (icon_size, icon_size)
+                back = pygame.transform.scale(back_img, back_scale)
+                backrect = back.get_rect()
+                backrect[0] = 0
+                backrect[1] = int(height * 185 / 216)
+                
+                w = int(width / 5)
+                h = int(height / 5)
+                m = min(w, h)
+                mode_size = (m, m)
+                w_pos = int((width - m * 3) / 4)
+                h_pos = int((height - m * 2) / 3)
+
+                """Mode 1 button"""
+                mode1 = pygame.transform.scale(mode1_img, mode_size)
+                mode1rect = mode1.get_rect()
+                mode1rect[0] = w_pos
+                mode1rect[1] = h_pos
+                """Mode 2 button"""
+                mode2 = pygame.transform.scale(mode2_img, mode_size)
+                mode2rect = mode2.get_rect()
+                mode2rect[0] = w_pos * 2 + m 
+                mode2rect[1] = h_pos
+                """Mode 3 button"""
+                mode3 = pygame.transform.scale(mode3_img, mode_size)
+                mode3rect = mode3.get_rect()
+                mode3rect[0] = w_pos * 3 + m * 2
+                mode3rect[1] = h_pos
+                """Mode 4 button"""
+                mode4 = pygame.transform.scale(mode4_img, mode_size)
+                mode4rect = mode4.get_rect()
+                mode4rect[0] = w_pos
+                mode4rect[1] = h_pos * 2 + m
+                """Mode 5 button"""
+                mode5 = pygame.transform.scale(mode5_img, mode_size)
+                mode5rect = mode5.get_rect()
+                mode5rect[0] = w_pos * 2 + m
+                mode5rect[1] = h_pos * 2 + m
+                """Mode 6 button"""
+                mode6 = pygame.transform.scale(mode6_img, mode_size)
+                mode6rect = mode6.get_rect()
+                mode6rect[0] = w_pos * 3 + m * 2
+                mode6rect[1] = h_pos * 2 + m
+
+                RESIZE = False
+
             """MAINLOOP"""
             for event in pygame.event.get():
                 """EVENTS HANDLING"""
-
                 """MOUSE EVENTS"""
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if backrect.collidepoint(event.pos):
@@ -1129,7 +1135,6 @@ def play_menu(com, backend):
                         backend.set_mode("persephone")
                         play_menu_2(com, backend)
                         return None
-
                 """KEYBOARD EVENTS"""
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -1137,13 +1142,14 @@ def play_menu(com, backend):
                         pygame.quit()
                         EXIT = True
                         return None
-
                 """OTHER EVENTS"""
                 if event.type == pygame.QUIT:
                     backend.stop()
                     pygame.quit()
                     EXIT = True
                     return None
+                if event.type == pygame.VIDEORESIZE:
+                    check_resize(event)
 
             """RENDERING"""
             screen.blit(BG, BGrect)
@@ -1155,6 +1161,30 @@ def play_menu(com, backend):
             screen.blit(mode5, mode5rect)
             screen.blit(mode6, mode6rect)
             pygame.display.flip()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     elif num > 0:
         """Not first player"""
@@ -1229,30 +1259,27 @@ def main_menu(com, backend):
             """Background"""
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
-
             """Play button"""
             play_scale = (int(width / 3), int(height * 33 / 216))
             play = pygame.transform.scale(play_img, play_scale)
             playrect = play.get_rect()
             playrect[0] = int(width / 3)
             playrect[1] = int(height * 64 / 216)
-
             """Exit button"""
             exit_scale = (int(width / 3), int(height * 33 / 216))
             exit = pygame.transform.scale(exit_img, exit_scale)
             exitrect = exit.get_rect()
             exitrect[0] = int(width / 3)
             exitrect[1] = int(height * 115 / 216)
-
             """Settings button"""
-            settings_scale = (int(height * 21 / 216), int(height * 21 / 216))
+            icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
+            settings_scale = (icon_size, icon_size)
             settings = pygame.transform.scale(settings_img, settings_scale)
             settingsrect = settings.get_rect()
             settingsrect[0] = 0
             settingsrect[1] = int(height * 185 / 216)
-
             """Rule button"""
-            rule_scale = settings_scale = (int(height * 21 / 216), int(height * 21 / 216))
+            rule_scale = settings_scale
             rule = pygame.transform.scale(rule_img, rule_scale)
             rulerect = rule.get_rect()
             rule_offset = int(width - rule_scale[0])
@@ -1260,7 +1287,6 @@ def main_menu(com, backend):
             rulerect[1] = int(height * 185 / 216)
 
             RESIZE = False
-
 
         """MAINLOOP"""
         for event in pygame.event.get():
@@ -1284,7 +1310,6 @@ def main_menu(com, backend):
                     play_menu(com, backend)
                     if EXIT:
                         return None
-
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -1292,7 +1317,6 @@ def main_menu(com, backend):
                     pygame.quit()
                     EXIT = True
                     return None
-
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
