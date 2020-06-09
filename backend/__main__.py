@@ -459,7 +459,7 @@ class Backend(Monitor):
                 logging.debug("Download ended")
                 self.version = version
                 with open("config.txt", "w") as f:
-                    data = {"ip": self.ip, "port": self.port, "version": self.version}
+                    data = {"ip": self.common.ip, "port": self.common.port, "version": self.version}
                     f.write(json.dumps(data))
                 self.common.updated = True
             else:
