@@ -373,7 +373,8 @@ class Backend(Monitor):
             self.common.vote_cards = [str(self.common.card)].append(
                 [int(i) for i in parsed]
             )
-            self.vote_time = True
+            self.common.vote_time = True
+            logging.debug("Vote time")
 
 
     def get_players_list(self):
