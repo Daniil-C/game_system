@@ -442,8 +442,8 @@ class Backend(Monitor):
             url = parsed[4]
             if version != self.version:
                 logging.debug("Versions are different")
-                if "resources" not in os.listdir(os.path.dirname(sys.argv[0])):
-                    os.mkdir("resources")
+                if "resources" not in os.path.join(os.path.dirname(sys.argv[0]), ".."):
+                    os.mkdir(os.path.join(os.path.dirname(sys.argv[0]), "../resources"))
                 path = os.path.join(os.path.dirname(sys.argv[0]), "../resources")
                 filepath = os.path.join(path, "{}.zip".format(version))
 
