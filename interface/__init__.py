@@ -1146,29 +1146,35 @@ def play_menu(com, backend):
         return None
     else:
         """Download interface"""
-        clock = pygame.time.Clock()
-        """Background"""
-        BG = pygame.transform.scale(pygame.image.load("interface/BG_main.png"), size)
+        bg_name = "interface/wait_0.png"
+        BG = pygame.transform.scale(pygame.image.load(bg_name), size)
         BGrect = BG.get_rect()
-
-        """Back button"""
-        back_scale = (int(height * 21 / 216), int(height * 21 / 216))
-        back = pygame.transform.scale(pygame.image.load("interface/back.png"), back_scale)
-        backrect = back.get_rect()
-        backrect[0] = 0
-        backrect[1] = int(height * 185 / 216)
-
-        while not backend.end_upd():
-#       for i in range(15):
+        progress = pygame.transform.scale(pygame.image.load("interface/bar"), (0, int(height / 6)))
+        progress_rect = progress.get_rect()
+        progress_rect[1] = int(height * 2 / 3)
+        screen_iter = 0
+        pygame.time.set_timer(pygame.USEREVENT, 1000)
+        while True:
             """MAINLOOP"""
             for event in pygame.event.get():
                 """EVENTS HANDLING"""
 
                 """MOUSE EVENTS"""
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if backrect.collidepoint(event.pos):
-                        backend.exit()
-                        return None
+
+                """USER EVENTS"""
+                    if event.type == pygame.USEREVENT:
+                        n = screen_iter % 4
+                        screen_iter += 1
+                        img = "interface/wait_{}.png".format(str(n))
+                        BG = pygame.transform.scale(pygame.image.load(img), size)
+                        BGrect = BG.get_rect()
+                        mul = com.get_progress()
+                        p_size = (int(width * mul), int(height / 6))
+                        progress = pygame.transform.scale(pygame.image.load("interface/bar), p_size)
+                        progress_rect = progress.get_rect()
+                        progress_rect[1] = int(height * 2 / 3)
+                        
 
                 """KEYBOARD EVENTS"""
                 if event.type == pygame.KEYDOWN:
@@ -1185,15 +1191,14 @@ def play_menu(com, backend):
                     EXIT = True
                     return None
 
-            clock.tick(1)
-
+            clock.tick(2)
+            if not com.is_connected:
+                disconnection()
+                return None
             """RENDERING"""
             screen.blit(BG, BGrect)
-            screen.blit(back, backrect)
+            screen.blit(progress, progress_rect)
             pygame.display.flip()
-
-        return None
-
 
 def main_menu(com, backend):
     """DRAW MAIN MENU INTERFACE"""
