@@ -499,7 +499,7 @@ def game(com, backend):
             color = color_else
             pygame.draw.rect(screen, color, rect_rect, 2)
             screen.blit(header, (int(width / 6) + shift, shift))
-            if choose_flg:
+            if (not leader) and choose_flg:
                 screen.blit(assoc, (int(width - a_rect[2]) / 2, int(height / 6 + 2 * shift)))
             if card:
                 screen.blit(b_card, card_rect)
