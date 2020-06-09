@@ -388,6 +388,9 @@ def game(com, backend):
         h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
         h_color = 0xAD, 0xE5, 0xF3
         header = h_font.render(header_text, True, h_color)
+        assoc = None
+        assoc_text = None
+        a_rect = None
 
         pygame.time.set_timer(pygame.USEREVENT, 100)
 
