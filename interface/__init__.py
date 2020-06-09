@@ -930,29 +930,31 @@ def play_menu_2(com, backend):
 
 def disconnection():
     """Disdpaying if backend can't connect to server"""
-    global EXIT
-    """Background"""
-    global EXIT
-    BG = pygame.transform.scale(pygame.image.load("interface/BG_disconnect.png"), size)
-    BGrect = BG.get_rect()
+    global EXIT, RESIZE
+    RESIZE = True
 
-    """Ok button"""
-    ok_scale = (int(width / 3), int(height * 33 / 216))
-    ok = pygame.transform.scale(pygame.image.load("interface/ok.png"), ok_scale)
-    okrect = ok.get_rect()
-    okrect[0] = int(width / 3)
-    okrect[1] = int(height * 115 / 216)
-
+    bg_img = pygame.image.load("interface/BG_disconnect.png")
+    ok_img = pygame.image.load("interface/ok.png")
     while True:
+        if RESIZE:
+            """Background"""
+            BG = pygame.transform.scale(bg_img, size)
+            BGrect = BG.get_rect()
+            """Ok button"""
+            ok_scale = (int(width / 3), int(height * 33 / 216))
+            ok = pygame.transform.scale(ok_img, ok_scale)
+            okrect = ok.get_rect()
+            okrect[0] = int(width / 3)
+            okrect[1] = int(height * 115 / 216)
+            RESIZE = False
+
         """MAINLOOP"""
         for event in pygame.event.get():
             """EVENTS HANDLING"""
-
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if okrect.collidepoint(event.pos):
                     return None
-
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -960,13 +962,14 @@ def disconnection():
                     pygame.quit()
                     EXIT = True
                     return None
-
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
                 pygame.quit()
                 EXIT = True
                 return None
+            if event.type == pygame.VIDEORESIZE:
+                check_resize(event)
 
         """RENDERING"""
         screen.blit(BG, BGrect)
@@ -979,7 +982,7 @@ def connection(com, backend):
     global EXIT, RESIZE
     RESIZE = True
 
-    bg_img, BG, BGrect = [], None, None
+    bg_img = []
     for i in range(4):
         bg_name = "interface/BG_{}.png".format(str(i))
         bg_img.append(pygame.image.load(bg_name))
@@ -991,13 +994,11 @@ def connection(com, backend):
             """Background"""
             BG = pygame.transform.scale(bg_img[n], size)
             BGrect = BG.get_rect()
-
             RESIZE = False
 
         """MAINLOOP"""
         if com.is_connected:
             return True
-
         for event in pygame.event.get():
             """EVENTS HANDLING"""
             """USER EVENTS"""
@@ -1027,8 +1028,6 @@ def connection(com, backend):
         pygame.display.flip()
 
     disconnection()
-    global SETTINGS
-    #SETTINGS = False
     return False
 
 
@@ -1047,7 +1046,6 @@ def play_menu(com, backend):
 
     """Start connection"""
     num = com.get_number()
-
     if num == 0:
         """First player interface"""
         bg_img = pygame.image.load("interface/BG_main.png")
@@ -1072,14 +1070,12 @@ def play_menu(com, backend):
                 back = pygame.transform.scale(back_img, back_scale)
                 backrect = back.get_rect()
                 backrect[0], backrect[1] = 0, int(height * 185 / 216)
-                
+                """Mods buttons"""
                 w, h = int(width / 5), int(height / 5)
                 m = min(w, h)
                 mode_size = (m, m)
                 w_shift, h_shift = int((width - m * 3) / 4), int((height - m * 2) / 3)
                 w_pos,h_pos = w_shift, h_shift
-
-                """Mods buttons"""
                 mode, mode_rect = [], []
                 for i in range(len(mode_img)):
                     mode.append(pygame.transform.scale(mode_img[i], mode_size))
@@ -1162,10 +1158,6 @@ def play_menu(com, backend):
             """MAINLOOP"""
             for event in pygame.event.get():
                 """EVENTS HANDLING"""
-
-                """MOUSE EVENTS"""
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    pass
                 """USER EVENTS"""
                 if event.type == pygame.USEREVENT:
                     n = screen_iter % 4
@@ -1195,6 +1187,7 @@ def play_menu(com, backend):
 
             if not com.is_connected:
                 disconnection()
+                RESIZE = True
                 return None
 
             """RENDERING"""
@@ -1258,14 +1251,17 @@ def main_menu(com, backend):
                     return None
                 elif settingsrect.collidepoint(event.pos):
                     settings_menu(com, backend)
+                    RESIZE = True
                     if EXIT:
                         return None
                 elif rulerect.collidepoint(event.pos):
                     rule_menu(com, backend)
+                    RESIZE = True
                     if EXIT:
                         return None
                 elif playrect.collidepoint(event.pos):
                     play_menu(com, backend)
+                    RESIZE = True
                     if EXIT:
                         return None
             """KEYBOARD EVENTS"""
