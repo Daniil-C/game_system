@@ -32,14 +32,14 @@ def vote(com, backend):
     header_rect[1] = shift
     w = header_rect[2]
     header_rect[0] = int(width / 2 - w / 2)
-    # cards = com.vote_cards #TODO
-    cards = [34, 35, 36, 37, 38, 39]
+    cards = com.vote_cards #TODO
+    #cards = [34, 35, 36, 37, 38, 39]
     card_pos = [int((width - height * len(cards) / 6) / (len(cards) + 1)), int(height * 0.7)]
     cards_img = []
     cards_rect = []
     cards_size = (int(height / 6), int(height / 4))
     for i in cards:
-        name = "".join(("interface/", str(i), ".png"))
+        name = "".join(("resources/", mode, "/", str(i), ".png"))
         cards_img.append(pygame.transform.scale(pygame.image.load(name), cards_size))
         cards_rect.append(cards_img[-1].get_rect())
         cards_rect[-1][0] = card_pos[0]
@@ -75,7 +75,7 @@ def vote(com, backend):
                 for i in range(len(cards)):
                     if cards_rect[i].collidepoint(pygame.mouse.get_pos()):
                         card = True
-                        name = "".join(("interface/", str(cards[i]), ".png"))
+                        name = "".join(("resources/", mode, "/", str(cards[i]), ".png"))
                         b_card = pygame.transform.scale(pygame.image.load(name), card_size)
                         card_rect = b_card.get_rect()
                         card_rect[0] = int(width / 2 - height / 6)
@@ -228,6 +228,7 @@ def game_wait(com, backend):
 def set_association(com, backend):
     global EXIT
     bg_play = "interface/play_bg.png"
+    mode = com.mode
     BG = pygame.transform.scale(pygame.image.load(bg_play), size)
     BGrect = BG.get_rect()
     header_text = "Enter your association"
@@ -242,7 +243,7 @@ def set_association(com, backend):
     header_rect[0] = int(width / 2 - w / 2)
     card_size = (int(height / 3), int(height / 2))
     name = "interface/34.png" #TODO
-    name = "".join(("interface/", str(com.get_card()), ".png"))
+    name = "".join(("resources/", mode, "/", str(com.get_card()), ".png"))
     b_card = pygame.transform.scale(pygame.image.load(name), card_size)
     card_rect = b_card.get_rect()
     card_rect[0] = int(width / 2 - height / 6)
@@ -339,17 +340,18 @@ def game(com, backend):
         leader = False #TODO
         leader = com.turn
         choose_flg = leader
+        mode = com.mode
         bg_play = "interface/play_bg_1.png"
         BG = pygame.transform.scale(pygame.image.load(bg_play), size)
         BGrect = BG.get_rect()
-        # cards = com.player.cards #TODO
-        cards = [34, 35, 36, 37, 38, 39]
+        cards = com.player.cards #TODO
+        #cards = [34, 35, 36, 37, 38, 39]
         card_pos = [int((width - height * len(cards) / 6) / (len(cards) + 1)), int(height * 0.7)]
         cards_img = []
         cards_rect = []
         cards_size = (int(height / 6), int(height / 4))
         for i in cards:
-            name = "".join(("interface/", str(i), ".png"))
+            name = "".join(("resources/", mode, "/",  str(i), ".png"))
             cards_img.append(pygame.transform.scale(pygame.image.load(name), cards_size))
             cards_rect.append(cards_img[-1].get_rect())
             cards_rect[-1][0] = card_pos[0]
@@ -434,7 +436,7 @@ def game(com, backend):
                     for i in range(len(cards)):
                         if cards_rect[i].collidepoint(pygame.mouse.get_pos()):
                             card = True
-                            name = "".join(("interface/", str(cards[i]), ".png"))
+                            name = "".join(("resources/", mode, "/", str(cards[i]), ".png"))
                             b_card = pygame.transform.scale(pygame.image.load(name), card_size)
                             card_rect = b_card.get_rect()
                             card_rect[0] = int(width / 2 - height / 6)
