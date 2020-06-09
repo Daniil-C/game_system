@@ -1154,7 +1154,7 @@ def play_menu(com, backend):
         progress_rect[1] = int(height * 2 / 3)
         screen_iter = 0
         pygame.time.set_timer(pygame.USEREVENT, 1000)
-        while True:
+        while not com.updated:
             """MAINLOOP"""
             for event in pygame.event.get():
                 """EVENTS HANDLING"""
