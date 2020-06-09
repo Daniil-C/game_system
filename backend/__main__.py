@@ -9,6 +9,7 @@ import time
 from multiprocessing import Queue
 import json
 import os
+import sys
 import wget
 import interface
 from zipfile import ZipFile
@@ -441,7 +442,7 @@ class Backend(Monitor):
             url = parsed[4]
             if version != self.version:
                 logging.debug("Versions are different")
-                path = os.path.join(os.getcwd(), "resources")
+                path = os.path.join(os.path.dirname(sys.argv[0]), "../resources")
                 filepath = os.path.join(path, "{}.zip".format(version))
 
                 def get_bar(curr, total, num):
