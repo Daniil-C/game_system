@@ -1003,7 +1003,7 @@ def connection(com, backend):
         pygame.display.flip()
     disconnection()
     global SETTINGS
-    SETTINGS = False
+    #SETTINGS = False
     return False
 
 
