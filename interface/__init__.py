@@ -1191,7 +1191,6 @@ def play_menu(com, backend):
                     EXIT = True
                     return None
 
-            clock.tick(2)
             if not com.is_connected:
                 disconnection()
                 return None
