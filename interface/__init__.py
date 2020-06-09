@@ -976,27 +976,36 @@ def disconnection():
 
 def connection(com, backend):
     """Wait to connection"""
-    global EXIT
-    clock = pygame.time.Clock()
-    """Background"""
-    BG = pygame.transform.scale(pygame.image.load("interface/BG_0.png"), size)
-    BGrect = BG.get_rect()
+    global EXIT, RESIZE
+    RESIZE = True
 
-    for i in range(20):
+    bg_img, BG, BGrect = [], None, None
+    for i in range(4):
+        bg_name = "interface/BG_{}.png".format(str(i))
+        bg_img.append(pygame.image.load(bg_name))
+    n, count = 0, 0
+    pygame.time.set_timer(pygame.USEREVENT, 500)
+
+    while count < 20:
+        if RESIZE:
+            """Background"""
+            BG = pygame.transform.scale(bg_img[n], size)
+            BGrect = BG.get_rect()
+
+            RESIZE = False
+
         """MAINLOOP"""
-        n = i % 4
-        img = "interface/BG_{}.png".format(str(n))
-        BG = pygame.transform.scale(pygame.image.load(img), size)
-        BGrect = BG.get_rect()
-
         if com.is_connected:
             return True
-        #if i == 19:
-            #return True
 
         for event in pygame.event.get():
             """EVENTS HANDLING"""
-
+            """USER EVENTS"""
+            if event.type == pygame.USEREVENT:
+                n = count % 4
+                count += 1
+                BG = pygame.transform.scale(bg_img[n], size)
+                BGrect = BG.get_rect()
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -1004,19 +1013,19 @@ def connection(com, backend):
                     pygame.quit()
                     EXIT = True
                     return None
-
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
                 pygame.quit()
                 EXIT = True
                 return None
-
-        clock.tick(2)
+            if event.type == pygame.VIDEORESIZE:
+                check_resize(event)
 
         """RENDERING"""
         screen.blit(BG, BGrect)
         pygame.display.flip()
+
     disconnection()
     global SETTINGS
     #SETTINGS = False
@@ -1032,7 +1041,6 @@ def play_menu(com, backend):
         """If the player hasn't specified connection parameters"""
         settings_menu(com, backend)
         return None
-
     backend.start_game()
     if not connection(com, backend):
         return None
@@ -1052,6 +1060,7 @@ def play_menu(com, backend):
         mode_img.append(pygame.image.load("interface/pandora.png"))
         mode_img.append(pygame.image.load("interface/persefona.png"))
         selected_mode = ["imaginarium", "ariadna", "himera", "odissey", "pandora", "persephone"]
+        RESIZE = True
         while True:
             if RESIZE:
                 """Background"""
@@ -1062,30 +1071,23 @@ def play_menu(com, backend):
                 back_scale = (icon_size, icon_size)
                 back = pygame.transform.scale(back_img, back_scale)
                 backrect = back.get_rect()
-                backrect[0] = 0
-                backrect[1] = int(height * 185 / 216)
+                backrect[0], backrect[1] = 0, int(height * 185 / 216)
                 
-                w = int(width / 5)
-                h = int(height / 5)
+                w, h = int(width / 5), int(height / 5)
                 m = min(w, h)
                 mode_size = (m, m)
-                w_shift = int((width - m * 3) / 4)
-                w_pos = w_shift
-                h_shift = int((height - m * 2) / 3)
-                h_pos = h_shift
+                w_shift, h_shift = int((width - m * 3) / 4), int((height - m * 2) / 3)
+                w_pos,h_pos = w_shift, h_shift
 
                 """Mods buttons"""
-                mode = []
-                mode_rect = []
+                mode, mode_rect = [], []
                 for i in range(len(mode_img)):
                     mode.append(pygame.transform.scale(mode_img[i], mode_size))
                     mode_rect.append(mode[i].get_rect())
-                    mode_rect[i][0] = w_pos
-                    mode_rect[i][1] = h_pos
+                    mode_rect[i][0], mode_rect[i][1] = w_pos, h_pos
                     w_pos += w_shift + m
                     if i == 2:
-                        w_pos = w_shift
-                        h_pos += h_shift + m
+                        w_pos, h_pos = w_shift, h_shift * 2 + m
 
                 RESIZE = False
 
@@ -1141,8 +1143,7 @@ def play_menu(com, backend):
         progress = pygame.transform.scale(progress_img, (0, int(height / 6)))
         progress_rect = progress.get_rect()
         progress_rect[1] = int(height * 2 / 3)
-        screen_iter = 0
-        n = 0
+        screen_iter, n = 0, 0
 
         pygame.time.set_timer(pygame.USEREVENT, 1000)
 
@@ -1155,6 +1156,8 @@ def play_menu(com, backend):
                 progress = pygame.transform.scale(progress_img, p_size)
                 progress_rect = progress.get_rect()
                 progress_rect[1] = int(height * 2 / 3)
+
+                RESIZE = False
 
             """MAINLOOP"""
             for event in pygame.event.get():
