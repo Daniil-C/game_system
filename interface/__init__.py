@@ -625,8 +625,6 @@ def wait_menu(com, backend):
 
 def settings_menu(com, backend):
     """settings menu"""
-    global EXIT
-
     def checker(IP, PORT):
         """Check data in settings fields"""
         ip_pars = IP.split(".")
@@ -648,74 +646,74 @@ def settings_menu(com, backend):
                 port_flg = True
         return ip_flg and port_flg
 
-    BG = 0
-    BGrect = 0
-    ip_text = ""
-    port_text = ""
-
     def save_fun(*arg):
         """Save ip and port"""
-        nonlocal BG, BGrect, ip_text, port_text
+        nonlocal BG, BGrect, ip_text, port_text, bg_img
         if checker(ip_text, port_text):
             backend.set_connection_params(ip_text, int(port_text))
             global SETTINGS
             SETTINGS = True
             com.is_connected = False
             bg_name = "interface/BG_settings_saved.png"
-            BG = pygame.transform.scale(pygame.image.load(bg_name), size)
+            bg_img = pygame.image.load(bg_name)
+            BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
             ip_text = ""
             port_text = ""
         else:
             bg_name = "interface/BG_settings_not_saved.png"
-            BG = pygame.transform.scale(pygame.image.load(bg_name), size)
+            bg_img = pygame.image.load(bg_name)
+            BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
 
-    """Text"""
-    font_size = int(height / 30)
-    font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
-    ip_active = False
-    port_active = False
+    global EXIT, RESIZE
+    RESIZE = True
+
+    ip_text, port_text = "", ""
     inactive_color = 0xFF, 0xFF, 0xFF
     active_color = 0xAD, 0xE5, 0xF3
-
-    """Text box for ip"""
-    ip_size = (int(width / 3), int(height * 3 / 60))
-    ip_pos = (int(width / 3), int(height * 53 / 216))
-    iprect = pygame.Rect(ip_pos[0], ip_pos[1], ip_size[0], ip_size[1])
-    ip_color = inactive_color
-
-    """Text box for port"""
-    port_size = (int(width / 3), int(height * 3 / 60))
-    port_pos = (int(width / 3), int(height * 137 / 216))
-    portrect = pygame.Rect(*port_pos, *port_size)
-    port_color = inactive_color
-
-    """Background"""
-    BG = pygame.transform.scale(pygame.image.load("interface/BG_settings.png"), size)
-    BGrect = BG.get_rect()
-
-    """Back button"""
-    back_scale = (int(height * 21 / 216), int(height * 21 / 216))
-    back = pygame.transform.scale(pygame.image.load("interface/back.png"), back_scale)
-    backrect = back.get_rect()
-    backrect[0] = 0
-    backrect[1] = int(height * 185 / 216)
-
-    """Save buton"""
-    save_scale = (int(width * 7 / 128), int(height * 12 / 216))
-    save = pygame.transform.scale(pygame.image.load("interface/save.png"), save_scale)
-    saverect = save.get_rect()
-    saverect[0] = int(width * 227 / 480)
-    saverect[1] = int(height * 7 / 9)
-
+    bg_img = pygame.image.load("interface/BG_settings.png")
+    back_img = pygame.image.load("interface/back.png")
+    save_img = pygame.image.load("interface/save.png")
     while True:
+        if RESIZE:
+            shift = int(height / 120)
+            """Text"""
+            font_size = int(height / 30)
+            font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
+            ip_active = False
+            port_active = False
+            """Text box for ip"""
+            ip_size = (int(width / 3), int(height * 3 / 60))
+            ip_pos = (int(width / 3), int(height * 53 / 216))
+            iprect = pygame.Rect(*ip_pos, *ip_size)
+            ip_color = inactive_color
+            """Text box for port"""
+            port_size = (int(width / 3), int(height * 3 / 60))
+            port_pos = (int(width / 3), int(height * 137 / 216))
+            portrect = pygame.Rect(*port_pos, *port_size)
+            port_color = inactive_color
+            """Background"""
+            BG = pygame.transform.scale(bg_img, size)
+            BGrect = BG.get_rect()
+            """Back button"""
+            icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
+            back_scale = (icon_size, icon_size)
+            back = pygame.transform.scale(back_img, back_scale)
+            backrect = back.get_rect()
+            backrect[0], backrect[1] = 0, int(height * 185 / 216)
+            """Save buton"""
+            save_scale = (int(width * 7 / 128), int(height * 12 / 216))
+            save = pygame.transform.scale(save_img, save_scale)
+            saverect = save.get_rect()
+            saverect[0], saverect[1] = int(width * 227 / 480), int(height * 7 / 9)
+            RESIZE = False
         """MAINLOOP"""
         for event in pygame.event.get():
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if backrect.collidepoint(event.pos):
-                    #backend.exit()
+                    backend.exit()
                     return None
                 if iprect.collidepoint(event.pos):
                     port_active = False
@@ -728,7 +726,6 @@ def settings_menu(com, backend):
                     port_active = False
                     if saverect.collidepoint(event.pos):
                         save_fun()
-
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -742,7 +739,7 @@ def settings_menu(com, backend):
                         port_active = True
                     elif event.key == pygame.K_BACKSPACE:
                         ip_text = ip_text[:-1]
-                    elif len(ip_text) < 20:
+                    elif len(ip_text) < 16:
                         ip_text += event.unicode
                 elif port_active:
                     if event.key == pygame.K_RETURN:
@@ -751,21 +748,20 @@ def settings_menu(com, backend):
                         save_fun()
                     elif event.key == pygame.K_BACKSPACE:
                         port_text = port_text[:-1]
-                    elif len(port_text) < 22:
+                    elif len(port_text) < 6:
                         port_text += event.unicode
-
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
                 pygame.quit()
                 EXIT = True
                 return None
+            if event.type == pygame.VIDEORESIZE:
+                check_resize(event)
 
         """RENDERING"""
         ip_color = active_color if ip_active else inactive_color
         port_color = active_color if port_active else inactive_color
-
-        shift = int(height / 120)
         screen.blit(BG, BGrect)
         screen.blit(back, backrect)
         screen.blit(save, saverect)
