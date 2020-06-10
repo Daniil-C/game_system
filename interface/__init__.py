@@ -61,6 +61,8 @@ def result(com, backend):
     pressed = False
     pygame.time.set_timer(pygame.USEREVENT, 100)
     players = com.get_players_list()
+    ok_img = pygame.image.load("interface/ok.png")
+
 
     while True:
         if RESIZE:
@@ -84,7 +86,7 @@ def result(com, backend):
                 cards_rect.append(cards_row[-1].get_rect())
                 cards_rect[-1][0] = card_pos[0]
                 cards_rect[-1][1] = card_pos[1]
-                card_pos[0] += int((width - cards_w * len(cards)) / (len(cards) + 1) + cards_w)
+                card_pos[0] += int((width - cards_w * len(res)) / (len(res) + 1) + cards_w)
             """Players"""
             players_pos = [w_offset, h_offset]
             font_size = int(height / 30)
@@ -111,13 +113,20 @@ def result(com, backend):
             card_size = (card_w, card_h)
             card_pos = (int(width / 2 - card_w) + w_offset, int(height / 6) + h_offset)
             card_rect = (*card_pos, *card_size)
+            """OK button"""
+            ok_scale = (int(width / 3), int(height * 33 / 216))
+            ok = pygame.transform.scale(ok_img, ok_scale)
+            okrect = ok.get_rect()
+            okrect[0], okrect[1] = int(width * 2 / 3 + width / 12) + w_offset, h_offset
+            #okrect[0], okrect[1] = int(width * 2 / 3 - width / 20) + w_offset, int(height * 115 / 216) + h_offset
             RESIZE = False
         """MAINLOOP"""
         for event in pygame.event.get():
             """EVENTS HANDLING"""
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
-                pass
+                if okrect.collidepoint(event.pos):
+                    backend.next_turn()
             """USER EVENTS"""
             if event.type == pygame.USEREVENT and not pressed:
                 for i in range(len(res)):
@@ -170,8 +179,13 @@ def result(com, backend):
         """RENDERING"""
         screen.fill(black)
         screen.blit(BG, BGrect)
+        screen.blit(ok, okrect)
         for i in range(len(cards_row)):
             screen.blit(cards_row[i], cards_rect[i])
+            color = color_leader if players[i][3] else color_else
+            p_name = res[i][0]
+            text_img = font.render(p_name, True, color)
+            screen.blit(text_img, (cards_rect[i][0], cards_rect[i][1] - shift - font_size))
         for i in range(len(players)):
             screen.blit(players_text[i], (players_rect[i][0] + shift, players_rect[i][1] + shift))
             screen.blit(players_score[i], (players_rect[i][0] + shift, players_rect[i][1] + shift * 6))
