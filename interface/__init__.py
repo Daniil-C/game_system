@@ -89,7 +89,9 @@ def vote(com, backend):
             assoc = a_font.render(assoc_text, True, a_color)
             a_rect = assoc.get_rect()
             card_size = (int(height / 3), int(height / 2))
+            card = False
             card_rect = []
+            RESIZE = False
 
         """MAINLOOP"""
         for event in pygame.event.get():
@@ -104,8 +106,7 @@ def vote(com, backend):
                 for i in range(len(cards)):
                     if cards_rect[i].collidepoint(pygame.mouse.get_pos()):
                         card = True
-                        name = "".join(("resources/", mode, "/", str(cards[i]), ".png"))
-                        b_card = pygame.transform.scale(pygame.image.load(name), card_size)
+                        b_card = pygame.transform.scale(cards_row[i], card_size)
                         card_rect = b_card.get_rect()
                         card_rect[0] = int(width / 2 - height / 6) + w_offset
                         card_rect[1] = int(height / 6) + h_offset
@@ -128,8 +129,7 @@ def vote(com, backend):
                             key_pressed[i] = True
                             pressed = True 
                             card = True
-                            name = "".join(("interface/", str(cards[i]), ".png"))
-                            b_card = pygame.transform.scale(pygame.image.load(name), card_size)
+                            b_card = pygame.transform.scale(cards_row[i], card_size)
                             card_rect = b_card.get_rect()
                             card_rect[0] = int(width / 2 - height / 6) + w_offset
                             card_rect[1] = int(height / 6) + h_offset
