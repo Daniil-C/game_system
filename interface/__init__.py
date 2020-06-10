@@ -49,6 +49,10 @@ def vote(com, backend):
     header_text = "Guess leader's card"
     h_color = 0xAD, 0xE5, 0xF3
     cards = com.vote_cards
+    cards_row = []
+    for i in cards:
+        name = pygame.image.load("".join(("resources/", mode, "/", str(i), ".png")))
+        cards_row.append(name)
     assoc_text = com.ass
     a_color = 0xAD, 0xE5, 0xF3
     card = False
@@ -74,9 +78,8 @@ def vote(com, backend):
             cards_img = []
             cards_rect = []
             cards_size = (int(height / 6), int(height / 4))
-            for i in cards:
-                name = pygame.image.load("".join(("resources/", mode, "/", str(i), ".png")))
-                cards_img.append(pygame.transform.scale(name, cards_size))
+            for i in range(len(cards)):
+                cards_img.append(pygame.transform.scale(cards_row[i], cards_size))
                 cards_rect.append(cards_img[-1].get_rect())
                 cards_rect[-1][0] = card_pos[0]
                 cards_rect[-1][1] = card_pos[1]
