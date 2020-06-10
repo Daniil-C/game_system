@@ -715,7 +715,7 @@ class GameServer:
             card_num = self.resources.configuration[self.game_state.card_set]
         except Exception:
             card_num = 50
-            self.logger.error("no configuration entry for '%s'" %\
+            self.logger.error("no configuration entry for '%s'" %
                               self.game_state.card_set)
         self.cards = list(range(card_num))
         shuffle(self.cards)
@@ -776,8 +776,6 @@ class GameServer:
                                         self.game_state.card_set + " " +
                                         ",".join(map(str, player.cards)) +
                                         " " + player_lst)
-
-
                 self.current_player = self.players.next_player(
                     self.players.players[randrange(len(
                         self.players.players))])
