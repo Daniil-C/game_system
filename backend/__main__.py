@@ -55,6 +55,7 @@ class Common(Monitor):
         self.coef = 0
         self.end_vote = False
         self.vote_results = []
+        self.deltas = {}
 
     def reset(self):
         """
@@ -395,16 +396,20 @@ class Backend(Monitor):
         if mes.startswith("STATUS"):
             parsed = parse_message(mes, " ")
             self.common.leader_card = int(parsed[1])
-            old_list = self.common.players_list
             results = parse_message(parsed[2], ",")
             results = [i.split(";") for i in results]
             for i in results:
                 votes = []
                 for j in results:
                     if j[2] == i[1]:
-                        votes.append(self.names[j[1]])
-                self.common.vote_results.append([self.names[i[0]], int(results[1]), votes])
+                        votes.append(self.names[j[0]])
+                self.common.vote_results.append([self.names[i[0]], int(i[1]), votes])
             logging.debug(self.common.vote_results)
+            p_list = parse_message(parsed[3], ",")
+            p_list = [i.split(";") for i in p_list]
+            self.common.players_list = []
+            for i in p_list:
+                self.common.players_list.append[i[1], self.names[i[0]], i[0]]
             self.common.players_list = parse_message(parsed[3], ",")
             self.common.players_list = [i.split(";") for i in self.common.players_list]
             self.common.end_vote = True
