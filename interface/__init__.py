@@ -420,7 +420,11 @@ def game(com, backend):
                 for i in players: 
                     color = color_leader if i[3] else color_else
                     players_rect.append(pygame.Rect(*players_pos, *players_size))
-                    players_text.append(font.render(i[1], True, color))
+                    p_name = i[1]
+                    players_text.append(font.render(p_name, True, color))
+                    while players_text[-1].get_size()[0] > int(width / 6):
+                        p_name = p_name[:-1]
+                        players_text[-1] = font.render(p_name, True, color)
                     score = "".join(("Score: ", str(i[0])))
                     players_score.append(font.render(score, True, color))
                     players_pos[1] += int(height / 8)
@@ -432,7 +436,7 @@ def game(com, backend):
                 card_pos = (int(width / 2 - card_w / 2) + w_offset, int(height / 6) + h_offset)
                 card_rect = (*card_pos, *card_size)
                 """Header"""
-                h_font_size = int(height / 6)
+                h_font_size = int(height / 12)
                 h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
                 header = h_font.render(header_text, True, h_color)
                 RESIZE = False
@@ -527,7 +531,7 @@ def game(com, backend):
             header_pos = (int((width - header.get_size()[0]) / 2) + w_offset, shift + h_offset)
             screen.blit(header, header_pos)
             if (not leader) and choose_flg:
-                a_pos = (int((width - a_rect[2]) / 2) + w_offset, int(height / 6 + 2 * shift) + h_offset)
+                a_pos = (int((width - a_rect[2]) / 2) + w_offset, int(height / 12 + 2 * shift) + h_offset)
                 screen.blit(assoc, a_pos)
             if card:
                 screen.blit(b_card, card_rect)
@@ -614,7 +618,7 @@ def wait_menu(com, backend):
                 check_resize(event)
 
         if not com.is_connected:
-            disconnection()
+            disconnection(com, backend)
             RESIZE = True
             return None
         """RENDERING"""
@@ -627,7 +631,7 @@ def wait_menu(com, backend):
         for i in range(len(players)):
             plr = str(i + 1) + ". " + players[i][1]
             player_box = font.render(plr, True, (0xAD, 0xE5, 0xF3))
-            while player_box.get_size()[0] + prect[0] > width:
+            while player_box.get_size()[0] + prect[0] > width + w_offset:
                 plr = plr[:-1]
                 player_box = font.render(plr, True, (0xAD, 0xE5, 0xF3))
             screen.blit(player_box, (prect[0], prect[1] + h_shift))

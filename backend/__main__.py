@@ -10,6 +10,7 @@ from multiprocessing import Queue
 import json
 import os
 import sys
+import shutil
 import wget
 import interface
 from zipfile import ZipFile
@@ -187,9 +188,10 @@ class Backend(Monitor):
         self.collector_thread = None
         self.tasks = []
         self.conn = None
+        self.config = os.getenv("CONFIG", "config.json")
 
         try:
-            with open("config.txt", "r") as f:
+            with open(self.config, "r") as f:
                 s = f.read()
                 data = json.loads(s)
                 self.common.ip = data["ip"]
@@ -266,6 +268,8 @@ class Backend(Monitor):
         """
         Stops programm
         """
+        if self.common.is_connected:
+            self.conn.send("SHUTDOWN")
         self.end = True
         if self.conn is not None:
             self.conn.close()
@@ -276,7 +280,7 @@ class Backend(Monitor):
             self.updater.join()
             logging.debug("Closing updater")
         except Exception as ex:
-            logging.error(ex)
+            logging.warning(ex)
 
     def set_connection_params(self, ip, port):
         """
@@ -288,7 +292,7 @@ class Backend(Monitor):
             self.connect(10)
             self.sock.close()
             self.common.is_connected = True
-            with open("config.txt", "w") as f:
+            with open(self.config, "w") as f:
                 data = {"ip": ip, "port": port, "version": self.version}
                 f.write(json.dumps(data))
         except Exception as e:
@@ -390,6 +394,22 @@ class Backend(Monitor):
             self.common.vote_time = True
             logging.debug("Vote time")
 
+        mes = self.conn.get()
+        logging.debug(mes)
+        if mes.startswith("STATUS"):
+            parsed = parse_message(mes, " ")
+            self.common.leader_card = int(parsed[1])
+            self.common.vote_results = parse_message(parsed[2], ",")
+            self.common.vote_results = [i.split(";") for i in self.common.vote_results]
+            self.common.players_list = parse_message(parsed[3], ",")
+            self.common.players_list = [i.split(";") for i in self.common.players_list]
+        elif mes.startswith("TURN"):
+            return True
+        else:
+            return False
+
+        # TODO
+
     def get_players_list(self):
         """
         Updates players table
@@ -410,7 +430,7 @@ class Backend(Monitor):
                 self.common.players_list = [i.split(";") for i in parsed]
                 time.sleep(1)
             except Exception as ex:
-                logging.error(ex)
+                logging.warning(ex)
         self.sock.settimeout(None)
 
     def set_mode(self, mode):
@@ -442,12 +462,18 @@ class Backend(Monitor):
             url = parsed[4]
             if version != self.version:
                 logging.debug("Versions are different")
-                if "resources" not in os.listdir(os.path.join(os.path.dirname(sys.argv[0]), "..")):
-                    os.mkdir(os.path.join(os.path.dirname(sys.argv[0]), "../resources"))
-                path = os.path.join(os.path.dirname(sys.argv[0]), "../resources")
+                if "resources" in os.listdir(
+                        os.path.join(os.path.dirname(sys.argv[0]), "..")
+                ):
+                    shutil.rmtree(os.path.join(
+                        os.path.dirname(sys.argv[0]), "../resources"))
+                os.mkdir(os.path.join(
+                    os.path.dirname(sys.argv[0]), "../resources"))
+                path = os.path.join(
+                    os.path.dirname(sys.argv[0]), "../resources")
                 filepath = os.path.join(path, "{}.zip".format(version))
 
-                def get_bar(curr, total, num):
+                def get_bar(curr, total, _):
                     self.common.coef_mutex.acquire()
                     self.common.coef = curr / total
                     self.common.coef_mutex.release()
@@ -458,8 +484,12 @@ class Backend(Monitor):
                 os.remove(filename)
                 logging.debug("Download ended")
                 self.version = version
-                with open("config.txt", "w") as f:
-                    data = {"ip": self.common.ip, "port": self.common.port, "version": self.version}
+                with open(self.config, "w") as f:
+                    data = {
+                        "ip": self.common.ip,
+                        "port": self.common.port,
+                        "version": self.version
+                    }
                     f.write(json.dumps(data))
                 self.common.updated = True
             else:
@@ -484,12 +514,13 @@ class Backend(Monitor):
         """
         Restarts menu
         """
+        self.conn.send("SHUTDOWN")
         self.conn.close()
         self.game_started = False
         try:
             self.updater.join()
         except Exception as ex:
-            logging.error(ex)
+            logging.warning(ex)
         self.common.reset()
 
     def set_card(self, card_num):
@@ -510,6 +541,13 @@ class Backend(Monitor):
         mes = "TURN {} {}".format(self.common.card, self.common.ass)
         self.conn.send(mes)
         logging.debug(mes)
+
+    def next_turn(self):
+        """
+        Send next turn message
+        """
+        self.conn.send("NETX_TURN")
+        logging.debug("NETX_TURN")
 
 
 class BackendInterface:
@@ -588,6 +626,13 @@ class BackendInterface:
         Select association
         """
         d = {"method": "set_ass", "args": [ass]}
+        self.in_q.put(json.dumps(d))
+
+    def next_turn(self):
+        """
+        Select association
+        """
+        d = {"method": "next_turn", "args": []}
         self.in_q.put(json.dumps(d))
 
 
