@@ -552,17 +552,19 @@ def wait_menu(com, backend):
             """Background"""
             BG = pygame.transform.scale(bg_img[n], size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
             """Back button"""
             icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
             back_scale = (icon_size, icon_size)
             back = pygame.transform.scale(back_img, back_scale)
             backrect = back.get_rect()
-            backrect[0], backrect[1] = 0, int(height * 185 / 216)
+            backrect[0], backrect[1] = w_offset, int(height * 185 / 216) + h_offset
             if num == 0:
                 play_scale = (int(width / 3), int(height * 33 / 216))
                 play = pygame.transform.scale(play_img, play_scale)
                 playrect = play.get_rect()
-                playrect[0], playrect[1] = int(width / 3), int(height * 150 / 216)
+                playrect[0] = int(width / 3) + w_offset
+                playrect[1] = int(height * 150 / 216) + h_offset
             RESIZE = False
         """MAINLOOP"""
         if com.game_started:
@@ -588,6 +590,7 @@ def wait_menu(com, backend):
                 screen_iter += 1
                 BG = pygame.transform.scale(bg_img[n], size)
                 BGrect = BG.get_rect()
+                BGrect[0], BGrect[1] = w_offset, h_offset
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -609,10 +612,11 @@ def wait_menu(com, backend):
             RESIZE = True
             return None
         """RENDERING"""
+        screen.fill(black)
         screen.blit(BG, BGrect)
         players = com.get_players_list()
         p_size = (int(width / 3), int(height / 7))
-        p_pos = (int(width * 2 / 3), 0)
+        p_pos = (int(width * 2 / 3) + w_offset, h_offset)
         prect = pygame.Rect(*p_pos, *p_size)
         for i in range(len(players)):
             plr = str(i + 1) + ". " + players[i][1]
@@ -660,6 +664,7 @@ def settings_menu(com, backend):
             bg_img = pygame.image.load(bg_name)
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
             ip_text = ""
             port_text = ""
         else:
@@ -667,6 +672,8 @@ def settings_menu(com, backend):
             bg_img = pygame.image.load(bg_name)
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
+
 
     global EXIT, RESIZE
     RESIZE = True
@@ -687,28 +694,30 @@ def settings_menu(com, backend):
             port_active = False
             """Text box for ip"""
             ip_size = (int(width / 3), int(height * 3 / 60))
-            ip_pos = (int(width / 3), int(height * 53 / 216))
+            ip_pos = (int(width / 3) + w_offset, int(height * 53 / 216) + h_offset)
             iprect = pygame.Rect(*ip_pos, *ip_size)
             ip_color = inactive_color
             """Text box for port"""
             port_size = (int(width / 3), int(height * 3 / 60))
-            port_pos = (int(width / 3), int(height * 137 / 216))
+            port_pos = (int(width / 3) + w_offset, int(height * 137 / 216) + h_offset)
             portrect = pygame.Rect(*port_pos, *port_size)
             port_color = inactive_color
             """Background"""
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
             """Back button"""
             icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
             back_scale = (icon_size, icon_size)
             back = pygame.transform.scale(back_img, back_scale)
             backrect = back.get_rect()
-            backrect[0], backrect[1] = 0, int(height * 185 / 216)
+            backrect[0], backrect[1] = w_offset, int(height * 185 / 216) + h_offset
             """Save buton"""
             save_scale = (int(width * 7 / 128), int(height * 12 / 216))
             save = pygame.transform.scale(save_img, save_scale)
             saverect = save.get_rect()
-            saverect[0], saverect[1] = int(width * 227 / 480), int(height * 7 / 9)
+            saverect[0] = int(width * 227 / 480) + w_offset
+            saverect[1] = int(height * 7 / 9) + h_offset
             RESIZE = False
         """MAINLOOP"""
         for event in pygame.event.get():
@@ -762,6 +771,7 @@ def settings_menu(com, backend):
                 check_resize(event)
 
         """RENDERING"""
+        screen.fill(black)
         ip_color = active_color if ip_active else inactive_color
         port_color = active_color if port_active else inactive_color
         screen.blit(BG, BGrect)
@@ -788,12 +798,13 @@ def rule_menu(com, backend):
             """Background"""
             BG_rule = pygame.transform.scale(bg_img, size)
             BG_rulerect = BG_rule.get_rect()
+            BG_rulerect[0], BG_rulerect[1] = w_offset, h_offset
             """Back button"""
             icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
             back_scale = (icon_size, icon_size)
             back = pygame.transform.scale(back_img, back_scale)
             backrect = back.get_rect()
-            backrect[0], backrect[1] = 0, int(height * 185 / 216)
+            backrect[0], backrect[1] = w_offset, int(height * 185 / 216) + h_offset
             RESIZE = False
         """MAINLOOP"""
         for event in pygame.event.get():
@@ -820,6 +831,7 @@ def rule_menu(com, backend):
                 check_resize(event)
 
         """RENDERING"""
+        screen.fill(black)
         screen.blit(BG_rule, BG_rulerect)
         screen.blit(back, backrect)
         pygame.display.flip()
@@ -840,6 +852,7 @@ def play_menu_2(com, backend):
             bg_img = pygame.image.load("interface/BG_name_bad.png")
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
             return False
 
     global EXIT, RESIZE
@@ -861,18 +874,19 @@ def play_menu_2(com, backend):
             """Background"""
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
             """Back button"""
             icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
             back_scale = (icon_size, icon_size)
             back = pygame.transform.scale(back_img, back_scale)
             backrect = back.get_rect()
-            backrect[0], backrect[1] = 0, int(height * 185 / 216)
+            backrect[0], backrect[1] = w_offset, int(height * 185 / 216) + h_offset
             """Text"""
             font_size = int(height / 30)
             font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
             """Text box aka Entry"""
             namebox_size = (int(width / 3), int(height * 3 / 60))
-            namebox_pos = (int(width / 3), int(height * 53 / 216))
+            namebox_pos = (int(width / 3) + w_offset, int(height * 53 / 216) + h_offset)
             namerect = pygame.Rect(*namebox_pos, *namebox_size)
             name_color = inactive_color
             name_text = name_full
@@ -884,7 +898,7 @@ def play_menu_2(com, backend):
             ok_scale = (int(width / 3), int(height * 33 / 216))
             ok = pygame.transform.scale(ok_img, ok_scale)
             okrect = ok.get_rect()
-            okrect[0], okrect[1] = int(width / 3), int(height * 115 / 216)
+            okrect[0], okrect[1] = int(width / 3) + w_offset, int(height * 115 / 216) + h_offset
             RESIZE = False
 
         """MAINLOOP"""
@@ -934,6 +948,7 @@ def play_menu_2(com, backend):
                 check_resize(event)
 
         """RENDERING"""
+        screen.fill(black)
         name_color = active_color if name_active else inactive_color
         screen.blit(BG, BGrect)
         screen.blit(back, backrect)
@@ -945,7 +960,7 @@ def play_menu_2(com, backend):
         pygame.display.flip()
 
 
-def disconnection():
+def disconnection(com, backend):
     """Disdpaying if backend can't connect to server"""
     global EXIT, RESIZE
     RESIZE = True
@@ -957,12 +972,13 @@ def disconnection():
             """Background"""
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
             """Ok button"""
             ok_scale = (int(width / 3), int(height * 33 / 216))
             ok = pygame.transform.scale(ok_img, ok_scale)
             okrect = ok.get_rect()
-            okrect[0] = int(width / 3)
-            okrect[1] = int(height * 115 / 216)
+            okrect[0] = int(width / 3) + w_offset
+            okrect[1] = int(height * 115 / 216) + h_offset
             RESIZE = False
 
         """MAINLOOP"""
@@ -989,6 +1005,7 @@ def disconnection():
                 check_resize(event)
 
         """RENDERING"""
+        screen.fill(black)
         screen.blit(BG, BGrect)
         screen.blit(ok, okrect)
         pygame.display.flip()
@@ -1011,6 +1028,7 @@ def connection(com, backend):
             """Background"""
             BG = pygame.transform.scale(bg_img[n], size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
             RESIZE = False
 
         """MAINLOOP"""
@@ -1024,6 +1042,7 @@ def connection(com, backend):
                 count += 1
                 BG = pygame.transform.scale(bg_img[n], size)
                 BGrect = BG.get_rect()
+                BGrect[0], BGrect[1] = w_offset, h_offset
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -1041,10 +1060,11 @@ def connection(com, backend):
                 check_resize(event)
 
         """RENDERING"""
+        screen.fill(black)
         screen.blit(BG, BGrect)
         pygame.display.flip()
 
-    disconnection()
+    disconnection(com, backend)
     return False
 
 
@@ -1081,13 +1101,13 @@ def play_menu(com, backend):
                 """Background"""
                 BG = pygame.transform.scale(bg_img, size)
                 BGrect = BG.get_rect()
-
+                BGrect[0], BGrect[1] = w_offset, h_offset
                 """Back button"""
                 icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
                 back_scale = (icon_size, icon_size)
                 back = pygame.transform.scale(back_img, back_scale)
                 backrect = back.get_rect()
-                backrect[0], backrect[1] = 0, int(height * 185 / 216)
+                backrect[0], backrect[1] = w_offset, int(height * 185 / 216) + h_offset
                 """Mods buttons"""
                 w, h = int(width / 5), int(height / 5)
                 m = min(w, h)
@@ -1098,7 +1118,7 @@ def play_menu(com, backend):
                 for i in range(len(mode_img)):
                     mode.append(pygame.transform.scale(mode_img[i], mode_size))
                     mode_rect.append(mode[i].get_rect())
-                    mode_rect[i][0], mode_rect[i][1] = w_pos, h_pos
+                    mode_rect[i][0], mode_rect[i][1] = w_pos + w_offset, h_pos + h_offset
                     w_pos += w_shift + m
                     if i == 2:
                         w_pos, h_pos = w_shift, h_shift * 2 + m
@@ -1135,6 +1155,7 @@ def play_menu(com, backend):
                     check_resize(event)
 
             """RENDERING"""
+            screen.fill(black)
             screen.blit(BG, BGrect)
             screen.blit(back, backrect)
             for i in range(len(mode)):
@@ -1147,16 +1168,19 @@ def play_menu(com, backend):
         return None
     else:
         """Download interface"""
+        RESIZE = True
         bg_img = []
         for i in range(4):
             bg_name = "interface/wait_{}.png".format(str(i))
             bg_img.append(pygame.image.load(bg_name))
         BG = pygame.transform.scale(pygame.image.load(bg_name), size)
         BGrect = BG.get_rect()
+        BGrect[0], BGrect[1] = w_offset, h_offset
         progress_img = pygame.image.load("interface/bar.png")
         progress = pygame.transform.scale(progress_img, (0, int(height / 6)))
         progress_rect = progress.get_rect()
-        progress_rect[1] = int(height * 2 / 3)
+        progress_rect[0] = w_offset
+        progress_rect[1] = int(height * 2 / 3) + h_offset
         screen_iter, n = 0, 0
 
         pygame.time.set_timer(pygame.USEREVENT, 1000)
@@ -1165,12 +1189,13 @@ def play_menu(com, backend):
             if RESIZE:
                 BG = pygame.transform.scale(bg_img[n], size)
                 BGrect = BG.get_rect()
+                BGrect[0], BGrect[1] = w_offset, h_offset
                 mul = com.get_progress()
                 p_size = (int(width * mul), int(height / 6))
                 progress = pygame.transform.scale(progress_img, p_size)
                 progress_rect = progress.get_rect()
-                progress_rect[1] = int(height * 2 / 3)
-
+                progress_rect[0] = w_offset
+                progress_rect[1] = int(height * 2 / 3) + h_offset
                 RESIZE = False
 
             """MAINLOOP"""
@@ -1182,11 +1207,13 @@ def play_menu(com, backend):
                     screen_iter += 1
                     BG = pygame.transform.scale(bg_img[n], size)
                     BGrect = BG.get_rect()
+                    BGrect[0], BGrect[1] = w_offset, h_offset
                     mul = com.get_progress()
                     p_size = (int(width * mul), int(height / 6))
                     progress = pygame.transform.scale(progress_img, p_size)
                     progress_rect = progress.get_rect()
-                    progress_rect[1] = int(height * 2 / 3)
+                    progress_rect[0] = w_offset
+                    progress_rect[1] = int(height * 2 / 3) + h_offset
                 """KEYBOARD EVENTS"""
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -1204,11 +1231,12 @@ def play_menu(com, backend):
                     check_resize(event)
 
             if not com.is_connected:
-                disconnection()
+                disconnection(com, backend)
                 RESIZE = True
                 return None
 
             """RENDERING"""
+            screen.fill(black)
             screen.blit(BG, BGrect)
             screen.blit(progress, progress_rect)
             pygame.display.flip()
