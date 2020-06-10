@@ -36,7 +36,7 @@ class Resources(Monitor):
             with open(conf_path) as conf:
                 self.configuration = json.load(conf)
         except Exception:
-            self.logger.error("failed to load config file resources/sets.json")
+            self.logger.error("failed to load config file resources/sets.json.")
 
 
 class HTTPHandler(SimpleHTTPRequestHandler):
@@ -620,7 +620,7 @@ class GameServer:
         while self.game_state.state != "SHUTDOWN":
             self.prepare()
             work = True
-            self.logger.info("Starting session %d" % self.session_id)
+            self.logger.info("Starting session %d." % self.session_id)
             while work:
                 self.check_resource_server()
                 if (self.game_state.state != "PLAYER_CONN" and
@@ -667,7 +667,7 @@ class GameServer:
                 self.players.release()
 
             self.players.stop()
-            self.logger.info("Closing session %d" % self.session_id)
+            self.logger.info("Closing session %d." % self.session_id)
             self.session_id += 1
 
         self.cli.stop()
@@ -715,10 +715,12 @@ class GameServer:
             card_num = self.resources.configuration[self.game_state.card_set]
         except Exception:
             card_num = 50
-            self.logger.error("no configuration entry for '%s'" %
+            self.logger.error("no configuration entry for '%s'." %
                               self.game_state.card_set)
         self.cards = list(range(card_num))
         shuffle(self.cards)
+        self.logger.info("Card set: %s, number of cards: %s." %
+                         (self.game_state.card_set, str(card_num)))
         if len(self.players) == 4:
             self.cards = self.cards[:len(self.cards) - 2]
         elif len(self.players) == 5:
