@@ -1011,6 +1011,7 @@ def connection(com, backend):
             """Background"""
             BG = pygame.transform.scale(bg_img[n], size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
             RESIZE = False
 
         """MAINLOOP"""
@@ -1024,6 +1025,7 @@ def connection(com, backend):
                 count += 1
                 BG = pygame.transform.scale(bg_img[n], size)
                 BGrect = BG.get_rect()
+                BGrect[0], BGrect[1] = w_offset, h_offset
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -1041,6 +1043,7 @@ def connection(com, backend):
                 check_resize(event)
 
         """RENDERING"""
+        screen.fill(black)
         screen.blit(BG, BGrect)
         pygame.display.flip()
 
