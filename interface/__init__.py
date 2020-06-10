@@ -945,7 +945,7 @@ def play_menu_2(com, backend):
         pygame.display.flip()
 
 
-def disconnection():
+def disconnection(com, backend):
     """Disdpaying if backend can't connect to server"""
     global EXIT, RESIZE
     RESIZE = True
@@ -957,12 +957,13 @@ def disconnection():
             """Background"""
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
             """Ok button"""
             ok_scale = (int(width / 3), int(height * 33 / 216))
             ok = pygame.transform.scale(ok_img, ok_scale)
             okrect = ok.get_rect()
-            okrect[0] = int(width / 3)
-            okrect[1] = int(height * 115 / 216)
+            okrect[0] = int(width / 3) + w_offset
+            okrect[1] = int(height * 115 / 216) + h_offset
             RESIZE = False
 
         """MAINLOOP"""
@@ -989,6 +990,7 @@ def disconnection():
                 check_resize(event)
 
         """RENDERING"""
+        screen.fill(black)
         screen.blit(BG, BGrect)
         screen.blit(ok, okrect)
         pygame.display.flip()
@@ -1047,7 +1049,7 @@ def connection(com, backend):
         screen.blit(BG, BGrect)
         pygame.display.flip()
 
-    disconnection()
+    disconnection(com, backend)
     return False
 
 
@@ -1214,7 +1216,7 @@ def play_menu(com, backend):
                     check_resize(event)
 
             if not com.is_connected:
-                disconnection()
+                disconnection(com, backend)
                 RESIZE = True
                 return None
 
