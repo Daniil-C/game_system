@@ -788,12 +788,13 @@ def rule_menu(com, backend):
             """Background"""
             BG_rule = pygame.transform.scale(bg_img, size)
             BG_rulerect = BG_rule.get_rect()
+            BG_rulerect[0], BG_rulerect[1] = w_offset, h_offset
             """Back button"""
             icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
             back_scale = (icon_size, icon_size)
             back = pygame.transform.scale(back_img, back_scale)
             backrect = back.get_rect()
-            backrect[0], backrect[1] = 0, int(height * 185 / 216)
+            backrect[0], backrect[1] = w_offset, int(height * 185 / 216) + h_offset
             RESIZE = False
         """MAINLOOP"""
         for event in pygame.event.get():
@@ -820,6 +821,7 @@ def rule_menu(com, backend):
                 check_resize(event)
 
         """RENDERING"""
+        screen.fill(black)
         screen.blit(BG_rule, BG_rulerect)
         screen.blit(back, backrect)
         pygame.display.flip()
