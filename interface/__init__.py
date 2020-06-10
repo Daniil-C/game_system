@@ -1148,16 +1148,19 @@ def play_menu(com, backend):
         return None
     else:
         """Download interface"""
+        RESIZE = True
         bg_img = []
         for i in range(4):
             bg_name = "interface/wait_{}.png".format(str(i))
             bg_img.append(pygame.image.load(bg_name))
         BG = pygame.transform.scale(pygame.image.load(bg_name), size)
         BGrect = BG.get_rect()
+        BGrect[0], BGrect[1] = w_offset, h_offset
         progress_img = pygame.image.load("interface/bar.png")
         progress = pygame.transform.scale(progress_img, (0, int(height / 6)))
         progress_rect = progress.get_rect()
-        progress_rect[1] = int(height * 2 / 3)
+        progress_rect[0] = w_offset
+        progress_rect[1] = int(height * 2 / 3) + h_offset
         screen_iter, n = 0, 0
 
         pygame.time.set_timer(pygame.USEREVENT, 1000)
@@ -1166,12 +1169,13 @@ def play_menu(com, backend):
             if RESIZE:
                 BG = pygame.transform.scale(bg_img[n], size)
                 BGrect = BG.get_rect()
+                BGrect[0], BGrect[1] = w_offset, h_offset
                 mul = com.get_progress()
                 p_size = (int(width * mul), int(height / 6))
                 progress = pygame.transform.scale(progress_img, p_size)
                 progress_rect = progress.get_rect()
-                progress_rect[1] = int(height * 2 / 3)
-
+                progress_rect[0] = w_offset
+                progress_rect[1] = int(height * 2 / 3) + h_offset
                 RESIZE = False
 
             """MAINLOOP"""
@@ -1183,11 +1187,13 @@ def play_menu(com, backend):
                     screen_iter += 1
                     BG = pygame.transform.scale(bg_img[n], size)
                     BGrect = BG.get_rect()
+                    BGrect[0], BGrect[1] = w_offset, h_offset
                     mul = com.get_progress()
                     p_size = (int(width * mul), int(height / 6))
                     progress = pygame.transform.scale(progress_img, p_size)
                     progress_rect = progress.get_rect()
-                    progress_rect[1] = int(height * 2 / 3)
+                    progress_rect[0] = w_offset
+                    progress_rect[1] = int(height * 2 / 3) + h_offset
                 """KEYBOARD EVENTS"""
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -1210,6 +1216,7 @@ def play_menu(com, backend):
                 return None
 
             """RENDERING"""
+            screen.fill(black)
             screen.blit(BG, BGrect)
             screen.blit(progress, progress_rect)
             pygame.display.flip()
