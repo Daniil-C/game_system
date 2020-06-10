@@ -207,6 +207,10 @@ def game_wait(com, backend):
                 players_rect.append(pygame.Rect(*players_pos, *players_size))
                 color = color_good if i[3] else color_bad
                 players_text.append(font.render(i[1], True, color))
+                text = i[1]
+                while players_text[-1].get_size()[0]  > int(width / 6):
+                    text = text[:-1]
+                    players_text[-1] = font.render(text, True, color)
                 score = "".join(("Score: ", str(i[0])))
                 players_score.append(font.render(score, True, color))
                 players_pos[1] += int(height / 8)
