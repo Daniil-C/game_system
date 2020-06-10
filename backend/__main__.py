@@ -407,7 +407,7 @@ class Backend(Monitor):
             self.common.leader_card = int(parsed[1])
             old_list = self.common.players_list
             results = parse_message(parsed[2], ",")
-            results = [i.split(";") for i in self.common.vote_results]
+            results = [i.split(";") for i in results]
             for i in results:
                 votes = []
                 for j in results:
