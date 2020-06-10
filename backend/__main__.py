@@ -13,7 +13,6 @@ import sys
 import shutil
 import wget
 import interface
-from zipfile import ZipFile
 from connection import connection as Conn
 from monitor import Monitor
 
@@ -155,15 +154,6 @@ class Common(Monitor):
         Returns voted players list
         """
         return self.vote_list
-
-    def get_progress(self):
-        """
-        Returns coef of downloaded archive
-        """
-        self.coef_mutex.acquire()
-        coef = self.coef
-        self.coef_mutex.release()
-        return coef
 
 
 def parse_message(message, sep):
@@ -382,7 +372,7 @@ class Backend(Monitor):
             i[-1] = False
         while not mes.startswith("VOTE") and mes:
             if mes.startswith("PLAYER"):
-                parsed = parse_message(mes, " ")
+                parsed = parse_message(mes," ")
             for i in self.common.vote_list:
                 if i[-2] == parsed[1]:
                     i[-1] = True
@@ -392,7 +382,7 @@ class Backend(Monitor):
             mes = self.conn.get()
             logging.debug(mes)
         else:
-            parsed = parse_message(parse_message(mes, " ")[1], ",")
+            parsed = parse_message(parse_message(mes," ")[1], ",")
             parsed.remove(str(self.common.card))
             self.common.vote_cards = [self.common.card]
             self.common.vote_cards.extend([int(i) for i in parsed])
