@@ -1081,13 +1081,13 @@ def play_menu(com, backend):
                 """Background"""
                 BG = pygame.transform.scale(bg_img, size)
                 BGrect = BG.get_rect()
-
+                BGrect[0], BGrect[1] = w_offset, h_offset
                 """Back button"""
                 icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
                 back_scale = (icon_size, icon_size)
                 back = pygame.transform.scale(back_img, back_scale)
                 backrect = back.get_rect()
-                backrect[0], backrect[1] = 0, int(height * 185 / 216)
+                backrect[0], backrect[1] = w_offset, int(height * 185 / 216) + h_offset
                 """Mods buttons"""
                 w, h = int(width / 5), int(height / 5)
                 m = min(w, h)
@@ -1098,7 +1098,7 @@ def play_menu(com, backend):
                 for i in range(len(mode_img)):
                     mode.append(pygame.transform.scale(mode_img[i], mode_size))
                     mode_rect.append(mode[i].get_rect())
-                    mode_rect[i][0], mode_rect[i][1] = w_pos, h_pos
+                    mode_rect[i][0], mode_rect[i][1] = w_pos + w_offset, h_pos + h_offset
                     w_pos += w_shift + m
                     if i == 2:
                         w_pos, h_pos = w_shift, h_shift * 2 + m
@@ -1135,6 +1135,7 @@ def play_menu(com, backend):
                     check_resize(event)
 
             """RENDERING"""
+            screen.fill(black)
             screen.blit(BG, BGrect)
             screen.blit(back, backrect)
             for i in range(len(mode)):
