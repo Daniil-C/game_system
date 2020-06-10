@@ -22,6 +22,7 @@ SETTINGS = False
 EXIT = False
 TURN = True
 RESIZE = False
+font_file = "fonts/Chilanka-Custom.ttf"
 
 def check_resize(event):
     global size, size_orig
@@ -40,60 +41,64 @@ def check_resize(event):
     RESIZE = True
 
 def vote(com, backend):
-    global EXIT
+    global EXIT, RESIZE
+    RESIZE = True
     leader = com.turn
     mode = com.mode
-    bg_play = "interface/play_bg.png"
-    BG = pygame.transform.scale(pygame.image.load(bg_play), size)
-    BGrect = BG.get_rect()
+    bg_play = pygame.image.load("interface/play_bg.png")
     header_text = "Guess leader's card"
-    h_font_size = int(height / 8)
-    h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
     h_color = 0xAD, 0xE5, 0xF3
-    header = h_font.render(header_text, True, h_color)
-    header_rect = header.get_rect()
-    shift = int(height / 120)
-    header_rect[1] = shift
-    w = header_rect[2]
-    header_rect[0] = int(width / 2 - w / 2)
-    cards = com.vote_cards #TODO
-    #cards = [34, 35, 36, 37, 38, 39]
-    card_pos = [int((width - height * len(cards) / 6) / (len(cards) + 1)), int(height * 0.7)]
-    cards_img = []
-    cards_rect = []
-    cards_size = (int(height / 6), int(height / 4))
+    cards = com.vote_cards
+    cards_row = []
     for i in cards:
-        name = "".join(("resources/", mode, "/", str(i), ".png"))
-        cards_img.append(pygame.transform.scale(pygame.image.load(name), cards_size))
-        cards_rect.append(cards_img[-1].get_rect())
-        cards_rect[-1][0] = card_pos[0]
-        cards_rect[-1][1] = card_pos[1]
-        card_pos[0] += int((width - height * len(cards) / 6) / (len(cards) + 1) + height / 6)
+        name = pygame.image.load("".join(("resources/", mode, "/", str(i), ".png")))
+        cards_row.append(name)
     assoc_text = com.ass
-    a_font_size = int(height / 30)
-    a_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", a_font_size)
     a_color = 0xAD, 0xE5, 0xF3
-    assoc = a_font.render(assoc_text, True, a_color)
-    a_rect = assoc.get_rect()
     card = False
     b_card = None
-    card_size = (int(height / 3), int(height / 2))
-    card_rect = []
     key_pressed = [False for i in range(len(cards))]
     pressed = False
     pygame.time.set_timer(pygame.USEREVENT, 100)
 
     while True:
+        if RESIZE:
+            BG = pygame.transform.scale(bg_play, size)
+            BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
+            h_font_size = int(height / 8)
+            h_font = pygame.font.Font(font_file, h_font_size)
+            header = h_font.render(header_text, True, h_color)
+            header_rect = header.get_rect()
+            shift = int(height / 120)
+            header_rect[1] = shift + h_offset
+            w = header_rect[2]
+            header_rect[0] = int(width / 2 - w / 2) + w_offset
+            card_pos = [int((width - height * len(cards) / 6) / (len(cards) + 1)) + w_offset, int(height * 0.7) + h_offset]
+            cards_img = []
+            cards_rect = []
+            cards_size = (int(height / 6), int(height / 4))
+            for i in range(len(cards)):
+                cards_img.append(pygame.transform.scale(cards_row[i], cards_size))
+                cards_rect.append(cards_img[-1].get_rect())
+                cards_rect[-1][0] = card_pos[0]
+                cards_rect[-1][1] = card_pos[1]
+                card_pos[0] += int((width - height * len(cards) / 6) / (len(cards) + 1) + height / 6)
+            a_font_size = int(height / 30)
+            a_font = pygame.font.Font(font_file, a_font_size)
+            assoc = a_font.render(assoc_text, True, a_color)
+            a_rect = assoc.get_rect()
+            card_size = (int(height / 3), int(height / 2))
+            card_rect = []
+
         """MAINLOOP"""
         for event in pygame.event.get():
             """EVENTS HANDLING"""
-
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN and not leader:
                 for i in range(len(cards)):
                     if cards_rect[i].collidepoint(event.pos):
                         backend.set_card(cards[i])
-
             """USER EVENTS"""
             if event.type == pygame.USEREVENT and not pressed:
                 for i in range(len(cards)):
@@ -102,14 +107,13 @@ def vote(com, backend):
                         name = "".join(("resources/", mode, "/", str(cards[i]), ".png"))
                         b_card = pygame.transform.scale(pygame.image.load(name), card_size)
                         card_rect = b_card.get_rect()
-                        card_rect[0] = int(width / 2 - height / 6)
-                        card_rect[1] = int(height / 6)
+                        card_rect[0] = int(width / 2 - height / 6) + w_offset
+                        card_rect[1] = int(height / 6) + h_offset
                         break
                 else:
                     card = False
                     b_card = None
                     card_rect = []
-
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -127,8 +131,8 @@ def vote(com, backend):
                             name = "".join(("interface/", str(cards[i]), ".png"))
                             b_card = pygame.transform.scale(pygame.image.load(name), card_size)
                             card_rect = b_card.get_rect()
-                            card_rect[0] = int(width / 2 - height / 6)
-                            card_rect[1] = int(height / 6)
+                            card_rect[0] = int(width / 2 - height / 6) + w_offset
+                            card_rect[1] = int(height / 6) + h_offset
                             break
                     else:
                         card = False
@@ -153,14 +157,17 @@ def vote(com, backend):
                 pygame.quit()
                 EXIT = True
                 return None
+            if event.type == pygame.VIDEORESIZE:
+                check_resize(event)
 
         """RENDERING"""
+        screen.fill(black)
         shift = int(height / 120)
         screen.blit(BG, BGrect)
         for i in range(len(cards_img)):
             screen.blit(cards_img[i], cards_rect[i])
-        screen.blit(header, (int(width / 6) + shift, shift))
-        screen.blit(assoc, (int(width - a_rect[2]) / 2, int(height / 6 + 2 * shift)))
+        screen.blit(header, (int(width / 6) + shift + w_offset, shift + h_offset))
+        screen.blit(assoc, (int(width - a_rect[2]) / 2 + w_offset, int(height / 6 + 2 * shift) + h_offset))
         if card:
             screen.blit(b_card, card_rect)
         pygame.display.flip()
@@ -168,42 +175,43 @@ def vote(com, backend):
 
 def game_wait(com, backend):
     """Wait when all players choose his card"""
-    global EXIT
-    bg_play = "interface/play_bg.png"
-    BG = pygame.transform.scale(pygame.image.load(bg_play), size)
-    BGrect = BG.get_rect()
+    global EXIT, RESIZE
+    RESIZE = True
+    bg_play = pygame.image.load("interface/play_bg.png")
     header_text = "Wait other players"
-    h_font_size = int(height / 8)
-    h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
     h_color = 0xAD, 0xE5, 0xF3
-    header = h_font.render(header_text, True, h_color)
-    header_rect = header.get_rect()
-    shift = int(height / 120)
-    header_rect[1] = shift
-    w = header_rect[2]
-    header_rect[0] = int(width / 2 - w / 2)
-    players = [[5, "agronom", 5], [5, "jmg", 5], [5, "dannon", 5]]
     players = com.get_vote_list()
-    players_pos = [0, 0]
-    font_size = int(height / 30)
-    font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
     color_good = 0x00, 0xFF, 0x00
     color_bad = 0xFF, 0x00, 0x00
-    score = 0
-    players_rect = []
-    players_size = (int(width / 6), int(height / 8))
-    players_text = []
-    players_score = []
-    for i in players:
-        players_rect.append(pygame.Rect(*players_pos, *players_size))
-        color = color_good if i[3] else color_bad
-        players_text.append(font.render(i[1], True, color))
-        score = "".join(("Score: ", str(i[0])))
-        players_score.append(font.render(score, True, color))
-        players_pos[1] += int(height / 8)
-    rect_rect = pygame.Rect(0, 0, int(width / 6), int(height / 8) * len(players))
-
     while True:
+        if RESIZE:
+            BG = pygame.transform.scale(bg_play, size)
+            BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
+            h_font_size = int(height / 8)
+            h_font = pygame.font.Font(font_file, h_font_size)
+            header = h_font.render(header_text, True, h_color)
+            header_rect = header.get_rect()
+            shift = int(height / 120)
+            header_rect[1] = shift + h_offset
+            w = header_rect[2]
+            header_rect[0] = int(width / 2 - w / 2) + w_offset
+            players_pos = [w_offset, h_offset]
+            font_size = int(height / 30)
+            font = pygame.font.Font(font_file, font_size)
+            players_rect = []
+            players_size = (int(width / 6), int(height / 8))
+            players_text = []
+            players_score = []
+            for i in players:
+                players_rect.append(pygame.Rect(*players_pos, *players_size))
+                color = color_good if i[3] else color_bad
+                players_text.append(font.render(i[1], True, color))
+                score = "".join(("Score: ", str(i[0])))
+                players_score.append(font.render(score, True, color))
+                players_pos[1] += int(height / 8)
+            rect_rect = pygame.Rect(w_offset, h_offset, int(width / 6), int(height / 8) * len(players))
+            RESIZE = False
         if com.vote_time:
             vote(com, backend)
             if EXIT:
@@ -211,9 +219,7 @@ def game_wait(com, backend):
         """MAINLOOP"""
         for event in pygame.event.get():
             """EVENTS HANDLING"""
-
             """MOUSE EVENTS"""
-
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -228,13 +234,15 @@ def game_wait(com, backend):
                 pygame.quit()
                 EXIT = True
                 return None
+            if event.type == pygame.VIDEORESIZE:
+                check_resize(event)
 
         """RENDERING"""
+        screen.fill(black)
         shift = int(height / 120)
         screen.blit(BG, BGrect)
-
         players = com.get_vote_list()
-        players_pos = [0, 0]
+        players_pos = [w_offset, h_offset]
         for i in range(len(players)):
             color = color_good if players[i][3] else color_bad
             players_text[i] = font.render(players[i][1], True, color)
@@ -245,7 +253,7 @@ def game_wait(com, backend):
             screen.blit(players_score[i], (players_rect[i][0] + shift, players_rect[i][1] + shift * 6))
         color = 0xFF, 0xFF, 0xFF
         pygame.draw.rect(screen, color, rect_rect, 2)
-        screen.blit(header, (int(width / 6) + shift, shift))
+        screen.blit(header, (int(width / 6) + shift + w_offset, shift + h_offset))
         pygame.display.flip()
 
 
@@ -272,7 +280,7 @@ def set_association(com, backend):
     BGrect[0], BGrect[1] = w_offset, h_offset
     """"Header"""
     h_font_size = int(height / 8)
-    h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
+    h_font = pygame.font.Font(font_file, h_font_size)
     header = h_font.render(header_text, True, h_color)
     header_rect = header.get_rect()
     shift = int(height / 120)
@@ -293,7 +301,7 @@ def set_association(com, backend):
     backrect[0] = w_offset
     backrect[1] = int(height * 185 / 216) + h_offset
     font_size = int(height / 30)
-    font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
+    font = pygame.font.Font(font_file, font_size)
     """Text box aka Entry"""
     namebox_size = (int(width * 2 / 3), int(height * 3 / 60))
     namebox_pos = (int(width / 6) + w_offset, int(height * 3 / 4 - height / 20) + h_offset)
@@ -313,7 +321,7 @@ def set_association(com, backend):
             BGrect[0], BGrect[1] = w_offset, h_offset
             """"Header"""
             h_font_size = int(height / 8)
-            h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
+            h_font = pygame.font.Font(font_file, h_font_size)
             header = h_font.render(header_text, True, h_color)
             header_rect = header.get_rect()
             shift = int(height / 120)
@@ -334,7 +342,7 @@ def set_association(com, backend):
             backrect[0] = w_offset
             backrect[1] = int(height * 185 / 216) + h_offset
             font_size = int(height / 30)
-            font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
+            font = pygame.font.Font(font_file, font_size)
             """Text box aka Entry"""
             namebox_size = (int(width * 2 / 3), int(height * 3 / 60))
             namebox_pos = (int(width / 6) + w_offset, int(height * 3 / 4 - height / 20) + h_offset)
@@ -351,7 +359,7 @@ def set_association(com, backend):
             """EVENTS HANDLING"""
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if backrect.collidepoint(event.pos):        #TODO
+                if backrect.collidepoint(event.pos):
                     return None
                 if namerect.collidepoint(event.pos):
                     name_active = not name_active
@@ -408,7 +416,7 @@ def game(com, backend):
         while not com.got_list:
             time.sleep(1)
         RESIZE = True
-        
+
         leader = com.turn
         choose_flg = leader
         mode = com.mode
@@ -460,12 +468,12 @@ def game(com, backend):
                 players = com.get_players_list()
                 players_pos = [w_offset, h_offset]
                 font_size = int(height / 30)
-                font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
+                font = pygame.font.Font(font_file, font_size)
                 players_rect = []
                 players_size = (int(width / 6), int(height / 8))
                 players_text = []
                 players_score = []
-                for i in players: 
+                for i in players:
                     color = color_leader if i[3] else color_else
                     players_rect.append(pygame.Rect(*players_pos, *players_size))
                     p_name = i[1]
@@ -485,7 +493,7 @@ def game(com, backend):
                 card_rect = (*card_pos, *card_size)
                 """Header"""
                 h_font_size = int(height / 12)
-                h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
+                h_font = pygame.font.Font(font_file, h_font_size)
                 header = h_font.render(header_text, True, h_color)
                 RESIZE = False
             """MAINLOOP"""
@@ -494,8 +502,8 @@ def game(com, backend):
                 choose_flg = True
                 header_text = "choose a card"
                 header = h_font.render(header_text, True, h_color)
-                assoc_text = com.ass 
-                a_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", a_font_size)
+                assoc_text = com.ass
+                a_font = pygame.font.Font(font_file, a_font_size)
                 assoc = a_font.render(assoc_text, True, a_color)
                 a_rect = assoc.get_rect()
 
@@ -538,7 +546,7 @@ def game(com, backend):
                             atr = "K_" + str(i + 1)
                             if event.key == pygame.__getattribute__(atr):
                                 key_pressed[i] = True
-                                pressed = True 
+                                pressed = True
                                 card = True
                                 b_card = pygame.transform.scale(cards_img[i], card_size)
                                 break
@@ -588,7 +596,6 @@ def game(com, backend):
                 break
 
 
-
 def wait_menu(com, backend):
     """Wait players"""
     global EXIT, RESIZE
@@ -605,7 +612,7 @@ def wait_menu(com, backend):
     while True:
         if RESIZE:
             font_size = int(height / 20)
-            font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
+            font = pygame.font.Font(font_file, font_size)
             h_shift = int(height / 14 - height / 40)
             """Background"""
             BG = pygame.transform.scale(bg_img[n], size)
@@ -735,7 +742,6 @@ def settings_menu(com, backend):
             BGrect = BG.get_rect()
             BGrect[0], BGrect[1] = w_offset, h_offset
 
-
     global EXIT, RESIZE
     RESIZE = True
 
@@ -750,7 +756,7 @@ def settings_menu(com, backend):
             shift = int(height / 120)
             """Text"""
             font_size = int(height / 30)
-            font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
+            font = pygame.font.Font(font_file, font_size)
             ip_active = False
             port_active = False
             """Text box for ip"""
@@ -918,7 +924,7 @@ def play_menu_2(com, backend):
 
     global EXIT, RESIZE
     RESIZE = True
-    
+
     bg_img = pygame.image.load("interface/BG_name.png")
     back_img = pygame.image.load("interface/back.png")
     ok_img = pygame.image.load("interface/ok.png")
@@ -944,7 +950,7 @@ def play_menu_2(com, backend):
             backrect[0], backrect[1] = w_offset, int(height * 185 / 216) + h_offset
             """Text"""
             font_size = int(height / 30)
-            font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
+            font = pygame.font.Font(font_file, font_size)
             """Text box aka Entry"""
             namebox_size = (int(width / 3), int(height * 3 / 60))
             namebox_pos = (int(width / 3) + w_offset, int(height * 53 / 216) + h_offset)
@@ -1174,7 +1180,7 @@ def play_menu(com, backend):
                 m = min(w, h)
                 mode_size = (m, m)
                 w_shift, h_shift = int((width - m * 3) / 4), int((height - m * 2) / 3)
-                w_pos,h_pos = w_shift, h_shift
+                w_pos, h_pos = w_shift, h_shift
                 mode, mode_rect = [], []
                 for i in range(len(mode_img)):
                     mode.append(pygame.transform.scale(mode_img[i], mode_size))
@@ -1351,7 +1357,7 @@ def main_menu(com, backend):
         for event in pygame.event.get():
             """EVENTS HANDLING"""
             """MOUSE EVENTS"""
-            if event.type == pygame.MOUSEBUTTONDOWN: 
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 if exitrect.collidepoint(event.pos):
                     backend.stop()
                     pygame.quit()
@@ -1402,6 +1408,4 @@ def init_interface(com, backend):
     global SETTINGS
     SETTINGS = com.ip is not None
     main_menu(com, backend)
-    return 
-
-#init_interface(-1, -1)
+    return
