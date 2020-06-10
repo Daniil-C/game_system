@@ -840,6 +840,7 @@ def play_menu_2(com, backend):
             bg_img = pygame.image.load("interface/BG_name_bad.png")
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
             return False
 
     global EXIT, RESIZE
@@ -861,18 +862,19 @@ def play_menu_2(com, backend):
             """Background"""
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
             """Back button"""
             icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
             back_scale = (icon_size, icon_size)
             back = pygame.transform.scale(back_img, back_scale)
             backrect = back.get_rect()
-            backrect[0], backrect[1] = 0, int(height * 185 / 216)
+            backrect[0], backrect[1] = w_offset, int(height * 185 / 216) + h_offset
             """Text"""
             font_size = int(height / 30)
             font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
             """Text box aka Entry"""
             namebox_size = (int(width / 3), int(height * 3 / 60))
-            namebox_pos = (int(width / 3), int(height * 53 / 216))
+            namebox_pos = (int(width / 3) + w_offset, int(height * 53 / 216) + h_offset)
             namerect = pygame.Rect(*namebox_pos, *namebox_size)
             name_color = inactive_color
             name_text = name_full
@@ -884,7 +886,7 @@ def play_menu_2(com, backend):
             ok_scale = (int(width / 3), int(height * 33 / 216))
             ok = pygame.transform.scale(ok_img, ok_scale)
             okrect = ok.get_rect()
-            okrect[0], okrect[1] = int(width / 3), int(height * 115 / 216)
+            okrect[0], okrect[1] = int(width / 3) + w_offset, int(height * 115 / 216) + h_offset
             RESIZE = False
 
         """MAINLOOP"""
@@ -934,6 +936,7 @@ def play_menu_2(com, backend):
                 check_resize(event)
 
         """RENDERING"""
+        screen.fill(black)
         name_color = active_color if name_active else inactive_color
         screen.blit(BG, BGrect)
         screen.blit(back, backrect)
