@@ -1081,6 +1081,7 @@ def play_menu(com, backend):
                 """Background"""
                 BG = pygame.transform.scale(bg_img, size)
                 BGrect = BG.get_rect()
+
                 """Back button"""
                 icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
                 back_scale = (icon_size, icon_size)
