@@ -391,14 +391,17 @@ def game(com, backend):
                 """Background"""
                 BG = pygame.transform.scale(bg_img, size)
                 BGrect = BG.get_rect()
+                BGrect[0], BGrect[1] = w_offset, h_offset
                 """Cards"""
                 cards_w = min(int(height / 6), int(width * 3 / 32))
                 cards_h = int(cards_w * 3 / 2)
                 cards_size = (cards_w, cards_h)
-                card_pos = [int((width - cards_w * len(cards)) / (len(cards) + 1)), int(height * 0.7)]
+                c_num = len(cards)
+                card_pos = [int((width - cards_w * c_num) / (c_num + 1)), int(height * 0.7)]
+                card_pos[0] += w_offset
+                card_pos[1] += h_offset
                 cards_row = []
                 cards_rect = []
-                cards_size = (int(height / 6), int(height / 4))
                 for i in range(len(cards)):
                     cards_row.append(pygame.transform.scale(cards_img[i], cards_size))
                     cards_rect.append(cards_row[-1].get_rect())
@@ -407,26 +410,26 @@ def game(com, backend):
                     card_pos[0] += int((width - cards_w * len(cards)) / (len(cards) + 1) + cards_w)
                 """Players"""
                 players = com.get_players_list()
-                players_pos = [0, 0]
+                players_pos = [w_offset, h_offset]
                 font_size = int(height / 30)
                 font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
                 players_rect = []
                 players_size = (int(width / 6), int(height / 8))
                 players_text = []
                 players_score = []
-                for i in players:
+                for i in players: 
                     color = color_leader if i[3] else color_else
                     players_rect.append(pygame.Rect(*players_pos, *players_size))
                     players_text.append(font.render(i[1], True, color))
                     score = "".join(("Score: ", str(i[0])))
                     players_score.append(font.render(score, True, color))
                     players_pos[1] += int(height / 8)
-                rect_rect = pygame.Rect(0, 0, int(width / 6), int(height / 8) * len(players))
+                rect_rect = pygame.Rect(w_offset, h_offset, int(width / 6), int(height / 8) * len(players))
                 """Big card"""
                 card_w = min(int(height / 3), int(width * 3 / 16))
                 card_h = int(card_w * 3 / 2)
                 card_size = (card_w, card_h)
-                card_pos = (int(width / 2 - card_w / 2), int(height / 6))
+                card_pos = (int(width / 2 - card_w / 2) + w_offset, int(height / 6) + h_offset)
                 card_rect = (*card_pos, *card_size)
                 """Header"""
                 h_font_size = int(height / 6)
@@ -471,7 +474,6 @@ def game(com, backend):
                     else:
                         card = False
                         b_card = None
-
                 """KEYBOARD EVENTS"""
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -512,6 +514,7 @@ def game(com, backend):
                     check_resize(event)
 
             """RENDERING"""
+            screen.fill(black)
             screen.blit(BG, BGrect)
             for i in range(len(cards_row)):
                 screen.blit(cards_row[i], cards_rect[i])
@@ -520,9 +523,12 @@ def game(com, backend):
                 screen.blit(players_score[i], (players_rect[i][0] + shift, players_rect[i][1] + shift * 6))
             color = color_else
             pygame.draw.rect(screen, color, rect_rect, 2)
-            screen.blit(header, (int(width / 6) + shift, shift))
+
+            header_pos = (int((width - header.get_size()[0]) / 2) + w_offset, shift + h_offset)
+            screen.blit(header, header_pos)
             if (not leader) and choose_flg:
-                screen.blit(assoc, (int(width - a_rect[2]) / 2, int(height / 6 + 2 * shift)))
+                a_pos = (int((width - a_rect[2]) / 2) + w_offset, int(height / 6 + 2 * shift) + h_offset)
+                screen.blit(assoc, a_pos)
             if card:
                 screen.blit(b_card, card_rect)
             pygame.display.flip()
