@@ -54,6 +54,8 @@ class Common(Monitor):
         self.vote_time = False
         self.coef_mutex = threading.Semaphore(1)
         self.coef = 0
+        self.end_vote = False
+        self.vote_results = []
 
     def reset(self):
         """
@@ -189,6 +191,7 @@ class Backend(Monitor):
         self.tasks = []
         self.conn = None
         self.config = os.getenv("CONFIG", "config.json")
+        self.names = {}
 
         try:
             with open(self.config, "r") as f:
@@ -337,6 +340,9 @@ class Backend(Monitor):
         logging.debug(parsed[3])
         self.common.players_list = [[0, i.split(";")[1], i.split(";")[0]]
                                     for i in parse_message(parsed[3], ",")]
+        for i in self.common.players_list:
+            self.names[i[2]] = i[1]
+        logging.debug(self.names)
         self.game_started = True
         self.common.game_started = True
         self.conn.send("READY")
@@ -399,10 +405,19 @@ class Backend(Monitor):
         if mes.startswith("STATUS"):
             parsed = parse_message(mes, " ")
             self.common.leader_card = int(parsed[1])
-            self.common.vote_results = parse_message(parsed[2], ",")
-            self.common.vote_results = [i.split(";") for i in self.common.vote_results]
+            old_list = self.common.players_list
+            results = parse_message(parsed[2], ",")
+            results = [i.split(";") for i in self.common.vote_results]
+            for i in results:
+                votes = []
+                for j in results:
+                    if j[2] == i[1]:
+                        votes.append(self.names[j[1]])
+                self.common.vote_results.append([self.names[i[0]], int(results[1]), votes])
+            logging.debug(self.common.vote_results)
             self.common.players_list = parse_message(parsed[3], ",")
             self.common.players_list = [i.split(";") for i in self.common.players_list]
+            self.common.end_vote = True
         elif mes.startswith("TURN"):
             return True
         else:
