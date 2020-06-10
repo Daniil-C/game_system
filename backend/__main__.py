@@ -171,12 +171,12 @@ def parse_message(message, sep):
     return message.split(sep)
 
 
-class Backend():
+class Backend(Monitor):
     """
     This class is a backend service of game
     """
     def __init__(self, common, inp_q):
-        #Monitor.__init__(self)
+        Monitor.__init__(self)
         self.common = common
         self.in_q = inp_q
         self.version = "res_0.0"
