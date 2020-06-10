@@ -614,7 +614,7 @@ def wait_menu(com, backend):
                 check_resize(event)
 
         if not com.is_connected:
-            disconnection()
+            disconnection(com, backend)
             RESIZE = True
             return None
         """RENDERING"""
