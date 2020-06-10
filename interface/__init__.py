@@ -387,7 +387,7 @@ def game(com, backend):
         while True:
             if RESIZE:
                 shift = int(height / 120)
-                a_font_size = int(height / 12)
+                a_font_size = int(height / 30)
                 """Background"""
                 BG = pygame.transform.scale(bg_img, size)
                 BGrect = BG.get_rect()
