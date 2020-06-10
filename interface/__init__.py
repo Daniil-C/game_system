@@ -184,6 +184,7 @@ def result(com, backend):
 def vote(com, backend):
     global EXIT, RESIZE
     RESIZE = True
+    selected = False
     leader = com.turn
     mode = com.mode
     bg_play = pygame.image.load("interface/play_bg.png")
