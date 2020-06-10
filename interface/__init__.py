@@ -89,7 +89,9 @@ def vote(com, backend):
             assoc = a_font.render(assoc_text, True, a_color)
             a_rect = assoc.get_rect()
             card_size = (int(height / 3), int(height / 2))
+            card = False
             card_rect = []
+            RESIZE = False
 
         """MAINLOOP"""
         for event in pygame.event.get():
@@ -104,8 +106,7 @@ def vote(com, backend):
                 for i in range(len(cards)):
                     if cards_rect[i].collidepoint(pygame.mouse.get_pos()):
                         card = True
-                        name = "".join(("resources/", mode, "/", str(cards[i]), ".png"))
-                        b_card = pygame.transform.scale(pygame.image.load(name), card_size)
+                        b_card = pygame.transform.scale(cards_row[i], card_size)
                         card_rect = b_card.get_rect()
                         card_rect[0] = int(width / 2 - height / 6) + w_offset
                         card_rect[1] = int(height / 6) + h_offset
@@ -128,8 +129,7 @@ def vote(com, backend):
                             key_pressed[i] = True
                             pressed = True 
                             card = True
-                            name = "".join(("interface/", str(cards[i]), ".png"))
-                            b_card = pygame.transform.scale(pygame.image.load(name), card_size)
+                            b_card = pygame.transform.scale(cards_row[i], card_size)
                             card_rect = b_card.get_rect()
                             card_rect[0] = int(width / 2 - height / 6) + w_offset
                             card_rect[1] = int(height / 6) + h_offset
@@ -207,6 +207,10 @@ def game_wait(com, backend):
                 players_rect.append(pygame.Rect(*players_pos, *players_size))
                 color = color_good if i[3] else color_bad
                 players_text.append(font.render(i[1], True, color))
+                text = i[1]
+                while players_text[-1].get_size()[0]  > int(width / 6):
+                    text = text[:-1]
+                    players_text[-1] = font.render(text, True, color)
                 score = "".join(("Score: ", str(i[0])))
                 players_score.append(font.render(score, True, color))
                 players_pos[1] += int(height / 8)
