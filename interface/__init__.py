@@ -826,40 +826,6 @@ def rule_menu(com, backend):
 
 def play_menu_2(com, backend):
     """DRAW NAME INSERTION INTERFACE"""
-    global EXIT
-    """Background"""
-    global EXIT
-    BG = pygame.transform.scale(pygame.image.load("interface/BG_name.png"), size)
-    BGrect = BG.get_rect()
-
-    """Back button"""
-    back_scale = (int(height * 21 / 216), int(height * 21 / 216))
-    back = pygame.transform.scale(pygame.image.load("interface/back.png"), back_scale)
-    backrect = back.get_rect()
-    backrect[0] = 0
-    backrect[1] = int(height * 185 / 216)
-
-    """Text"""
-    font_size = int(height / 30)
-    font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
-    name_active = False
-    name_text = ""
-
-    """Text box aka Entry"""
-    namebox_size = (int(width / 3), int(height * 3 / 60))
-    namebox_pos = (int(width / 3), int(height * 53 / 216))
-    namerect = pygame.Rect(namebox_pos[0], namebox_pos[1], namebox_size[0], namebox_size[1])
-    inactive_color = 0xFF, 0xFF, 0xFF
-    active_color = 0xAD, 0xE5, 0xF3
-    name_color = inactive_color
-
-    """OK button"""
-    ok_scale = (int(width / 3), int(height * 33 / 216))
-    ok = pygame.transform.scale(pygame.image.load("interface/ok.png"), ok_scale)
-    okrect = ok.get_rect()
-    okrect[0] = int(width / 3)
-    okrect[1] = int(height * 115 / 216)
-
     def save_fun(*arg):
         """Save Name"""
         nonlocal BG, BGrect, name_text
@@ -870,15 +836,52 @@ def play_menu_2(com, backend):
             backend.exit()
             return True
         else:
-            BG = pygame.transform.scale(pygame.image.load("interface/BG_name_bad.png"), size)
+            bg_img = pygame.image.load("interface/BG_name_bad.png")
+            BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
             return False
 
+    global EXIT, RESIZE
+    RESIZE = True
+    
+    bg_img = pygame.image.load("interface/BG_name.png")
+    back_img = pygame.image.load("interface/back.png")
+    ok_img = pygame.image.load("interface/ok.png")
+    inactive_color = 0xFF, 0xFF, 0xFF
+    active_color = 0xAD, 0xE5, 0xF3
+    name_active = False
+    name_text = ""
+    shift = int(height / 120)
+
     while True:
+        if RESIZE:
+            """Background"""
+            BG = pygame.transform.scale(bg_img, size)
+            BGrect = BG.get_rect()
+            """Back button"""
+            icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
+            back_scale = (icon_size, icon_size)
+            back = pygame.transform.scale(back_img, back_scale)
+            backrect = back.get_rect()
+            backrect[0], backrect[1] = 0, int(height * 185 / 216)
+            """Text"""
+            font_size = int(height / 30)
+            font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
+            """Text box aka Entry"""
+            namebox_size = (int(width / 3), int(height * 3 / 60))
+            namebox_pos = (int(width / 3), int(height * 53 / 216))
+            namerect = pygame.Rect(*namebox_pos, *namebox_size)
+            name_color = inactive_color
+            """OK button"""
+            ok_scale = (int(width / 3), int(height * 33 / 216))
+            ok = pygame.transform.scale(ok_img, ok_scale)
+            okrect = ok.get_rect()
+            okrect[0], okrect[1] = int(width / 3), int(height * 115 / 216)
+            RESIZE = False
+
         """MAINLOOP"""
         for event in pygame.event.get():
             """EVENTS HANDLING"""
-
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if backrect.collidepoint(event.pos):
@@ -891,7 +894,6 @@ def play_menu_2(com, backend):
                     if okrect.collidepoint(event.pos):
                         if save_fun():
                             return None
-
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -906,24 +908,28 @@ def play_menu_2(com, backend):
                             return None
                     elif event.key == pygame.K_BACKSPACE:
                         name_text = name_text[:-1]
-                    elif len(name_text) < 20:
+                    else:
                         name_text += event.unicode
-
+                        name_box = font.render(name_text, True, name_color)
+                        if name_box.get_size()[0] > namebox_size[0] - shift:
+                            name_text = name_text[:-1]
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
                 pygame.quit()
                 EXIT = True
                 return None
+            if event.type == pygame.VIDEORESIZE:
+                check_resize(event)
 
         """RENDERING"""
         name_color = active_color if name_active else inactive_color
-        shift = int(height / 120)
         screen.blit(BG, BGrect)
         screen.blit(back, backrect)
         screen.blit(ok, okrect)
         name_box = font.render(name_text, True, name_color)
-        screen.blit(name_box, (namerect[0] + shift, namerect[1] + shift))
+        name_pos = (namerect[0] + shift, namerect[1] + shift)
+        screen.blit(name_box, name_pos)
         pygame.draw.rect(screen, name_color, namerect, 2)
         pygame.display.flip()
 
