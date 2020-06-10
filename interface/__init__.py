@@ -781,23 +781,25 @@ def settings_menu(com, backend):
 def rule_menu(com, backend):
     """DRAW RULE MENU INTERFACE"""
     global EXIT, RESIZE
-    """Background"""
-    global EXIT
-    BG_rule = pygame.transform.scale(pygame.image.load("interface/rule_menu.png"), size)
-    BG_rulerect = BG_rule.get_rect()
-
-    """Back button"""
-    back_scale = (int(height * 21 / 216), int(height * 21 / 216))
-    back = pygame.transform.scale(pygame.image.load("interface/back.png"), back_scale)
-    backrect = back.get_rect()
-    backrect[0] = 0
-    backrect[1] = int(height * 185 / 216)
+    RESIZE = True
+    bg_img = pygame.image.load("interface/rule_menu.png")
+    back_img = pygame.image.load("interface/back.png")
 
     while True:
+        if RESIZE:
+            """Background"""
+            BG_rule = pygame.transform.scale(bg_img, size)
+            BG_rulerect = BG_rule.get_rect()
+            """Back button"""
+            icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
+            back_scale = (icon_size, icon_size)
+            back = pygame.transform.scale(back_img, back_scale)
+            backrect = back.get_rect()
+            backrect[0], backrect[1] = 0, int(height * 185 / 216)
+            RESIZE = False
         """MAINLOOP"""
         for event in pygame.event.get():
             """EVENTS HANDLING"""
-
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if backrect.collidepoint(event.pos):
@@ -810,13 +812,14 @@ def rule_menu(com, backend):
                     pygame.quit()
                     EXIT = True
                     return None
-
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
                 pygame.quit()
                 EXIT = True
                 return None
+            if event.type == pygame.VIDEORESIZE:
+                check_resize(event)
 
         """RENDERING"""
         screen.blit(BG_rule, BG_rulerect)
