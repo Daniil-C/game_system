@@ -53,6 +53,7 @@ class Common(Monitor):
         self.vote_time = False
         self.coef_mutex = threading.Semaphore(1)
         self.coef = 0
+        self.config = os.getenv("CONFIG", "config.json")
 
     def reset(self):
         """
@@ -189,7 +190,7 @@ class Backend(Monitor):
         self.conn = None
 
         try:
-            with open("config.txt", "r") as f:
+            with open(self.config, "r") as f:
                 s = f.read()
                 data = json.loads(s)
                 self.common.ip = data["ip"]
@@ -276,7 +277,7 @@ class Backend(Monitor):
             self.updater.join()
             logging.debug("Closing updater")
         except Exception as ex:
-            logging.error(ex)
+            logging.warn(ex)
 
     def set_connection_params(self, ip, port):
         """
@@ -288,7 +289,7 @@ class Backend(Monitor):
             self.connect(10)
             self.sock.close()
             self.common.is_connected = True
-            with open("config.txt", "w") as f:
+            with open(self.config, "w") as f:
                 data = {"ip": ip, "port": port, "version": self.version}
                 f.write(json.dumps(data))
         except Exception as e:
@@ -410,7 +411,7 @@ class Backend(Monitor):
                 self.common.players_list = [i.split(";") for i in parsed]
                 time.sleep(1)
             except Exception as ex:
-                logging.error(ex)
+                logging.warn(ex)
         self.sock.settimeout(None)
 
     def set_mode(self, mode):
@@ -442,12 +443,16 @@ class Backend(Monitor):
             url = parsed[4]
             if version != self.version:
                 logging.debug("Versions are different")
-                if "resources" not in os.listdir(os.path.join(os.path.dirname(sys.argv[0]), "..")):
-                    os.mkdir(os.path.join(os.path.dirname(sys.argv[0]), "../resources"))
-                path = os.path.join(os.path.dirname(sys.argv[0]), "../resources")
+                if "resources" not in os.listdir(
+                        os.path.join(os.path.dirname(sys.argv[0]), "..")
+                ):
+                    os.mkdir(os.path.join(
+                        os.path.dirname(sys.argv[0]), "../resources"))
+                path = os.path.join(
+                    os.path.dirname(sys.argv[0]), "../resources")
                 filepath = os.path.join(path, "{}.zip".format(version))
 
-                def get_bar(curr, total, num):
+                def get_bar(curr, total, _):
                     self.common.coef_mutex.acquire()
                     self.common.coef = curr / total
                     self.common.coef_mutex.release()
@@ -458,8 +463,12 @@ class Backend(Monitor):
                 os.remove(filename)
                 logging.debug("Download ended")
                 self.version = version
-                with open("config.txt", "w") as f:
-                    data = {"ip": self.common.ip, "port": self.common.port, "version": self.version}
+                with open(self.config, "w") as f:
+                    data = {
+                        "ip": self.common.ip,
+                        "port": self.common.port,
+                        "version": self.version
+                    }
                     f.write(json.dumps(data))
                 self.common.updated = True
             else:
@@ -489,7 +498,7 @@ class Backend(Monitor):
         try:
             self.updater.join()
         except Exception as ex:
-            logging.error(ex)
+            logging.warn(ex)
         self.common.reset()
 
     def set_card(self, card_num):
