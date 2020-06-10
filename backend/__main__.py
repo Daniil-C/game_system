@@ -268,7 +268,8 @@ class Backend(Monitor):
         """
         Stops programm
         """
-        self.conn.send("SHUTDOWN")
+        if self.common.is_connected:
+            self.conn.send("SHUTDOWN")
         self.end = True
         if self.conn is not None:
             self.conn.close()
