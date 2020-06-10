@@ -627,6 +627,9 @@ def wait_menu(com, backend):
         for i in range(len(players)):
             plr = str(i + 1) + ". " + players[i][1]
             player_box = font.render(plr, True, (0xAD, 0xE5, 0xF3))
+            while player_box.get_size()[0] + prect[0] > width:
+                plr = plr[:-1]
+                player_box = font.render(plr, True, (0xAD, 0xE5, 0xF3))
             screen.blit(player_box, (prect[0], prect[1] + h_shift))
             prect[1] += int(height / 7)
         screen.blit(back, backrect)
