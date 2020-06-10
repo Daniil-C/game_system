@@ -10,6 +10,7 @@ from random import shuffle, randrange
 import os
 import sys
 import gettext
+import json
 from monitor import Monitor
 from connection import connection
 import server.environment as env
@@ -22,11 +23,20 @@ class Resources(Monitor):
     Attributes:
     name (str): resources version name.
     link (str): new resources version address.
+    configuration(dict): number if cards in each set.
     """
-    def __init__(self, res_name, res_link):
+    def __init__(self, res_name, res_link, logger):
         Monitor.__init__(self)
         self.name = res_name
         self.link = res_link
+        self.logger = logger
+        self.configuration = None
+        conf_path = os.path.dirname(sys.argv[0]) + "/resources/sets.json"
+        try:
+            with open(conf_path) as conf:
+                self.configuration = json.load(conf)
+        except Exception:
+            self.logger.error("failed to load config file resources/sets.json")
 
 
 class HTTPHandler(SimpleHTTPRequestHandler):
@@ -76,9 +86,11 @@ class ResourceServer(Monitor):
 
         handler = HTTPHandler
         handler.logger = self.logger
+        file_path = os.path.dirname(sys.argv[0]) + "/resources/cards"
         self.server = HTTPServer((ip_addr, port),
                                  (lambda *args, **kwargs:
-                                  handler(*args, directory="server/resources",
+                                  handler(*args,
+                                          directory=file_path,
                                           **kwargs)))
         self.server.serve_forever(poll_interval=0.5)
         self.server.server_close()
@@ -679,9 +691,8 @@ class GameServer:
         """
         self.game_state.state = "PLAYER_CONN"
         self.players = PlayerList(self.logger, self.game_state)
-        self.cards = list(range(98))
-        shuffle(self.cards)
-        self.resources = Resources(env.get_res_name(), env.get_res_link())
+        self.resources = Resources(env.get_res_name(), env.get_res_link(),
+                                   self.logger)
         self.cli.players = self.players
         self.resource_server = ResourceServer(self.logger)
         self.current_player = None
@@ -700,6 +711,14 @@ class GameServer:
         """
         Setup before game start.
         """
+        try:
+            card_num = self.resources.configuration[self.game_state.card_set]
+        except Exception:
+            card_num = 50
+            self.logger.error("no configuration entry for '%s'" %\
+                              self.game_state.card_set)
+        self.cards = list(range(card_num))
+        shuffle(self.cards)
         if len(self.players) == 4:
             self.cards = self.cards[:len(self.cards) - 2]
         elif len(self.players) == 5:
