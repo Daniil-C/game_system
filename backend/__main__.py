@@ -172,12 +172,12 @@ def parse_message(message, sep):
     return message.split(sep)
 
 
-class Backend(Monitor):
+class Backend():
     """
     This class is a backend service of game
     """
     def __init__(self, common, inp_q):
-        Monitor.__init__(self)
+        #Monitor.__init__(self)
         self.common = common
         self.in_q = inp_q
         self.version = "res_0.0"
@@ -280,7 +280,7 @@ class Backend(Monitor):
             self.updater.join()
             logging.debug("Closing updater")
         except Exception as ex:
-            logging.warn(ex)
+            logging.warning(ex)
 
     def set_connection_params(self, ip, port):
         """
@@ -430,7 +430,7 @@ class Backend(Monitor):
                 self.common.players_list = [i.split(";") for i in parsed]
                 time.sleep(1)
             except Exception as ex:
-                logging.warn(ex)
+                logging.warning(ex)
         self.sock.settimeout(None)
 
     def set_mode(self, mode):
@@ -520,7 +520,7 @@ class Backend(Monitor):
         try:
             self.updater.join()
         except Exception as ex:
-            logging.warn(ex)
+            logging.warning(ex)
         self.common.reset()
 
     def set_card(self, card_num):
