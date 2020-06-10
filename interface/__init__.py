@@ -780,7 +780,7 @@ def settings_menu(com, backend):
 
 def rule_menu(com, backend):
     """DRAW RULE MENU INTERFACE"""
-    global EXIT
+    global EXIT, RESIZE
     """Background"""
     global EXIT
     BG_rule = pygame.transform.scale(pygame.image.load("interface/rule_menu.png"), size)
@@ -851,10 +851,12 @@ def play_menu_2(com, backend):
     active_color = 0xAD, 0xE5, 0xF3
     name_active = False
     name_text = ""
+    name_full = ""
     shift = int(height / 120)
 
     while True:
         if RESIZE:
+            shift = int(height / 120)
             """Background"""
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
@@ -872,6 +874,11 @@ def play_menu_2(com, backend):
             namebox_pos = (int(width / 3), int(height * 53 / 216))
             namerect = pygame.Rect(*namebox_pos, *namebox_size)
             name_color = inactive_color
+            name_text = name_full
+            name_box = font.render(name_text, True, name_color)
+            while name_box.get_size()[0] > namebox_size[0] - shift:
+                name_text = name_text[:-1]
+                name_box = font.render(name_text, True, name_color)
             """OK button"""
             ok_scale = (int(width / 3), int(height * 33 / 216))
             ok = pygame.transform.scale(ok_img, ok_scale)
@@ -907,12 +914,15 @@ def play_menu_2(com, backend):
                         if save_fun():
                             return None
                     elif event.key == pygame.K_BACKSPACE:
-                        name_text = name_text[:-1]
+                        name_full = name_full[:-1]
                     else:
-                        name_text += event.unicode
+                        name_full += event.unicode
+                    name_text = name_full
+                    name_box = font.render(name_text, True, name_color)
+                    while name_box.get_size()[0] > namebox_size[0] - shift:
+                        name_text = name_text[:-1]
+                        name_full = name_full[:-1]
                         name_box = font.render(name_text, True, name_color)
-                        if name_box.get_size()[0] > namebox_size[0] - shift:
-                            name_text = name_text[:-1]
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
