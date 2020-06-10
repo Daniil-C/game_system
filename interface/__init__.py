@@ -527,54 +527,46 @@ def game(com, backend):
 
 
 def wait_menu(com, backend):
-    global EXIT
     """Wait players"""
-    global EXIT
-    font_size = int(height / 20)
-    font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
-    w_shift = int(height / 120)
-    h_shift = int(height / 14 - height / 40)
-    clock = pygame.time.Clock()
-    """Background"""
-    bg_name = "interface/wait_0.png"
-    BG = pygame.transform.scale(pygame.image.load(bg_name), size)
-    BGrect = BG.get_rect()
+    global EXIT, RESIZE
+    RESIZE = True
 
-    """Back button"""
-    back_scale = (int(height * 21 / 216), int(height * 21 / 216))
-    back_name = "interface/back.png"
-    back = pygame.transform.scale(pygame.image.load(back_name), back_scale)
-    backrect = back.get_rect()
-    backrect[0] = 0
-    backrect[1] = int(height * 185 / 216)
-
+    bg_img = []
+    for i in range(4):
+        bg_img.append(pygame.image.load("interface/wait_{}.png".format(str(i))))
+    back_img = pygame.image.load("interface/back.png")
+    play_img = pygame.image.load("interface/play.png")
     num = com.get_number()
-    play = 0
-    playrect = 0
-    if num == 0:
-        play_scale = (int(width / 3), int(height * 33 / 216))
-        play_name = "interface/play.png"
-        play = pygame.transform.scale(pygame.image.load(play_name), play_scale)
-        playrect = play.get_rect()
-        playrect[0] = int(width / 3)
-        playrect[1] = int(height * 150 / 216)
-
-    screen_iter = 0
-
+    screen_iter, n = 0, 0
+    pygame.time.set_timer(pygame.USEREVENT, 500)
     while True:
+        if RESIZE:
+            font_size = int(height / 20)
+            font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
+            h_shift = int(height / 14 - height / 40)
+            """Background"""
+            BG = pygame.transform.scale(bg_img[n], size)
+            BGrect = BG.get_rect()
+            """Back button"""
+            icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
+            back_scale = (icon_size, icon_size)
+            back = pygame.transform.scale(back_img, back_scale)
+            backrect = back.get_rect()
+            backrect[0], backrect[1] = 0, int(height * 185 / 216)
+            if num == 0:
+                play_scale = (int(width / 3), int(height * 33 / 216))
+                play = pygame.transform.scale(play_img, play_scale)
+                playrect = play.get_rect()
+                playrect[0], playrect[1] = int(width / 3), int(height * 150 / 216)
+            RESIZE = False
         """MAINLOOP"""
-        n = screen_iter % 4
-        screen_iter += 1
-        img = "interface/wait_{}.png".format(str(n))
-        BG = pygame.transform.scale(pygame.image.load(img), size)
-        BGrect = BG.get_rect()
         if com.game_started:
             game(com, backend)
+            RESIZE = True
             return None
 
         for event in pygame.event.get():
             """EVENTS HANDLING"""
-
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if backrect.collidepoint(event.pos):
@@ -583,9 +575,14 @@ def wait_menu(com, backend):
                 if num == 0 and playrect.collidepoint(event.pos):
                     backend.play()
                     game(com, backend)
+                    RESIZE = True
                     return None
-
-
+            """USER EVENTS"""
+            if event.type == pygame.USEREVENT:
+                n = screen_iter % 4
+                screen_iter += 1
+                BG = pygame.transform.scale(bg_img[n], size)
+                BGrect = BG.get_rect()
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -593,29 +590,29 @@ def wait_menu(com, backend):
                     pygame.quit()
                     EXIT = True
                     return None
-
             """OTHER EVENTS"""
             if event.type == pygame.QUIT:
                 backend.stop()
                 pygame.quit()
                 EXIT = True
                 return None
+            if event.type == pygame.VIDEORESIZE:
+                check_resize(event)
 
-        clock.tick(2)
         if not com.is_connected:
             disconnection()
+            RESIZE = True
             return None
         """RENDERING"""
         screen.blit(BG, BGrect)
         players = com.get_players_list()
         p_size = (int(width / 3), int(height / 7))
         p_pos = (int(width * 2 / 3), 0)
-        prect = pygame.Rect(p_pos[0], p_pos[1], p_size[0], p_size[1])
+        prect = pygame.Rect(*p_pos, *p_size)
         for i in range(len(players)):
             plr = str(i + 1) + ". " + players[i][1]
             player_box = font.render(plr, True, (0xAD, 0xE5, 0xF3))
-            screen.blit(player_box, (prect[0] + w_shift, prect[1] + h_shift))
-            # pygame.draw.rect(screen, (0xAD, 0xE5, 0xF3), prect, 2)
+            screen.blit(player_box, (prect[0], prect[1] + h_shift))
             prect[1] += int(height / 7)
         screen.blit(back, backrect)
         if num == 0:
