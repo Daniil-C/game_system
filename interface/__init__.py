@@ -185,6 +185,9 @@ def result(com, backend):
             color = color_leader if players[i][3] else color_else
             p_name = res[i][0]
             text_img = font.render(p_name, True, color)
+            while text_img.get_size()[0] > cards_rect[i][2]:
+                p_name = p_name[:-1]
+                text_img = font.render(p_name, True, color)
             screen.blit(text_img, (cards_rect[i][0], cards_rect[i][1] - shift - font_size))
         for i in range(len(players)):
             screen.blit(players_text[i], (players_rect[i][0] + shift, players_rect[i][1] + shift))
