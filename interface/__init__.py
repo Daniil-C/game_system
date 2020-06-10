@@ -120,7 +120,7 @@ def result(com, backend):
                 pass
             """USER EVENTS"""
             if event.type == pygame.USEREVENT and not pressed:
-                for i in range(len(cards)):
+                for i in range(len(res)):
                     if cards_rect[i].collidepoint(pygame.mouse.get_pos()):
                         card = True
                         b_card = pygame.transform.scale(cards_img[i], card_size)
@@ -184,6 +184,7 @@ def result(com, backend):
 def vote(com, backend):
     global EXIT, RESIZE
     RESIZE = True
+    selected = False
     leader = com.turn
     mode = com.mode
     bg_play = pygame.image.load("interface/play_bg.png")
