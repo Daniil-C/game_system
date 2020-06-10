@@ -183,6 +183,7 @@ class Backend(Monitor):
         self.conn = None
         self.config = os.getenv("CONFIG", "config.json")
         self.names = {}
+        self.leader = 0
 
         try:
             with open(self.config, "r") as f:
@@ -350,9 +351,10 @@ class Backend(Monitor):
         logging.debug(mes)
         if mes.startswith("TURN"):
             parsed = parse_message(mes, " ")
+            self.leader = int(parsed[1])
             self.common.turn = int(parsed[1]) == self.common.player.number
             for i in self.common.players_list:
-                i.append(int(i[-1]) == int(parsed[1]))
+                i.append(int(i[-1]) == self.leader)
                 logging.debug(i)
         else:
             return False
@@ -409,7 +411,7 @@ class Backend(Monitor):
             p_list = [i.split(";") for i in p_list]
             self.common.players_list = []
             for i in p_list:
-                self.common.players_list.append([i[1], self.names[i[0]], i[0]])
+                self.common.players_list.append([i[1], self.names[i[0]], i[0], int(i[0]) == self.leader])
             self.common.end_vote = True
         elif mes.startswith("TURN"):
             return True
