@@ -13,19 +13,30 @@ info = pygame.display.Info()
 size = width, height = info.current_w, info.current_h
 print(size)
 
+size_orig = size
+w_orig = width
+h_orig = height
+w_offset = 0
+h_offset = 0
 SETTINGS = False
 EXIT = False
 TURN = True
 RESIZE = False
 
 def check_resize(event):
-    global size
-    global width
-    global height
+    global size, size_orig
+    global width, w_orig, w_offset
+    global height, h_orig, h_offset
     global RESIZE
-    size = event.size
-    width = event.w
-    height = event.h
+    size_orig = event.size
+    w_orig = event.w
+    h_orig = event.h
+    width = min(event.w, int(event.h * 1920 / 1080))
+    height = int(width * 1080 / 1920)
+    size = (width, height)
+    h_offset = int((h_orig - height) / 2)
+    w_offset = int((w_orig - width) / 2)
+    #screen = pygame.display.set_mode(size, pygame.RESIZABLE)
     RESIZE = True
 
 def vote(com, backend):
@@ -1216,32 +1227,33 @@ def main_menu(com, backend):
             """Background"""
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
             """Play button"""
             play_scale = (int(width / 3), int(height * 33 / 216))
             play = pygame.transform.scale(play_img, play_scale)
             playrect = play.get_rect()
-            playrect[0] = int(width / 3)
-            playrect[1] = int(height * 64 / 216)
+            playrect[0] = int(width / 3) + w_offset
+            playrect[1] = int(height * 64 / 216) + h_offset
             """Exit button"""
             exit_scale = (int(width / 3), int(height * 33 / 216))
             exit = pygame.transform.scale(exit_img, exit_scale)
             exitrect = exit.get_rect()
-            exitrect[0] = int(width / 3)
-            exitrect[1] = int(height * 115 / 216)
+            exitrect[0] = int(width / 3) + w_offset
+            exitrect[1] = int(height * 115 / 216) + h_offset
             """Settings button"""
             icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
             settings_scale = (icon_size, icon_size)
             settings = pygame.transform.scale(settings_img, settings_scale)
             settingsrect = settings.get_rect()
-            settingsrect[0] = 0
-            settingsrect[1] = int(height * 185 / 216)
+            settingsrect[0] = w_offset
+            settingsrect[1] = int(height * 185 / 216) + h_offset
             """Rule button"""
             rule_scale = settings_scale
             rule = pygame.transform.scale(rule_img, rule_scale)
             rulerect = rule.get_rect()
             rule_offset = int(width - rule_scale[0])
-            rulerect[0] = rule_offset
-            rulerect[1] = int(height * 185 / 216)
+            rulerect[0] = rule_offset + w_offset
+            rulerect[1] = int(height * 185 / 216) + h_offset
 
             RESIZE = False
 
@@ -1287,6 +1299,7 @@ def main_menu(com, backend):
                 check_resize(event)
 
         """RENDERING"""
+        screen.fill(black)
         screen.blit(BG, BGrect)
         screen.blit(play, playrect)
         screen.blit(exit, exitrect)
