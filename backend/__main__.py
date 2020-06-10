@@ -10,6 +10,7 @@ from multiprocessing import Queue
 import json
 import os
 import sys
+import shutil
 import wget
 import interface
 from zipfile import ZipFile
@@ -391,6 +392,22 @@ class Backend(Monitor):
             self.common.vote_time = True
             logging.debug("Vote time")
 
+        self.conn.get(mes)
+        logging.debug(mes)
+        if mes.startswith("STATUS"):
+            parsed = parse_message(mes, " ")
+            self.common.leader_card = int(parsed[1])
+            self.common.vote_results = parse_message(parsed[2], ",")
+            self.common.vote_results = [i.split(";") for i in self.common.vote_results]
+            self.common.players_list = parse_message(parsed[3], ",")
+            self.common.players_list = [i.split(";") for i in self.common.players_list]
+        elif mes.startswith("TURN"):
+            return True
+        else:
+            return False
+
+        # TODO
+
     def get_players_list(self):
         """
         Updates players table
@@ -443,11 +460,13 @@ class Backend(Monitor):
             url = parsed[4]
             if version != self.version:
                 logging.debug("Versions are different")
-                if "resources" not in os.listdir(
+                if "resources" in os.listdir(
                         os.path.join(os.path.dirname(sys.argv[0]), "..")
                 ):
-                    os.mkdir(os.path.join(
+                    shutil.rmtree(os.path.join(
                         os.path.dirname(sys.argv[0]), "../resources"))
+                os.mkdir(os.path.join(
+                    os.path.dirname(sys.argv[0]), "../resources"))
                 path = os.path.join(
                     os.path.dirname(sys.argv[0]), "../resources")
                 filepath = os.path.join(path, "{}.zip".format(version))
@@ -519,6 +538,13 @@ class Backend(Monitor):
         mes = "TURN {} {}".format(self.common.card, self.common.ass)
         self.conn.send(mes)
         logging.debug(mes)
+
+    def next_turn(self):
+        """
+        Send next turn message
+        """
+        self.conn.send("NETX_TURN")
+        logging.debug("NETX_TURN")
 
 
 class BackendInterface:
