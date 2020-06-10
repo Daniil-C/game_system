@@ -120,7 +120,7 @@ def result(com, backend):
                 pass
             """USER EVENTS"""
             if event.type == pygame.USEREVENT and not pressed:
-                for i in range(len(cards)):
+                for i in range(len(res)):
                     if cards_rect[i].collidepoint(pygame.mouse.get_pos()):
                         card = True
                         b_card = pygame.transform.scale(cards_img[i], card_size)
