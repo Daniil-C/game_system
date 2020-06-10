@@ -409,9 +409,7 @@ class Backend(Monitor):
             p_list = [i.split(";") for i in p_list]
             self.common.players_list = []
             for i in p_list:
-                self.common.players_list.append[i[1], self.names[i[0]], i[0]]
-            self.common.players_list = parse_message(parsed[3], ",")
-            self.common.players_list = [i.split(";") for i in self.common.players_list]
+                self.common.players_list.append(i[1], self.names[i[0]], i[0])
             self.common.end_vote = True
         elif mes.startswith("TURN"):
             return True
