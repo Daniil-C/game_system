@@ -250,59 +250,105 @@ def game_wait(com, backend):
 
 
 def set_association(com, backend):
-    global EXIT
-    bg_play = "interface/play_bg.png"
+    global EXIT, RESIZE
+    RESIZE = True
+
+    bg_play = pygame.image.load("interface/play_bg.png")
     mode = com.mode
-    BG = pygame.transform.scale(pygame.image.load(bg_play), size)
-    BGrect = BG.get_rect()
     header_text = "Enter your association"
-    h_font_size = int(height / 8)
-    h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
     h_color = 0xAD, 0xE5, 0xF3
-    header = h_font.render(header_text, True, h_color)
-    header_rect = header.get_rect()
-    shift = int(height / 120)
-    header_rect[1] = shift
-    w = header_rect[2]
-    header_rect[0] = int(width / 2 - w / 2)
-    card_size = (int(height / 3), int(height / 2))
-    name = "interface/34.png" #TODO
     name = "".join(("resources/", mode, "/", str(com.get_card()), ".png"))
-    b_card = pygame.transform.scale(pygame.image.load(name), card_size)
-    card_rect = b_card.get_rect()
-    card_rect[0] = int(width / 2 - height / 6)
-    card_rect[1] = int(height / 6)
-    back_scale = (int(height * 21 / 216), int(height * 21 / 216))
-    back_name = "interface/back.png"
-    back = pygame.transform.scale(pygame.image.load(back_name), back_scale)
-    backrect = back.get_rect()
-    backrect[0] = 0
-    backrect[1] = int(height * 185 / 216)
-    font_size = int(height / 30)
-    font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
+    card_img = pygame.image.load(name)
     name_active = False
     name_text = ""
-
-    """Text box aka Entry"""
-    namebox_size = (int(width * 2 / 3), int(height * 3 / 60))
-    namebox_pos = (int(width / 6), int(height * 3 / 4 - height / 20))
-    namerect = pygame.Rect(namebox_pos[0], namebox_pos[1], namebox_size[0], namebox_size[1])
     inactive_color = 0xFF, 0xFF, 0xFF
     active_color = 0xAD, 0xE5, 0xF3
     name_color = inactive_color
+    ok_img = pygame.image.load("interface/ok.png")
 
+    """Background"""
+    BG = pygame.transform.scale(bg_play, size)
+    BGrect = BG.get_rect()
+    BGrect[0], BGrect[1] = w_offset, h_offset
+    """"Header"""
+    h_font_size = int(height / 8)
+    h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
+    header = h_font.render(header_text, True, h_color)
+    header_rect = header.get_rect()
+    shift = int(height / 120)
+    header_rect[1] = shift + h_offset
+    w = header_rect[2]
+    header_rect[0] = int(width / 2 - w / 2) + w_offset
+    """Card"""
+    card_size = (int(height / 3), int(height / 2))
+    b_card = pygame.transform.scale(card_img, card_size)
+    card_rect = b_card.get_rect()
+    card_rect[0] = int(width / 2 - height / 6) + w_offset
+    card_rect[1] = int(height / 6) + h_offset
+    """Back button"""
+    back_scale = (int(height * 21 / 216), int(height * 21 / 216))
+    back_img = pygame.image.load("interface/back.png")
+    back = pygame.transform.scale(back_img, back_scale)
+    backrect = back.get_rect()
+    backrect[0] = w_offset
+    backrect[1] = int(height * 185 / 216) + h_offset
+    font_size = int(height / 30)
+    font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
+    """Text box aka Entry"""
+    namebox_size = (int(width * 2 / 3), int(height * 3 / 60))
+    namebox_pos = (int(width / 6) + w_offset, int(height * 3 / 4 - height / 20) + h_offset)
+    namerect = pygame.Rect(namebox_pos[0], namebox_pos[1], namebox_size[0], namebox_size[1])
     """OK button"""
     ok_scale = (int(width / 3), int(height * 33 / 216))
-    ok = pygame.transform.scale(pygame.image.load("interface/ok.png"), ok_scale)
+    ok = pygame.transform.scale(ok_img, ok_scale)
     okrect = ok.get_rect()
-    okrect[0] = int(width / 3)
-    okrect[1] = int(height * 170 / 216)
+    okrect[0] = int(width / 3) + w_offset
+    okrect[1] = int(height * 170 / 216) + h_offset
 
     while True:
+        if RESIZE:
+            """Background"""
+            BG = pygame.transform.scale(bg_play, size)
+            BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
+            """"Header"""
+            h_font_size = int(height / 8)
+            h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
+            header = h_font.render(header_text, True, h_color)
+            header_rect = header.get_rect()
+            shift = int(height / 120)
+            header_rect[1] = shift + h_offset
+            w = header_rect[2]
+            header_rect[0] = int(width / 2 - w / 2) + w_offset
+            """Card"""
+            card_size = (int(height / 3), int(height / 2))
+            b_card = pygame.transform.scale(card_img, card_size)
+            card_rect = b_card.get_rect()
+            card_rect[0] = int(width / 2 - height / 6) + w_offset
+            card_rect[1] = int(height / 6) + h_offset
+            """Back button"""
+            back_scale = (int(height * 21 / 216), int(height * 21 / 216))
+            back_img = pygame.image.load("interface/back.png")
+            back = pygame.transform.scale(back_img, back_scale)
+            backrect = back.get_rect()
+            backrect[0] = w_offset
+            backrect[1] = int(height * 185 / 216) + h_offset
+            font_size = int(height / 30)
+            font = pygame.font.Font("fonts/Chilanka-Custom.ttf", font_size)
+            """Text box aka Entry"""
+            namebox_size = (int(width * 2 / 3), int(height * 3 / 60))
+            namebox_pos = (int(width / 6) + w_offset, int(height * 3 / 4 - height / 20) + h_offset)
+            namerect = pygame.Rect(namebox_pos[0], namebox_pos[1], namebox_size[0], namebox_size[1])
+            """OK button"""
+            ok_scale = (int(width / 3), int(height * 33 / 216))
+            ok = pygame.transform.scale(ok_img, ok_scale)
+            okrect = ok.get_rect()
+            okrect[0] = int(width / 3) + w_offset
+            okrect[1] = int(height * 170 / 216) + h_offset
+            RESIZE = False
         """MAINLOOP"""
         for event in pygame.event.get():
             """EVENTS HANDLING"""
-
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if backrect.collidepoint(event.pos):        #TODO
@@ -315,7 +361,6 @@ def set_association(com, backend):
                         backend.set_ass(name_text)
                         game_wait(com, backend)
                         return None
-
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -340,8 +385,11 @@ def set_association(com, backend):
                 pygame.quit()
                 EXIT = True
                 return None
+            if event.type == pygame.VIDEORESIZE:
+                check_resize(event)
 
         """RENDERING"""
+        screen.fill(black)
         name_color = active_color if name_active else inactive_color
         screen.blit(BG, BGrect)
         screen.blit(back, backrect)
@@ -420,7 +468,11 @@ def game(com, backend):
                 for i in players: 
                     color = color_leader if i[3] else color_else
                     players_rect.append(pygame.Rect(*players_pos, *players_size))
-                    players_text.append(font.render(i[1], True, color))
+                    p_name = i[1]
+                    players_text.append(font.render(p_name, True, color))
+                    while players_text[-1].get_size()[0] > int(width / 6):
+                        p_name = p_name[:-1]
+                        players_text[-1] = font.render(p_name, True, color)
                     score = "".join(("Score: ", str(i[0])))
                     players_score.append(font.render(score, True, color))
                     players_pos[1] += int(height / 8)
@@ -432,7 +484,7 @@ def game(com, backend):
                 card_pos = (int(width / 2 - card_w / 2) + w_offset, int(height / 6) + h_offset)
                 card_rect = (*card_pos, *card_size)
                 """Header"""
-                h_font_size = int(height / 6)
+                h_font_size = int(height / 12)
                 h_font = pygame.font.Font("fonts/Chilanka-Custom.ttf", h_font_size)
                 header = h_font.render(header_text, True, h_color)
                 RESIZE = False
@@ -527,7 +579,7 @@ def game(com, backend):
             header_pos = (int((width - header.get_size()[0]) / 2) + w_offset, shift + h_offset)
             screen.blit(header, header_pos)
             if (not leader) and choose_flg:
-                a_pos = (int((width - a_rect[2]) / 2) + w_offset, int(height / 6 + 2 * shift) + h_offset)
+                a_pos = (int((width - a_rect[2]) / 2) + w_offset, int(height / 12 + 2 * shift) + h_offset)
                 screen.blit(assoc, a_pos)
             if card:
                 screen.blit(b_card, card_rect)
@@ -614,7 +666,7 @@ def wait_menu(com, backend):
                 check_resize(event)
 
         if not com.is_connected:
-            disconnection()
+            disconnection(com, backend)
             RESIZE = True
             return None
         """RENDERING"""
@@ -627,6 +679,9 @@ def wait_menu(com, backend):
         for i in range(len(players)):
             plr = str(i + 1) + ". " + players[i][1]
             player_box = font.render(plr, True, (0xAD, 0xE5, 0xF3))
+            while player_box.get_size()[0] + prect[0] > width + w_offset:
+                plr = plr[:-1]
+                player_box = font.render(plr, True, (0xAD, 0xE5, 0xF3))
             screen.blit(player_box, (prect[0], prect[1] + h_shift))
             prect[1] += int(height / 7)
         screen.blit(back, backrect)
