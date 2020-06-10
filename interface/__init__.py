@@ -660,6 +660,7 @@ def settings_menu(com, backend):
             bg_img = pygame.image.load(bg_name)
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
             ip_text = ""
             port_text = ""
         else:
@@ -667,6 +668,8 @@ def settings_menu(com, backend):
             bg_img = pygame.image.load(bg_name)
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
+
 
     global EXIT, RESIZE
     RESIZE = True
@@ -687,28 +690,30 @@ def settings_menu(com, backend):
             port_active = False
             """Text box for ip"""
             ip_size = (int(width / 3), int(height * 3 / 60))
-            ip_pos = (int(width / 3), int(height * 53 / 216))
+            ip_pos = (int(width / 3) + w_offset, int(height * 53 / 216) + h_offset)
             iprect = pygame.Rect(*ip_pos, *ip_size)
             ip_color = inactive_color
             """Text box for port"""
             port_size = (int(width / 3), int(height * 3 / 60))
-            port_pos = (int(width / 3), int(height * 137 / 216))
+            port_pos = (int(width / 3) + w_offset, int(height * 137 / 216) + h_offset)
             portrect = pygame.Rect(*port_pos, *port_size)
             port_color = inactive_color
             """Background"""
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
             """Back button"""
             icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
             back_scale = (icon_size, icon_size)
             back = pygame.transform.scale(back_img, back_scale)
             backrect = back.get_rect()
-            backrect[0], backrect[1] = 0, int(height * 185 / 216)
+            backrect[0], backrect[1] = w_offset, int(height * 185 / 216) + h_offset
             """Save buton"""
             save_scale = (int(width * 7 / 128), int(height * 12 / 216))
             save = pygame.transform.scale(save_img, save_scale)
             saverect = save.get_rect()
-            saverect[0], saverect[1] = int(width * 227 / 480), int(height * 7 / 9)
+            saverect[0] = int(width * 227 / 480) + w_offset
+            saverect[1] = int(height * 7 / 9) + h_offset
             RESIZE = False
         """MAINLOOP"""
         for event in pygame.event.get():
@@ -762,6 +767,7 @@ def settings_menu(com, backend):
                 check_resize(event)
 
         """RENDERING"""
+        screen.fill(black)
         ip_color = active_color if ip_active else inactive_color
         port_color = active_color if port_active else inactive_color
         screen.blit(BG, BGrect)
