@@ -590,6 +590,7 @@ def wait_menu(com, backend):
                 screen_iter += 1
                 BG = pygame.transform.scale(bg_img[n], size)
                 BGrect = BG.get_rect()
+                BGrect[0], BGrect[1] = w_offset, h_offset
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
