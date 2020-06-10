@@ -54,7 +54,6 @@ class Common(Monitor):
         self.vote_time = False
         self.coef_mutex = threading.Semaphore(1)
         self.coef = 0
-        self.config = os.getenv("CONFIG", "config.json")
 
     def reset(self):
         """
@@ -189,6 +188,7 @@ class Backend():
         self.collector_thread = None
         self.tasks = []
         self.conn = None
+        self.config = os.getenv("CONFIG", "config.json")
 
         try:
             with open(self.config, "r") as f:
