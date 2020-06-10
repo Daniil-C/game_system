@@ -268,6 +268,7 @@ class Backend(Monitor):
         """
         Stops programm
         """
+        self.conn.send("SHUTDOWN")
         self.end = True
         if self.conn is not None:
             self.conn.close()
@@ -512,6 +513,7 @@ class Backend(Monitor):
         """
         Restarts menu
         """
+        self.conn.send("SHUTDOWN")
         self.conn.close()
         self.game_started = False
         try:
@@ -623,6 +625,13 @@ class BackendInterface:
         Select association
         """
         d = {"method": "set_ass", "args": [ass]}
+        self.in_q.put(json.dumps(d))
+
+    def next_turn(self):
+        """
+        Select association
+        """
+        d = {"method": "next_turn", "args": []}
         self.in_q.put(json.dumps(d))
 
 
