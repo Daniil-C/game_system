@@ -394,7 +394,7 @@ class Backend():
             self.common.vote_time = True
             logging.debug("Vote time")
 
-        self.conn.get(mes)
+        mes = self.conn.get()
         logging.debug(mes)
         if mes.startswith("STATUS"):
             parsed = parse_message(mes, " ")
