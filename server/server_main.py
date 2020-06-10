@@ -775,6 +775,7 @@ class GameServer:
         elif cond == "SELF_SYNC":
             card_list = [player.current_card
                          for player in self.players]
+            shuffle(card_list)
             self.players.broadcast("VOTE " +
                                    ",".join(map(str, card_list)))
             for player in self.players:
