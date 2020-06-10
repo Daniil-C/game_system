@@ -552,17 +552,19 @@ def wait_menu(com, backend):
             """Background"""
             BG = pygame.transform.scale(bg_img[n], size)
             BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
             """Back button"""
             icon_size = min(int(height * 21 / 216), int(width * 7 / 128))
             back_scale = (icon_size, icon_size)
             back = pygame.transform.scale(back_img, back_scale)
             backrect = back.get_rect()
-            backrect[0], backrect[1] = 0, int(height * 185 / 216)
+            backrect[0], backrect[1] = w_offset, int(height * 185 / 216) + h_offset
             if num == 0:
                 play_scale = (int(width / 3), int(height * 33 / 216))
                 play = pygame.transform.scale(play_img, play_scale)
                 playrect = play.get_rect()
-                playrect[0], playrect[1] = int(width / 3), int(height * 150 / 216)
+                playrect[0] = int(width / 3) + w_offset
+                playrect[1] = int(height * 150 / 216) + h_offset
             RESIZE = False
         """MAINLOOP"""
         if com.game_started:
@@ -609,10 +611,11 @@ def wait_menu(com, backend):
             RESIZE = True
             return None
         """RENDERING"""
+        screen.fill(black)
         screen.blit(BG, BGrect)
         players = com.get_players_list()
         p_size = (int(width / 3), int(height / 7))
-        p_pos = (int(width * 2 / 3), 0)
+        p_pos = (int(width * 2 / 3) + w_offset, h_offset)
         prect = pygame.Rect(*p_pos, *p_size)
         for i in range(len(players)):
             plr = str(i + 1) + ". " + players[i][1]
