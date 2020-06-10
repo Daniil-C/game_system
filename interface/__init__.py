@@ -29,6 +29,7 @@ def check_resize(event):
     global width, w_orig, w_offset
     global height, h_orig, h_offset
     global RESIZE
+    selected = False
     size_orig = event.size
     w_orig = event.w
     h_orig = event.h
@@ -37,12 +38,153 @@ def check_resize(event):
     size = (width, height)
     h_offset = int((h_orig - height) / 2)
     w_offset = int((w_orig - width) / 2)
-    #screen = pygame.display.set_mode(size, pygame.RESIZABLE)
     RESIZE = True
+    
+
+def result(com, backend):
+    global EXIT, TURN, RESIZE
+    RESIZE = True
+    res = com.vote_results
+    leader = com.turn
+    mode = com.mode
+    bg_img = pygame.image.load("interface/play_bg_1.png")
+    cards = com.player.cards
+    cards_img = []
+    for i in res:
+        name = "".join(("resources/", mode, "/",  str(i[1]), ".png"))
+        cards_img.append(pygame.image.load(name))
+    color_else = 0xFF, 0xFF, 0xFF
+    color_leader = 0xFF, 0xFF, 0x00
+    card = False
+    b_card = None
+    key_pressed = [False for i in range(len(cards))]
+    pressed = False
+    pygame.time.set_timer(pygame.USEREVENT, 100)
+    players = com.get_players_list()
+
+    while True:
+        if RESIZE:
+            shift = int(height / 120)
+            """Background"""
+            BG = pygame.transform.scale(bg_img, size)
+            BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
+            """Cards"""
+            cards_w = min(int(height / 6), int(width * 3 / 32))
+            cards_h = int(cards_w * 3 / 2)
+            cards_size = (cards_w, cards_h)
+            c_num = len(res)
+            card_pos = [int((width - cards_w * c_num) / (c_num + 1)), int(height * 0.7)]
+            card_pos[0] += w_offset
+            card_pos[1] += h_offset
+            cards_row = []
+            cards_rect = []
+            for i in range(len(res)):
+                cards_row.append(pygame.transform.scale(cards_img[i], cards_size))
+                cards_rect.append(cards_row[-1].get_rect())
+                cards_rect[-1][0] = card_pos[0]
+                cards_rect[-1][1] = card_pos[1]
+                card_pos[0] += int((width - cards_w * len(cards)) / (len(cards) + 1) + cards_w)
+            """Players"""
+            players_pos = [w_offset, h_offset]
+            font_size = int(height / 30)
+            font = pygame.font.Font(font_file, font_size)
+            players_rect = []
+            players_size = (int(width / 6), int(height / 8))
+            players_text = []
+            players_score = []
+            for i in players:
+                color = color_leader if i[3] else color_else
+                players_rect.append(pygame.Rect(*players_pos, *players_size))
+                p_name = i[1]
+                players_text.append(font.render(p_name, True, color))
+                while players_text[-1].get_size()[0] > int(width / 6):
+                    p_name = p_name[:-1]
+                    players_text[-1] = font.render(p_name, True, color)
+                score = "".join(("Score: ", str(i[0])))
+                players_score.append(font.render(score, True, color))
+                players_pos[1] += int(height / 8)
+            rect_rect = pygame.Rect(w_offset, h_offset, int(width / 6), int(height / 8) * len(players))
+            """Big card"""
+            card_w = min(int(height / 3), int(width * 3 / 16))
+            card_h = int(card_w * 3 / 2)
+            card_size = (card_w, card_h)
+            card_pos = (int(width / 2 - card_w) + w_offset, int(height / 6) + h_offset)
+            card_rect = (*card_pos, *card_size)
+            RESIZE = False
+        """MAINLOOP"""
+        for event in pygame.event.get():
+            """EVENTS HANDLING"""
+            """MOUSE EVENTS"""
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pass
+            """USER EVENTS"""
+            if event.type == pygame.USEREVENT and not pressed:
+                for i in range(len(res)):
+                    if cards_rect[i].collidepoint(pygame.mouse.get_pos()):
+                        card = True
+                        b_card = pygame.transform.scale(cards_img[i], card_size)
+                        break
+                else:
+                    card = False
+                    b_card = None
+            """KEYBOARD EVENTS"""
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    backend.stop()
+                    pygame.quit()
+                    EXIT = True
+                    return None
+                else:
+                    for i in range(len(cards_rect)):
+                        atr = "K_" + str(i + 1)
+                        if event.key == pygame.__getattribute__(atr):
+                            key_pressed[i] = True
+                            pressed = True
+                            card = True
+                            b_card = pygame.transform.scale(cards_img[i], card_size)
+                            break
+                    else:
+                        card = False
+                        b_card = None
+            elif event.type == pygame.KEYUP:
+                for i in range(len(cards_rect)):
+                    atr = "K_" + str(i + 1)
+                    if event.key == pygame.__getattribute__(atr):
+                        key_pressed[i] = False
+                        pressed = False
+                        for j in key_pressed:
+                            pressed = pressed or j
+                        if not pressed:
+                            card = False
+                            b_card = None
+            """OTHER EVENTS"""
+            if event.type == pygame.QUIT:
+                backend.stop()
+                pygame.quit()
+                EXIT = True
+                return None
+            if event.type == pygame.VIDEORESIZE:
+                check_resize(event)
+
+        """RENDERING"""
+        screen.fill(black)
+        screen.blit(BG, BGrect)
+        for i in range(len(cards_row)):
+            screen.blit(cards_row[i], cards_rect[i])
+        for i in range(len(players)):
+            screen.blit(players_text[i], (players_rect[i][0] + shift, players_rect[i][1] + shift))
+            screen.blit(players_score[i], (players_rect[i][0] + shift, players_rect[i][1] + shift * 6))
+        color = color_else
+        pygame.draw.rect(screen, color, rect_rect, 2)
+        if card:
+            screen.blit(b_card, card_rect)
+        pygame.display.flip()
 
 def vote(com, backend):
     global EXIT, RESIZE
     RESIZE = True
+    selected = False
     leader = com.turn
     mode = com.mode
     bg_play = pygame.image.load("interface/play_bg.png")
@@ -62,6 +204,10 @@ def vote(com, backend):
     pygame.time.set_timer(pygame.USEREVENT, 100)
 
     while True:
+        if com.end_vote:
+            result(com, backend)
+            if EXIT:
+                return None
         if RESIZE:
             BG = pygame.transform.scale(bg_play, size)
             BGrect = BG.get_rect()
@@ -89,23 +235,25 @@ def vote(com, backend):
             assoc = a_font.render(assoc_text, True, a_color)
             a_rect = assoc.get_rect()
             card_size = (int(height / 3), int(height / 2))
+            card = False
             card_rect = []
+            RESIZE = False
 
         """MAINLOOP"""
         for event in pygame.event.get():
             """EVENTS HANDLING"""
             """MOUSE EVENTS"""
-            if event.type == pygame.MOUSEBUTTONDOWN and not leader:
-                for i in range(len(cards)):
+            if event.type == pygame.MOUSEBUTTONDOWN and not leader and not selected:
+                for i in range(1,len(cards)):
                     if cards_rect[i].collidepoint(event.pos):
                         backend.set_card(cards[i])
+                        selected = True
             """USER EVENTS"""
             if event.type == pygame.USEREVENT and not pressed:
                 for i in range(len(cards)):
                     if cards_rect[i].collidepoint(pygame.mouse.get_pos()):
                         card = True
-                        name = "".join(("resources/", mode, "/", str(cards[i]), ".png"))
-                        b_card = pygame.transform.scale(pygame.image.load(name), card_size)
+                        b_card = pygame.transform.scale(cards_row[i], card_size)
                         card_rect = b_card.get_rect()
                         card_rect[0] = int(width / 2 - height / 6) + w_offset
                         card_rect[1] = int(height / 6) + h_offset
@@ -128,8 +276,7 @@ def vote(com, backend):
                             key_pressed[i] = True
                             pressed = True 
                             card = True
-                            name = "".join(("interface/", str(cards[i]), ".png"))
-                            b_card = pygame.transform.scale(pygame.image.load(name), card_size)
+                            b_card = pygame.transform.scale(cards_row[i], card_size)
                             card_rect = b_card.get_rect()
                             card_rect[0] = int(width / 2 - height / 6) + w_offset
                             card_rect[1] = int(height / 6) + h_offset
@@ -207,6 +354,10 @@ def game_wait(com, backend):
                 players_rect.append(pygame.Rect(*players_pos, *players_size))
                 color = color_good if i[3] else color_bad
                 players_text.append(font.render(i[1], True, color))
+                text = i[1]
+                while players_text[-1].get_size()[0]  > int(width / 6):
+                    text = text[:-1]
+                    players_text[-1] = font.render(text, True, color)
                 score = "".join(("Score: ", str(i[0])))
                 players_score.append(font.render(score, True, color))
                 players_pos[1] += int(height / 8)
@@ -439,6 +590,7 @@ def game(com, backend):
         a_rect = None
         a_color = 0xAD, 0xE5, 0xF3
         pygame.time.set_timer(pygame.USEREVENT, 100)
+        players = com.get_players_list()
 
         while True:
             if RESIZE:
@@ -465,7 +617,6 @@ def game(com, backend):
                     cards_rect[-1][1] = card_pos[1]
                     card_pos[0] += int((width - cards_w * len(cards)) / (len(cards) + 1) + cards_w)
                 """Players"""
-                players = com.get_players_list()
                 players_pos = [w_offset, h_offset]
                 font_size = int(height / 30)
                 font = pygame.font.Font(font_file, font_size)
