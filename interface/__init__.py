@@ -282,8 +282,7 @@ def vote(com, backend):
     while True:
         if com.end_vote:
             result(com, backend)
-            if EXIT:
-                return None
+            return None
         if RESIZE:
             BG = pygame.transform.scale(bg_play, size)
             BGrect = BG.get_rect()
@@ -455,8 +454,7 @@ def game_wait(com, backend):
         players = com.get_vote_list()
         if com.vote_time:
             vote(com, backend)
-            if EXIT:
-                return None
+            return None
         """MAINLOOP"""
         for event in pygame.event.get():
             """EVENTS HANDLING"""
