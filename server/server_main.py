@@ -5,7 +5,7 @@ Imaginarium game server.
 import threading
 import readline
 from select import select
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from random import shuffle, randrange
 import os
 import sys
@@ -87,11 +87,11 @@ class ResourceServer(Monitor):
         handler = HTTPHandler
         handler.logger = self.logger
         file_path = os.path.dirname(sys.argv[0]) + "/resources/cards"
-        self.server = HTTPServer((ip_addr, port),
-                                 (lambda *args, **kwargs:
-                                  handler(*args,
-                                          directory=file_path,
-                                          **kwargs)))
+        self.server = ThreadingHTTPServer((ip_addr, port),
+                                          (lambda *args, **kwargs:
+                                           handler(*args,
+                                                   directory=file_path,
+                                                   **kwargs)))
         self.server.serve_forever(poll_interval=0.5)
         self.server.server_close()
 
