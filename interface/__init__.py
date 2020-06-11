@@ -1603,6 +1603,7 @@ def main_menu(com, backend):
     exit_img = pygame.image.load("interface/exit.png")
     settings_img = pygame.image.load("interface/settings.png")
     rule_img = pygame.image.load("interface/rule.png")
+    n = 0
     while True:
         if RESIZE:
             """Background"""
@@ -1637,10 +1638,14 @@ def main_menu(com, backend):
             rulerect[1] = int(height * 185 / 216) + h_offset
 
             RESIZE = False
-
+        print(n%100)
+        n += 1
+        if n == 100:
+            n = 0
         """MAINLOOP"""
         for event in pygame.event.get():
             """EVENTS HANDLING"""
+            print(str(event.type))
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if exitrect.collidepoint(event.pos):
@@ -1692,6 +1697,7 @@ def main_menu(com, backend):
 
 def init_interface(com, backend):
     global SETTINGS
+    #time.sleep(30)
     SETTINGS = com.ip is not None
     main_menu(com, backend)
     return
