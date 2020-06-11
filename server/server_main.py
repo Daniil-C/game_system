@@ -279,7 +279,7 @@ class Player(Monitor):
                 self.log_message("expected association message")
                 return
             self.current_card = int(res[1])
-            self.selected_card = 0
+            self.selected_card = -1
             for player in self.plist:
                 player.state = "WAIT_SELF_CARD"
             self.plist.broadcast("ASSOC " + " ".join(res[2:]))
