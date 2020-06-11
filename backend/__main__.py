@@ -57,6 +57,7 @@ class Common(Monitor):
         self.end_vote = False
         self.vote_results = []
         self.deltas = {}
+        self.new_turn = False
 
     def reset(self):
         """
@@ -81,6 +82,7 @@ class Common(Monitor):
         self.end_vote = False
         self.vote_results = []
         self.deltas = {}
+        self.new_turn = False
 
     def set_ip_port(self, ip, port):
         """
@@ -444,6 +446,7 @@ class Backend(Monitor):
                 parsed = parse_message(mes, " ")
                 self.common.player.cards = parse_message(parsed[1], ",")
                 self.new_turn();
+                self.common.new_turn = True
             else:
                 return False
         elif mes.startswith("TURN"):
