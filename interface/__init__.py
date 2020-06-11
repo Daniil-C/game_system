@@ -1592,7 +1592,8 @@ def play_menu(com, backend):
             pygame.draw.rect(screen, color, rect_rect, 2)
             pygame.display.flip()
             CLOCK.tick(30)
-        nonlocal UPD = True
+        nonlocal UPD 
+        UPD = True
 
 
 def main_menu(com, backend):
