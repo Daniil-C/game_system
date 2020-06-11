@@ -443,10 +443,11 @@ class Backend(Monitor):
             mes = self.conn.get()
             logging.debug(mes)
             if mes.startswith("CARDS"):
+                self.new_turn();
                 parsed = parse_message(mes, " ")
                 self.common.player.cards = parse_message(parsed[1], ",")
-                self.new_turn();
                 self.common.next_turn = True
+                self.common.got_list = True
             else:
                 return False
         elif mes.startswith("TURN"):
