@@ -131,6 +131,7 @@ def result(com, backend):
                     if com.finish_game:
                         global TURN
                         TURN = False
+                        return None
                     nxttrn = True
                     backend.next_turn()
             """USER EVENTS"""
