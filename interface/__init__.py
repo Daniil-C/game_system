@@ -20,6 +20,7 @@ EXIT = False
 TURN = True
 RESIZE = False
 font_file = "fonts/Chilanka-Custom.ttf"
+CLOCK = pygame.time.Clock()
 
 
 def check_resize(event):
@@ -137,7 +138,8 @@ def result(com, backend):
                         b_text = ["Owner:", res[i][0], "Voted:", *res[i][2]]
                         b_rend = []
                         b_rend.append(font.render(b_text[0], True, red))
-                        b_rend.append(font.render(b_text[1], True, color_leader))
+                        b_rend.append(font.render(b_text[1], True,
+                                                  color_leader))
                         while b_rend[-1].get_size()[0] > int(width / 6):
                             b_text[1] = b_text[1][:-1]
                             b_rend[-1] = (font.render(b_text[1],
@@ -170,10 +172,12 @@ def result(com, backend):
                             card = True
                             b_card = pygame.transform.scale(cards_img[i],
                                                             card_size)
-                            b_text = ["Owner:", res[i][0], "Voted:", *res[i][2]]
+                            b_text = ["Owner:", res[i][0],
+                                      "Voted:", *res[i][2]]
                             b_rend = []
                             b_rend.append(font.render(b_text[0], True, red))
-                            b_rend.append(font.render(b_text[1], True, color_leader))
+                            b_rend.append(font.render(b_text[1],
+                                          True, color_leader))
                             while b_rend[-1].get_size()[0] > int(width / 6):
                                 b_text[1] = b_text[1][:-1]
                                 b_rend[-1] = (font.render(b_text[1],
@@ -182,10 +186,12 @@ def result(com, backend):
                             for j in range(len(res[i][2])):
                                 b_rend.append(font.render(b_text[3 + j],
                                                           True, color_else))
-                                while b_rend[-1].get_size()[0] > int(width / 6):
+                                while b_rend[-1].get_size()[0] > int(width
+                                                                     / 6):
                                     b_text[3 + j] = b_text[3 + j][:-1]
                                     b_rend[-1] = (font.render(b_text[3 + j],
-                                                              True, color_leader))
+                                                              True,
+                                                              color_leader))
                             break
                     else:
                         card = False
@@ -245,6 +251,7 @@ def result(com, backend):
                 screen.blit(i, text_pos)
                 text_pos[1] += font_size + shift
         pygame.display.flip()
+        CLOCK.tick(30)
 
 
 def vote(com, backend):
@@ -395,6 +402,7 @@ def vote(com, backend):
         if card:
             screen.blit(b_card, card_rect)
         pygame.display.flip()
+        CLOCK.tick(30)
 
 
 def game_wait(com, backend):
@@ -482,6 +490,7 @@ def game_wait(com, backend):
         screen.blit(header, (int(width / 6) + shift + w_offset,
                              shift + h_offset))
         pygame.display.flip()
+        CLOCK.tick(30)
 
 
 def set_association(com, backend):
@@ -639,6 +648,7 @@ def set_association(com, backend):
         screen.blit(name_box, (namerect[0] + shift, namerect[1] + shift))
         pygame.draw.rect(screen, name_color, namerect, 2)
         pygame.display.flip()
+        CLOCK.tick(30)
 
 
 def game(com, backend):
@@ -838,6 +848,7 @@ def game(com, backend):
             if card:
                 screen.blit(b_card, card_rect)
             pygame.display.flip()
+            CLOCK.tick(30)
             if breaker:
                 break
 
@@ -943,6 +954,7 @@ def wait_menu(com, backend):
         if num == 0:
             screen.blit(play, playrect)
         pygame.display.flip()
+        CLOCK.tick(30)
 
 
 def settings_menu(com, backend):
@@ -1102,6 +1114,7 @@ def settings_menu(com, backend):
         pygame.draw.rect(screen, ip_color, iprect, 2)
         pygame.draw.rect(screen, port_color, portrect, 2)
         pygame.display.flip()
+        CLOCK.tick(30)
 
 
 def rule_menu(com, backend):
@@ -1154,6 +1167,7 @@ def rule_menu(com, backend):
         screen.blit(BG_rule, BG_rulerect)
         screen.blit(back, backrect)
         pygame.display.flip()
+        CLOCK.tick(30)
 
 
 def play_menu_2(com, backend):
@@ -1280,6 +1294,7 @@ def play_menu_2(com, backend):
         screen.blit(name_box, name_pos)
         pygame.draw.rect(screen, name_color, namerect, 2)
         pygame.display.flip()
+        CLOCK.tick(30)
 
 
 def disconnection(com, backend):
@@ -1331,6 +1346,7 @@ def disconnection(com, backend):
         screen.blit(BG, BGrect)
         screen.blit(ok, okrect)
         pygame.display.flip()
+        CLOCK.tick(30)
 
 
 def connection(com, backend):
@@ -1385,6 +1401,7 @@ def connection(com, backend):
         screen.fill(black)
         screen.blit(BG, BGrect)
         pygame.display.flip()
+        CLOCK.tick(30)
 
     disconnection(com, backend)
     return False
@@ -1488,6 +1505,7 @@ def play_menu(com, backend):
             for i in range(len(mode)):
                 screen.blit(mode[i], mode_rect[i])
             pygame.display.flip()
+            CLOCK.tick(30)
 
     elif num > 0:
         """Not first player"""
@@ -1573,6 +1591,7 @@ def play_menu(com, backend):
             screen.blit(progress, progress_rect)
             pygame.draw.rect(screen, color, rect_rect, 2)
             pygame.display.flip()
+            CLOCK.tick(30)
 
 
 def main_menu(com, backend):
@@ -1668,6 +1687,7 @@ def main_menu(com, backend):
         screen.blit(settings, settingsrect)
         screen.blit(rule, rulerect)
         pygame.display.flip()
+        CLOCK.tick(30)
 
 
 def init_interface(com, backend):
