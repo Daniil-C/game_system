@@ -448,11 +448,14 @@ class Backend(Monitor):
                 self.common.player.cards = parse_message(parsed[1], ",")
                 self.common.next_turn = True
                 self.common.got_list = True
+                return True
             else:
+                self.game_started = False
                 return False
         elif mes.startswith("TURN"):
             return True
         else:
+            self.game_started = False
             return False
 
     def new_turn(self):
