@@ -445,6 +445,7 @@ class Backend(Monitor):
             mes = self.conn.get()
             logging.debug(mes)
             if mes.startswith("CARDS"):
+                self.common.got_list = False
                 self.common.next_turn = True
                 while not self.common.approved:
                     time.sleep(1)
