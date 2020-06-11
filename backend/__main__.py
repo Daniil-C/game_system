@@ -156,6 +156,14 @@ class Common(Monitor):
         """
         return self.vote_list
 
+    def get_progress(self):
+        """
+        Returns coef of downloaded archive
+        """
+        self.coef_mutex.acquire()
+        coef = self.coef
+        self.coef_mutex.release()
+        return coef
 
 def parse_message(message, sep):
     """
