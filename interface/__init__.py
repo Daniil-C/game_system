@@ -1592,6 +1592,7 @@ def play_menu(com, backend):
             pygame.draw.rect(screen, color, rect_rect, 2)
             pygame.display.flip()
             CLOCK.tick(30)
+        nonlocal UPD = True
 
 
 def main_menu(com, backend):
@@ -1659,7 +1660,10 @@ def main_menu(com, backend):
                     if EXIT:
                         return None
                 elif playrect.collidepoint(event.pos):
+                    UPD = False
                     play_menu(com, backend)
+                    if UPD:
+                        play_menu(com, backend)
                     RESIZE = True
                     if EXIT:
                         return None
