@@ -255,6 +255,7 @@ def result(com, backend):
         pygame.display.flip()
         CLOCK.tick(30)
         if com.next_turn:
+            com.appruved = True
             return None
 
 
