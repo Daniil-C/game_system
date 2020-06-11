@@ -594,8 +594,8 @@ class Backend(Monitor):
         """
         Send next turn message
         """
-        self.conn.send("NETX_TURN")
-        logging.debug("NETX_TURN")
+        self.conn.send("NEXT_TURN")
+        logging.debug("NEXT_TURN")
 
 
 class BackendInterface:
