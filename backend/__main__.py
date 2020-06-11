@@ -66,6 +66,22 @@ class Common(Monitor):
         self.players_list = []
         self.game_started = False
 
+    def new_turn():
+        """
+        Resets turn vars
+        """
+        self.turn = False
+        self.got_list = False
+        self.card = 0
+        self.ass = ""
+        self.got_ass = False
+        self.vote_list = []
+        self.vote_cards = []
+        self.vote_time = False
+        self.end_vote = False
+        self.vote_results = []
+        self.deltas = {}
+
     def set_ip_port(self, ip, port):
         """
         Set connections params to connect to game server
@@ -422,12 +438,25 @@ class Backend(Monitor):
             for i in p_list:
                 self.common.players_list.append([i[1], self.names[i[0]], i[0], int(i[0]) == self.leader])
             self.common.end_vote = True
+            mes = self.conn.get()
+            logging.debug(mes)
+            if mes.startswith("CARDS"):
+                parsed = parse_message(mes, " ")
+                self.common.player.cards = parse_message(parsed[1], ",")
+                self.new_turn();
+            else:
+                return False
         elif mes.startswith("TURN"):
             return True
         else:
             return False
 
-        # TODO
+    def new_turn(self):
+        """
+        Resets turn vars
+        """
+        self.common.new_turn()
+        self.leader = 0
 
     def get_players_list(self):
         """
