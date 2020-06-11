@@ -58,6 +58,7 @@ class Common(Monitor):
         self.vote_results = []
         self.deltas = {}
         self.next_turn = False
+        self.approved = False
 
     def reset(self):
         """
@@ -374,6 +375,7 @@ class Backend(Monitor):
         """
         Provides turn logic
         """
+        self.common.approved = False
         mes = self.conn.get()
         logging.debug(mes)
         if mes.startswith("TURN"):
@@ -443,10 +445,12 @@ class Backend(Monitor):
             mes = self.conn.get()
             logging.debug(mes)
             if mes.startswith("CARDS"):
+                self.common.next_turn = True
+                while not self.common.approved:
+                    time.sleep(1)
                 self.new_turn();
                 parsed = parse_message(mes, " ")
                 self.common.player.cards = parse_message(parsed[1], ",")
-                self.common.next_turn = True
                 return True
             else:
                 self.game_started = False
