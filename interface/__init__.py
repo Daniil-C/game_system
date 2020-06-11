@@ -110,7 +110,7 @@ def result(com, backend):
             card_h = int(card_w * 3 / 2)
             card_size = (card_w, card_h)
             card_pos = (int(width / 2 - card_w) + w_offset,
-                        int(height / 6) + h_offset)
+                        int(height / 12) + h_offset)
             card_rect = (*card_pos, *card_size)
             """OK button"""
             ok_scale = (int(width / 3), int(height * 33 / 216))
@@ -189,6 +189,13 @@ def result(com, backend):
             while text_img.get_size()[0] > cards_rect[i][2]:
                 p_name = p_name[:-1]
                 text_img = font.render(p_name, True, color)
+            color = black
+            num_t = str(len(res[i][2]))
+            num_img = font.render(num_t, True, color)
+            num_w = int((cards_rect[i][2] - num_img.get_size()[0]) /
+                        2) + cards_rect[i][0]
+            num_h = cards_rect[i][1] + cards_rect[i][3] + shift
+            screen.blit(num_img, (num_w, num_h))
             screen.blit(text_img, (cards_rect[i][0],
                                    cards_rect[i][1] - shift - font_size))
         for i in range(len(players)):
