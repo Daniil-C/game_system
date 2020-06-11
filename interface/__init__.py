@@ -691,9 +691,9 @@ def game(com, backend):
                         players_text[-1] = font.render(p_name, True, color)
                     score = "".join(("Score: ", str(i[0])))
                     players_score.append(font.render(score, True, color))
-                    players_pos[1] += int(height / 8)
+                    players_pos[1] += int(height / 12)
                 rect_rect = pygame.Rect(w_offset, h_offset, int(width / 6),
-                                        int(height / 8) * len(players))
+                                        int(height / 12) * len(players))
                 """Big card"""
                 card_w = min(int(height / 3), int(width * 3 / 16))
                 card_h = int(card_w * 3 / 2)
