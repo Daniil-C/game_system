@@ -1559,10 +1559,10 @@ def play_menu(com, backend):
                     BGrect = BG.get_rect()
                     BGrect[0], BGrect[1] = w_offset, h_offset
                     mul = com.get_progress()
-                    p_size = (int(width * mul), int(height / 6))
+                    p_size = (int(width * mul / 3), int(height / 20))
                     progress = pygame.transform.scale(progress_img, p_size)
                     progress_rect = progress.get_rect()
-                    progress_rect[0] = w_offset
+                    progress_rect[0] = w_offset + int(width / 3)
                     progress_rect[1] = int(height * 2 / 3) + h_offset
                 """KEYBOARD EVENTS"""
                 if event.type == pygame.KEYDOWN:
