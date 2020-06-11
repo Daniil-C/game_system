@@ -21,7 +21,7 @@ TURN = True
 RESIZE = False
 font_file = "fonts/Chilanka-Custom.ttf"
 CLOCK = pygame.time.Clock()
-
+UPD = False
 
 def check_resize(event):
     global size, size_orig
@@ -1592,7 +1592,7 @@ def play_menu(com, backend):
             pygame.draw.rect(screen, color, rect_rect, 2)
             pygame.display.flip()
             CLOCK.tick(30)
-        nonlocal UPD 
+        global UPD 
         UPD = True
 
 
@@ -1661,6 +1661,7 @@ def main_menu(com, backend):
                     if EXIT:
                         return None
                 elif playrect.collidepoint(event.pos):
+                    global UPD
                     UPD = False
                     play_menu(com, backend)
                     if UPD:
