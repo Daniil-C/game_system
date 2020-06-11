@@ -3,6 +3,7 @@ Environment variables handling.
 """
 
 import os
+import sys
 
 def get_ip():
     """
@@ -41,4 +42,7 @@ def get_log_file():
     """
     Get log file name.
     """
-    return os.getenv("LOG_FILE", "log.txt")
+    log_file = os.getenv("LOG_FILE", "")
+    if log_file != "":
+        return log_file
+    return os.path.dirname(sys.argv[0]) + "/server.log"
