@@ -51,6 +51,7 @@ def result(com, backend):
         cards_img.append(pygame.image.load(name))
     color_else = 0xFF, 0xFF, 0xFF
     color_leader = 0xFF, 0xFF, 0x00
+    red = 0xFF, 0x00, 0x00
     card = False
     b_card = None
     key_pressed = [False for i in range(len(cards))]
@@ -109,7 +110,7 @@ def result(com, backend):
             card_w = min(int(height / 3), int(width * 3 / 16))
             card_h = int(card_w * 3 / 2)
             card_size = (card_w, card_h)
-            card_pos = (int(width / 2 - card_w) + w_offset,
+            card_pos = (int(width / 2 - card_w / 2) + w_offset,
                         int(height / 12) + h_offset)
             card_rect = (*card_pos, *card_size)
             """OK button"""
@@ -133,6 +134,22 @@ def result(com, backend):
                         card = True
                         b_card = pygame.transform.scale(cards_img[i],
                                                         card_size)
+                        b_text = ["Owner:", res[i][0], "Voted:", *res[i][2]]
+                        b_rend = []
+                        b_rend.append(font.render(b_text[0], True, red))
+                        b_rend.append(font.render(b_text[1], True, color_leader))
+                        while b_rend[-1].get_size()[0] > int(width / 6):
+                            b_text[1] = b_text[1][:-1]
+                            b_rend[-1] = (font.render(b_text[1],
+                                                      True, color_leader))
+                        b_rend.append(font.render(b_text[2], True, red))
+                        for j in range(len(res[i][2])):
+                            b_rend.append(font.render(b_text[3 + j],
+                                                      True, color_else))
+                            while b_rend[-1].get_size()[0] > int(width / 6):
+                                b_text[3 + j] = b_text[3 + j][:-1]
+                                b_rend[-1] = (font.render(b_text[3 + j],
+                                                          True, color_leader))
                         break
                 else:
                     card = False
@@ -153,6 +170,22 @@ def result(com, backend):
                             card = True
                             b_card = pygame.transform.scale(cards_img[i],
                                                             card_size)
+                            b_text = ["Owner:", res[i][0], "Voted:", *res[i][2]]
+                            b_rend = []
+                            b_rend.append(font.render(b_text[0], True, red))
+                            b_rend.append(font.render(b_text[1], True, color_leader))
+                            while b_rend[-1].get_size()[0] > int(width / 6):
+                                b_text[1] = b_text[1][:-1]
+                                b_rend[-1] = (font.render(b_text[1],
+                                                          True, color_leader))
+                            b_rend.append(font.render(b_text[2], True, red))
+                            for j in range(len(res[i][2])):
+                                b_rend.append(font.render(b_text[3 + j],
+                                                          True, color_else))
+                                while b_rend[-1].get_size()[0] > int(width / 6):
+                                    b_text[3 + j] = b_text[3 + j][:-1]
+                                    b_rend[-1] = (font.render(b_text[3 + j],
+                                                              True, color_leader))
                             break
                     else:
                         card = False
@@ -207,6 +240,10 @@ def result(com, backend):
         pygame.draw.rect(screen, color, rect_rect, 2)
         if card:
             screen.blit(b_card, card_rect)
+            text_pos = [card_rect[0] + card_rect[2] + shift, card_rect[1]]
+            for i in b_rend:
+                screen.blit(i, text_pos)
+                text_pos[1] += font_size + shift
         pygame.display.flip()
 
 
