@@ -59,6 +59,7 @@ class Common(Monitor):
         self.deltas = {}
         self.next_turn = False
         self.approved = False
+        self.finish_game = True
 
     def reset(self):
         """
@@ -386,6 +387,7 @@ class Backend(Monitor):
                 i.append(int(i[-1]) == self.leader)
                 logging.debug(i)
         else:
+            self.common.finish_game = True
             return False
         self.common.got_list = True
         mes = self.conn.get()
@@ -396,6 +398,7 @@ class Backend(Monitor):
         elif mes.startswith("TURN"):
             return True
         else:
+            self.common.finish_game = True
             return False
         mes = self.conn.get()
         logging.debug(mes)
@@ -410,6 +413,7 @@ class Backend(Monitor):
                     i[-1] = True
                     break
             else:
+                self.common.finish_game = True
                 return False
             mes = self.conn.get()
             logging.debug(mes)
@@ -454,12 +458,12 @@ class Backend(Monitor):
                 self.common.player.cards = parse_message(parsed[1], ",")
                 return True
             else:
-                self.game_started = False
+                self.common.finish_game = True
                 return False
         elif mes.startswith("TURN"):
             return True
         else:
-            self.game_started = False
+            self.common.finish_game = True
             return False
 
     def new_turn(self):
@@ -503,6 +507,7 @@ class Backend(Monitor):
         """
         Starts the game
         """
+        self.common.finish_game = False
         try:
             self.connect()
         except Exception as ex:
