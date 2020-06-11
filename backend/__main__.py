@@ -72,7 +72,6 @@ class Common(Monitor):
         Resets turn vars
         """
         self.turn = False
-        self.players_list = []
         self.got_list = False
         self.card = 0
         self.ass = ""
@@ -463,7 +462,8 @@ class Backend(Monitor):
         Resets turn vars
         """
         self.common.new_turn()
-        self.leader = 0
+        for i in self.common.players_list:
+            i.pop(-1)
 
     def get_players_list(self):
         """
