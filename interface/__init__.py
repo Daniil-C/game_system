@@ -412,7 +412,6 @@ def game_wait(com, backend):
     bg_play = pygame.image.load("interface/play_bg.png")
     header_text = "Wait other players"
     h_color = 0xAD, 0xE5, 0xF3
-    players = com.get_vote_list()
     color_good = 0x00, 0xFF, 0x00
     color_bad = 0xFF, 0x00, 0x00
     while True:
@@ -431,24 +430,26 @@ def game_wait(com, backend):
             players_pos = [w_offset, h_offset]
             font_size = int(height / 30)
             font = pygame.font.Font(font_file, font_size)
-            players_rect = []
-            players_size = (int(width / 6), int(height / 8))
-            players_text = []
-            players_score = []
-            for i in players:
-                players_rect.append(pygame.Rect(*players_pos, *players_size))
-                color = color_good if i[3] else color_bad
-                players_text.append(font.render(i[1], True, color))
-                text = i[1]
-                while players_text[-1].get_size()[0] > int(width / 6):
-                    text = text[:-1]
-                    players_text[-1] = font.render(text, True, color)
-                score = "".join(("Score: ", str(i[0])))
-                players_score.append(font.render(score, True, color))
-                players_pos[1] += int(height / 8)
-            rect_rect = pygame.Rect(w_offset, h_offset, int(width / 6),
-                                    int(height / 8) * len(players))
             RESIZE = False
+        players_rect = []
+        players_size = (int(width / 6), int(height / 8))
+        players_text = []
+        players_score = []
+        for i in players:
+            players_rect.append(pygame.Rect(*players_pos, *players_size))
+            color = color_good if i[3] else color_bad
+            players_text.append(font.render(i[1], True, color))
+            text = i[1]
+            while players_text[-1].get_size()[0] > int(width / 6):
+                text = text[:-1]
+                players_text[-1] = font.render(text, True, color)
+            score = "".join(("Score: ", str(i[0])))
+            players_score.append(font.render(score, True, color))
+            players_pos[1] += int(height / 12)
+        rect_rect = pygame.Rect(w_offset, h_offset, int(width / 6),
+                                int(height / 12) * len(players))
+
+        players = com.get_vote_list()
         if com.vote_time:
             vote(com, backend)
             if EXIT:
