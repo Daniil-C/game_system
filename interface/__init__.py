@@ -128,6 +128,9 @@ def result(com, backend):
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if okrect.collidepoint(event.pos) and not nxttrn:
+                    if com.finish_game:
+                        global TURN
+                        TURN = False
                     nxttrn = True
                     backend.next_turn()
             """USER EVENTS"""
@@ -621,6 +624,7 @@ def set_association(com, backend):
 def game(com, backend):
     global EXIT, TURN, RESIZE
     while TURN:
+        print("INTERFACE TURN")
         while not com.got_list:
             time.sleep(1)
         RESIZE = True
@@ -1666,7 +1670,8 @@ def main_menu(com, backend):
 
 
 def init_interface(com, backend):
-    global SETTINGS
+    global SETTINGS, TURN
+    TURN = True
     SETTINGS = com.ip is not None
     main_menu(com, backend)
     return
