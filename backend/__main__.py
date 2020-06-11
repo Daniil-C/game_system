@@ -13,6 +13,7 @@ import sys
 import shutil
 import wget
 import interface
+from zipfile import ZipFile
 from connection import connection as Conn
 from monitor import Monitor
 
