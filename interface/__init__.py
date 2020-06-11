@@ -42,6 +42,7 @@ def check_resize(event):
 def result(com, backend):
     global EXIT, TURN, RESIZE
     RESIZE = True
+    nxttrn = False
     res = com.vote_results
     mode = com.mode
     bg_img = pygame.image.load("interface/play_bg_1.png")
@@ -126,7 +127,8 @@ def result(com, backend):
             """EVENTS HANDLING"""
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if okrect.collidepoint(event.pos):
+                if okrect.collidepoint(event.pos) and not nxttrn:
+                    nxttrn = True
                     backend.next_turn()
             """USER EVENTS"""
             if event.type == pygame.USEREVENT and not pressed:
