@@ -130,6 +130,7 @@ def result(com, backend):
                 if okrect.collidepoint(event.pos) and not nxttrn:
                     if com.finish_game:
                         global TURN
+                        print("Это конец игры, ВСЕ вон")
                         TURN = False
                         return None
                     nxttrn = True
