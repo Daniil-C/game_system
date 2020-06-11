@@ -66,7 +66,7 @@ class Common(Monitor):
         self.players_list = []
         self.game_started = False
 
-    def new_turn():
+    def new_turn(self):
         """
         Resets turn vars
         """
