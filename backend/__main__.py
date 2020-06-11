@@ -72,6 +72,7 @@ class Common(Monitor):
         Resets turn vars
         """
         self.turn = False
+        self.players_list = []
         self.got_list = False
         self.card = 0
         self.ass = ""
@@ -447,7 +448,6 @@ class Backend(Monitor):
                 parsed = parse_message(mes, " ")
                 self.common.player.cards = parse_message(parsed[1], ",")
                 self.common.next_turn = True
-                self.common.got_list = True
                 return True
             else:
                 self.game_started = False
