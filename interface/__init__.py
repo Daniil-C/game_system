@@ -510,47 +510,6 @@ def set_association(com, backend):
     name_color = inactive_color
     ok_img = pygame.image.load("interface/ok.png")
 
-    """Background"""
-    BG = pygame.transform.scale(bg_play, size)
-    BGrect = BG.get_rect()
-    BGrect[0], BGrect[1] = w_offset, h_offset
-    """"Header"""
-    h_font_size = int(height / 8)
-    h_font = pygame.font.Font(font_file, h_font_size)
-    header = h_font.render(header_text, True, h_color)
-    header_rect = header.get_rect()
-    shift = int(height / 120)
-    header_rect[1] = shift + h_offset
-    w = header_rect[2]
-    header_rect[0] = int(width / 2 - w / 2) + w_offset
-    """Card"""
-    card_size = (int(height / 3), int(height / 2))
-    b_card = pygame.transform.scale(card_img, card_size)
-    card_rect = b_card.get_rect()
-    card_rect[0] = int(width / 2 - height / 6) + w_offset
-    card_rect[1] = int(height / 6) + h_offset
-    """Back button"""
-    back_scale = (int(height * 21 / 216), int(height * 21 / 216))
-    back_img = pygame.image.load("interface/back.png")
-    back = pygame.transform.scale(back_img, back_scale)
-    backrect = back.get_rect()
-    backrect[0] = w_offset
-    backrect[1] = int(height * 185 / 216) + h_offset
-    font_size = int(height / 30)
-    font = pygame.font.Font(font_file, font_size)
-    """Text box aka Entry"""
-    namebox_size = (int(width * 2 / 3), int(height * 3 / 60))
-    namebox_pos = (int(width / 6) + w_offset,
-                   int(height * 3 / 4 - height / 20) + h_offset)
-    namerect = pygame.Rect(namebox_pos[0], namebox_pos[1],
-                           namebox_size[0], namebox_size[1])
-    """OK button"""
-    ok_scale = (int(width / 3), int(height * 33 / 216))
-    ok = pygame.transform.scale(ok_img, ok_scale)
-    okrect = ok.get_rect()
-    okrect[0] = int(width / 3) + w_offset
-    okrect[1] = int(height * 170 / 216) + h_offset
-
     while True:
         if RESIZE:
             """Background"""
@@ -606,9 +565,11 @@ def set_association(com, backend):
                 else:
                     name_active = False
                     if okrect.collidepoint(event.pos):
-                        backend.set_ass(name_text)
-                        game_wait(com, backend)
-                        return None
+                        if len(name_text) > 0:
+                            name_active = False
+                            backend.set_ass(name_text)
+                            game_wait(com, backend)
+                            return None
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -618,10 +579,11 @@ def set_association(com, backend):
                     return None
                 if name_active:
                     if event.key == pygame.K_RETURN:
-                        name_active = False
-                        backend.set_ass(name_text)
-                        game_wait(com, backend)
-                        return None
+                        if len(name_text):
+                            name_active = False
+                            backend.set_ass(name_text)
+                            game_wait(com, backend)
+                            return None
                     elif event.key == pygame.K_BACKSPACE:
                         name_text = name_text[:-1]
                     elif len(name_text) < 68:
