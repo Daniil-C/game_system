@@ -5,6 +5,7 @@ Imaginarium game server.
 import threading
 import readline
 from select import select
+import socket
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from random import shuffle, randrange
 import os
@@ -703,9 +704,12 @@ class GameServer:
         """
         new_conn = self.listening_socket.accept()
         if self.game_state.state == "PLAYER_CONN":
-            self.players.add_player(self.resources, new_conn[0])
-        else:
-            self.logger.info("Disconnected: %s.", str(new_conn[1]))
+            if len(self.players) < 7:
+                self.players.add_player(self.resources, new_conn[0])
+                return
+        self.logger.info("Disconnected: %s.", str(new_conn[1]))
+        new_conn[0].shutdown(socket.SHUT_RDWR)
+        new_conn[0].close()
 
     def begin_game(self):
         """
