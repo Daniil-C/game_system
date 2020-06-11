@@ -713,7 +713,8 @@ def game(com, backend):
                                                     *players_size))
                     p_name = i[1]
                     players_text.append(font.render(p_name, True, color))
-                    while players_text[-1].get_size()[0] > int(width / 6):
+                    while players_text[-1].get_size()[0] + shift > int(width
+                                                                       / 6):
                         p_name = p_name[:-1]
                         players_text[-1] = font.render(p_name, True, color)
                     score = "".join(("Score: ", str(i[0])))
@@ -1508,6 +1509,7 @@ def play_menu(com, backend):
         progress_rect[0] = w_offset
         progress_rect[1] = int(height * 2 / 3) + h_offset
         screen_iter, n = 0, 0
+        color = 0xAD, 0xE5, 0xF3
 
         pygame.time.set_timer(pygame.USEREVENT, 1000)
 
@@ -1517,11 +1519,15 @@ def play_menu(com, backend):
                 BGrect = BG.get_rect()
                 BGrect[0], BGrect[1] = w_offset, h_offset
                 mul = com.get_progress()
-                p_size = (int(width * mul), int(height / 6))
+                p_size = (int(width * mul / 3), int(height / 20))
                 progress = pygame.transform.scale(progress_img, p_size)
                 progress_rect = progress.get_rect()
-                progress_rect[0] = w_offset
+                progress_rect[0] = w_offset + int(width / 3)
                 progress_rect[1] = int(height * 2 / 3) + h_offset
+                rect_rect = [w_offset + int(width / 3),
+                             h_offset + int(height * 2 / 3),
+                             int(width / 3),
+                             int(height / 20)]
                 RESIZE = False
 
             """MAINLOOP"""
@@ -1565,6 +1571,7 @@ def play_menu(com, backend):
             screen.fill(black)
             screen.blit(BG, BGrect)
             screen.blit(progress, progress_rect)
+            pygame.draw.rect(screen, color, rect_rect, 2)
             pygame.display.flip()
 
 
