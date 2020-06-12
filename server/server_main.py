@@ -202,6 +202,14 @@ class Player(Monitor):
         self.buffer.append(data)
         self.has_buffer = True
 
+    def push_buffer(self):
+        """
+        Send all queued messages.
+        """
+        while len(self.buffer) > 0:
+            self.conn.send(self.buffer.pop(0))
+        self.has_buffer = False
+
     # Player states:
     #
     #    |
@@ -521,6 +529,7 @@ class PlayerList(Monitor):
         """
         for player in self.players:
             if not player.verify():
+                player.push_buffer()
                 player.stop()
                 self.sockets.pop(player.player_socket)
                 if (player.status == "MASTER" and
@@ -557,6 +566,7 @@ class PlayerList(Monitor):
         Disconnect all players and delete all Player objects.
         """
         for i in range(len(self.players)):
+            self.players[i].push_buffer()
             self.players[i].stop()
         self.players.clear()
         self.sockets.clear()
@@ -836,7 +846,7 @@ class GameServer:
                 self.players.broadcast("END_GAME")
                 for player in self.players:
                     player.valid = False
-                self.game_state.state = "END"
+                #self.game_state.state = "END"
 
     def check_resource_server(self):
         """
