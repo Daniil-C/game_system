@@ -1480,8 +1480,9 @@ def play_menu(com, backend):
                 backrect[0], backrect[1] = w_offset, int(height * 185 /
                                                          216) + h_offset
                 """Mods buttons"""
-                w, h = int(width / 5), int(height / 5)
-                m = min(w, h)
+                #w, h = int(width / 5), int(height / 5)
+                #m = min(w, h)
+                m = int(width / 5)
                 mode_size = (m, m)
                 w_shift, h_shift = int((width - m * 3) /
                                        4), int((height - m * 2) / 3)
