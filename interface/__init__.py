@@ -123,15 +123,15 @@ def result(com, backend):
                                        12) + w_offset, h_offset
             RESIZE = False
         """MAINLOOP"""
+        if com.finish_game:
+            print("Это конец игры, ВСЕ вон")
+            TURN = False
+            return None
         for event in pygame.event.get():
             """EVENTS HANDLING"""
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if okrect.collidepoint(event.pos) and not nxttrn:
-                    if com.finish_game:
-                        global TURN
-                        TURN = False
-                        return None
                     nxttrn = True
                     backend.next_turn()
             """USER EVENTS"""
