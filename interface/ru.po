@@ -48,13 +48,9 @@ msgid "Enter your association"
 msgstr "Введите ассоциацию"
 
 #: __init__.py:680
-msgid "choose a card"
+msgid "Choose a card"
 msgstr "Выберите карту"
 
 #: __init__.py:680
-msgid "wait for your turn"
+msgid "Wait for your turn"
 msgstr "Ждём ведущего"
-
-#: __init__.py:755
-msgid "Choose a card"
-msgstr "Выберите карту"
