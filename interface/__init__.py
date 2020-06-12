@@ -24,7 +24,8 @@ RESIZE = False
 font_file = "fonts/Chilanka-Custom.ttf"
 CLOCK = pygame.time.Clock()
 UPD = False
-PATH = os.path.dirname(sys.argv[0]) + "/../"
+PATH = os.path.dirname(sys.argv[0]) + "/../interface/en/"
+PATH_R = os.path.dirname(sys.argv[0]) + "/../resources/"
 print(PATH)
 
 
@@ -50,12 +51,12 @@ def result(com, backend):
     nxttrn = False
     res = com.vote_results
     mode = com.mode
-    bg_file = PATH + "interface/play_bg_1.png"
+    bg_file = PATH + "play_bg_1.png"
     bg_img = pygame.image.load(bg_file)
     cards = com.player.cards
     cards_img = []
     for i in res:
-        name = "".join((PATH, "resources/", mode, "/",  str(i[1]), ".png"))
+        name = "".join((PATH_R, mode, "/",  str(i[1]), ".png"))
         cards_img.append(pygame.image.load(name))
     color_else = 0xFF, 0xFF, 0xFF
     color_leader = 0xFF, 0xFF, 0x00
@@ -66,7 +67,7 @@ def result(com, backend):
     pressed = False
     pygame.time.set_timer(pygame.USEREVENT, 100)
     players = com.get_players_list()
-    ok_file = PATH + "interface/ok.png"
+    ok_file = PATH + "ok.png"
     ok_img = pygame.image.load(ok_file)
     while True:
         if RESIZE:
@@ -276,7 +277,7 @@ def vote(com, backend):
     selected = False
     leader = com.turn
     mode = com.mode
-    bg_file = PATH + "interface/play_bg.png"
+    bg_file = PATH + "play_bg.png"
     bg_play = pygame.image.load(bg_file)
     leader = com.turn
     header_text = "Wait for other players" if leader else "Guess leader's card"
@@ -284,7 +285,7 @@ def vote(com, backend):
     cards = com.vote_cards
     cards_row = []
     for i in cards:
-        name = pygame.image.load("".join((PATH, "resources/",
+        name = pygame.image.load("".join((PATH_R,
                                           mode, "/", str(i), ".png")))
         cards_row.append(name)
     assoc_text = com.ass
@@ -433,7 +434,7 @@ def game_wait(com, backend):
     """Wait when all players choose his card"""
     global EXIT, RESIZE
     RESIZE = True
-    bg_file = PATH + "interface/play_bg.png"
+    bg_file = PATH + "play_bg.png"
     bg_play = pygame.image.load(bg_file)
     header_text = "Wait for other players"
     h_color = 0xAD, 0xE5, 0xF3
@@ -521,12 +522,12 @@ def game_wait(com, backend):
 def set_association(com, backend):
     global EXIT, RESIZE
     RESIZE = True
-
-    bg_play = pygame.image.load("interface/play_bg.png")
+    bg_file = PATH + "play_bg.png"
+    bg_play = pygame.image.load(bg_file)
     mode = com.mode
     header_text = "Enter your association"
     h_color = 0xAD, 0xE5, 0xF3
-    name = "".join((PATH, "resources/", mode, "/",
+    name = "".join((PATH_R, mode, "/",
                     str(com.get_card()), ".png"))
     card_img = pygame.image.load(name)
     name_active = False
@@ -534,9 +535,9 @@ def set_association(com, backend):
     inactive_color = 0xFF, 0xFF, 0xFF
     active_color = 0xAD, 0xE5, 0xF3
     name_color = inactive_color
-    ok_file = PATH + "interface/ok.png"
+    ok_file = PATH + "ok.png"
     ok_img = pygame.image.load(ok_file)
-    back_file = PATH + "interface/back.png"
+    back_file = PATH + "back.png"
     back_img = pygame.image.load(back_file)
 
     while True:
@@ -644,7 +645,7 @@ def set_association(com, backend):
 def game(com, backend):
     global EXIT, TURN, RESIZE
     while TURN:
-        bg_file = PATH + "interface/play_bg_1.png"
+        bg_file = PATH + "play_bg_1.png"
         bg_img = pygame.image.load(bg_file)
         BG = pygame.transform.scale(bg_img, size)
         BGrect = BG.get_rect()
@@ -659,12 +660,12 @@ def game(com, backend):
         leader = com.turn
         choose_flg = leader
         mode = com.mode
-        bg_file = PATH + "interface/play_bg_1.png"
+        bg_file = PATH + "play_bg_1.png"
         bg_img = pygame.image.load(bg_file)
         cards = com.player.cards
         cards_img = []
         for i in cards:
-            name = "".join((PATH, "resources/", mode, "/",  str(i), ".png"))
+            name = "".join((PATH_R, mode, "/",  str(i), ".png"))
             cards_img.append(pygame.image.load(name))
         color_else = 0xFF, 0xFF, 0xFF
         color_leader = 0xFF, 0xFF, 0x00
@@ -825,6 +826,9 @@ def game(com, backend):
                 if event.type == pygame.VIDEORESIZE:
                     check_resize(event)
 
+            if breaker:
+                break
+
             """RENDERING"""
             screen.fill(black)
             screen.blit(BG, BGrect)
@@ -850,8 +854,6 @@ def game(com, backend):
                 screen.blit(b_card, card_rect)
             pygame.display.flip()
             CLOCK.tick(30)
-            if breaker:
-                break
 
 
 def wait_menu(com, backend):
@@ -861,11 +863,11 @@ def wait_menu(com, backend):
 
     bg_img = []
     for i in range(4):
-        bg_file = PATH + "interface/wait_{}.png".format(str(i))
+        bg_file = PATH + "wait_{}.png".format(str(i))
         bg_img.append(pygame.image.load(bg_file))
-    back_file = PATH + "interface/back.png"
+    back_file = PATH + "back.png"
     back_img = pygame.image.load(back_file)
-    play_file = PATH + "interface/play.png"
+    play_file = PATH + "play.png"
     play_img = pygame.image.load(play_file)
     num = com.get_number()
     screen_iter, n = 0, 0
@@ -988,7 +990,7 @@ def settings_menu(com, backend):
             global SETTINGS
             SETTINGS = True
             com.is_connected = False
-            bg_name = PATH + "interface/BG_settings_saved.png"
+            bg_name = PATH + "BG_settings_saved.png"
             bg_img = pygame.image.load(bg_name)
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
@@ -996,7 +998,7 @@ def settings_menu(com, backend):
             ip_text = ""
             port_text = ""
         else:
-            bg_name = PATH + "interface/BG_settings_not_saved.png"
+            bg_name = PATH + "BG_settings_not_saved.png"
             bg_img = pygame.image.load(bg_name)
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
@@ -1008,11 +1010,11 @@ def settings_menu(com, backend):
     ip_text, port_text = "", ""
     inactive_color = 0xFF, 0xFF, 0xFF
     active_color = 0xAD, 0xE5, 0xF3
-    bg_file = PATH + "interface/BG_settings.png"
+    bg_file = PATH + "BG_settings.png"
     bg_img = pygame.image.load(bg_file)
-    back_file = PATH + "interface/back.png"
+    back_file = PATH + "back.png"
     back_img = pygame.image.load(back_file)
-    save_file = PATH + "interface/save.png"
+    save_file = PATH + "save.png"
     save_img = pygame.image.load(save_file)
     while True:
         if RESIZE:
@@ -1124,9 +1126,9 @@ def rule_menu(com, backend):
     """DRAW RULE MENU INTERFACE"""
     global EXIT, RESIZE
     RESIZE = True
-    bg_file = PATH + "interface/rule_menu.png"
+    bg_file = PATH + "rule_menu.png"
     bg_img = pygame.image.load(bg_file)
-    back_file = PATH + "interface/back.png"
+    back_file = PATH + "back.png"
     back_img = pygame.image.load(back_file)
 
     while True:
@@ -1189,7 +1191,7 @@ def play_menu_2(com, backend): #TODO
             backend.exit()
             return True
         else:
-            bg_file = PATH + "interface/BG_name_bad.png"
+            bg_file = PATH + "BG_name_bad.png"
             bg_img = pygame.image.load(bg_file)
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
@@ -1199,11 +1201,11 @@ def play_menu_2(com, backend): #TODO
     global EXIT, RESIZE
     RESIZE = True
 
-    bg_file = PATH + "interface/BG_name.png"
+    bg_file = PATH + "BG_name.png"
     bg_img = pygame.image.load(bg_file)
-    back_file = PATH + "interface/back.png"
+    back_file = PATH + "back.png"
     back_img = pygame.image.load(back_file)
-    ok_file = PATH + "interface/ok.png"
+    ok_file = PATH + "ok.png"
     ok_img = pygame.image.load(ok_file)
     inactive_color = 0xFF, 0xFF, 0xFF
     active_color = 0xAD, 0xE5, 0xF3
@@ -1313,9 +1315,9 @@ def disconnection(com, backend):
     global EXIT, RESIZE
     RESIZE = True
 
-    bg_file = PATH + "interface/BG_disconnect.png"
+    bg_file = PATH + "BG_disconnect.png"
     bg_img = pygame.image.load(bg_file)
-    ok_file = PATH + "interface/ok.png"
+    ok_file = PATH + "ok.png"
     ok_img = pygame.image.load(ok_file)
     while True:
         if RESIZE:
@@ -1371,7 +1373,7 @@ def connection(com, backend):
 
     bg_img = []
     for i in range(4):
-        bg_name = PATH + "interface/BG_{}.png".format(str(i))
+        bg_name = PATH + "BG_{}.png".format(str(i))
         bg_img.append(pygame.image.load(bg_name))
     n, count = 0, 0
     pygame.time.set_timer(pygame.USEREVENT, 500)
@@ -1440,22 +1442,22 @@ def play_menu(com, backend):
     num = com.get_number()
     if num == 0:
         """First player interface"""
-        bg_file = PATH + "interface/BG_main.png"
+        bg_file = PATH + "BG_main.png"
         bg_img = pygame.image.load(bg_file)
-        back_file = PATH + "interface/back.png"
+        back_file = PATH + "back.png"
         back_img = pygame.image.load(back_file)
         mode_img = []
-        m_file = PATH + "interface/classic.png"
+        m_file = PATH + "classic.png"
         mode_img.append(pygame.image.load(m_file))
-        m_file = PATH + "interface/ariadna.png"
+        m_file = PATH + "ariadna.png"
         mode_img.append(pygame.image.load(m_file))
-        m_file = PATH + "interface/himera.png"
+        m_file = PATH + "himera.png"
         mode_img.append(pygame.image.load(m_file))
-        m_file = PATH + "interface/Odiseya.png"
+        m_file = PATH + "Odiseya.png"
         mode_img.append(pygame.image.load(m_file))
-        m_file = PATH + "interface/pandora.png"
+        m_file = PATH + "pandora.png"
         mode_img.append(pygame.image.load(m_file))
-        m_file = "interface/persefona.png"
+        m_file = PATH + "persefona.png"
         mode_img.append(pygame.image.load(m_file))
         selected_mode = ["imaginarium", "ariadna", "himera",
                          "odissey", "pandora", "persephone"]
@@ -1540,12 +1542,12 @@ def play_menu(com, backend):
         RESIZE = True
         bg_img = []
         for i in range(4):
-            bg_name = PATH + "interface/wait_{}.png".format(str(i))
+            bg_name = PATH + "wait_{}.png".format(str(i))
             bg_img.append(pygame.image.load(bg_name))
         BG = pygame.transform.scale(pygame.image.load(bg_name), size)
         BGrect = BG.get_rect()
         BGrect[0], BGrect[1] = w_offset, h_offset
-        p_file = PATH + "interface/bar.png"
+        p_file = PATH + "bar.png"
         progress_img = pygame.image.load(p_file)
         progress = pygame.transform.scale(progress_img, (0, int(height / 6)))
         progress_rect = progress.get_rect()
@@ -1628,15 +1630,15 @@ def main_menu(com, backend):
     """DRAW MAIN MENU INTERFACE"""
     global EXIT, RESIZE
     RESIZE = True
-    bg_file = PATH + "interface/BG.png"
+    bg_file = PATH + "BG.png"
     bg_img = pygame.image.load(bg_file)
-    play_file = PATH + "interface/play.png"
+    play_file = PATH + "play.png"
     play_img = pygame.image.load(play_file)
-    exit_file = PATH + "interface/exit.png"
+    exit_file = PATH + "exit.png"
     exit_img = pygame.image.load(exit_file)
-    settings_file = PATH + "interface/settings.png"
+    settings_file = PATH + "settings.png"
     settings_img = pygame.image.load(settings_file)
-    rule_file = PATH + "interface/rule.png"
+    rule_file = PATH + "rule.png"
     rule_img = pygame.image.load(rule_file)
     while True:
         if RESIZE:
