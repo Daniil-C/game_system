@@ -2,6 +2,7 @@ import pygame
 import time
 import sys
 import os
+import gettext
 
 pygame.init()
 
@@ -11,6 +12,8 @@ black = 0, 0, 0
 info = pygame.display.Info()
 size = width, height = info.current_w, info.current_h
 print(size)
+
+gettext.install("client", os.path.dirname(sys.argv[0]) + "/../interface")
 
 size_orig = size
 w_orig = width
@@ -24,9 +27,8 @@ RESIZE = False
 font_file = "fonts/Chilanka-Custom.ttf"
 CLOCK = pygame.time.Clock()
 UPD = False
-PATH = os.path.dirname(sys.argv[0]) + "/../interface/en/"
+PATH = os.path.dirname(sys.argv[0]) + _("/../interface/en/")
 PATH_R = os.path.dirname(sys.argv[0]) + "/../resources/"
-print(PATH)
 
 
 def check_resize(event):
@@ -111,7 +113,7 @@ def result(com, backend):
                 while players_text[-1].get_size()[0] > int(width / 6):
                     p_name = p_name[:-1]
                     players_text[-1] = font.render(p_name, True, color)
-                score = "".join(("Score: ", str(i[0])))
+                score = "".join((_("Score: "), str(i[0])))
                 players_score.append(font.render(score, True, color))
                 players_pos[1] += int(height / 12)
             rect_rect = pygame.Rect(w_offset, h_offset, int(width / 6),
@@ -148,7 +150,8 @@ def result(com, backend):
                         card = True
                         b_card = pygame.transform.scale(cards_img[i],
                                                         card_size)
-                        b_text = ["Owner:", res[i][0], "Voted:", *res[i][2]]
+                        b_text = [_("Owner:"), res[i][0], _("Voted:"),
+                                  *res[i][2]]
                         b_rend = []
                         b_rend.append(font.render(b_text[0], True, green))
                         b_rend.append(font.render(b_text[1], True,
@@ -185,8 +188,8 @@ def result(com, backend):
                             card = True
                             b_card = pygame.transform.scale(cards_img[i],
                                                             card_size)
-                            b_text = ["Owner:", res[i][0],
-                                      "Voted:", *res[i][2]]
+                            b_text = [_("Owner:"), res[i][0],
+                                      _("Voted:"), *res[i][2]]
                             b_rend = []
                             b_rend.append(font.render(b_text[0], True, green))
                             b_rend.append(font.render(b_text[1],
@@ -280,7 +283,8 @@ def vote(com, backend):
     bg_file = PATH + "play_bg.png"
     bg_play = pygame.image.load(bg_file)
     leader = com.turn
-    header_text = "Wait for other players" if leader else "Guess leader's card"
+    header_text = _("Wait for other players") if\
+        leader else _("Guess leader's card")
     h_color = 0xAD, 0xE5, 0xF3
     cards = com.vote_cards
     cards_row = []
@@ -344,7 +348,7 @@ def vote(com, backend):
                 for i in range(1, len(cards)):
                     if cards_rect[i].collidepoint(event.pos):
                         backend.set_card(cards[i])
-                        header_text = "Wait for other players"
+                        header_text = _("Wait for other players")
                         header = h_font.render(header_text, True, h_color)
                         header_rect = header.get_rect()
                         shift = int(height / 120)
@@ -436,7 +440,7 @@ def game_wait(com, backend):
     RESIZE = True
     bg_file = PATH + "play_bg.png"
     bg_play = pygame.image.load(bg_file)
-    header_text = "Wait for other players"
+    header_text = _("Wait for other players")
     h_color = 0xAD, 0xE5, 0xF3
     color_good = 0x00, 0xFF, 0x00
     color_bad = 0xFF, 0x00, 0x00
@@ -470,7 +474,7 @@ def game_wait(com, backend):
             while players_text[-1].get_size()[0] > int(width / 6):
                 text = text[:-1]
                 players_text[-1] = font.render(text, True, color)
-            score = "".join(("Score: ", str(i[0])))
+            score = "".join((_("Score: "), str(i[0])))
             players_score.append(font.render(score, True, color))
             players_pos[1] += int(height / 12)
         rect_rect = pygame.Rect(w_offset, h_offset, int(width / 6),
@@ -525,7 +529,7 @@ def set_association(com, backend):
     bg_file = PATH + "play_bg.png"
     bg_play = pygame.image.load(bg_file)
     mode = com.mode
-    header_text = "Enter your association"
+    header_text = _("Enter your association")
     h_color = 0xAD, 0xE5, 0xF3
     name = "".join((PATH_R, mode, "/",
                     str(com.get_card()), ".png"))
@@ -673,7 +677,7 @@ def game(com, backend):
         b_card = None
         key_pressed = [False for i in range(len(cards))]
         pressed = False
-        header_text = "choose a card" if leader else "wait for your turn"
+        header_text = _("Choose a card") if leader else _("Wait for your turn")
         h_color = 0xAD, 0xE5, 0xF3
         assoc = None
         assoc_text = None
@@ -727,7 +731,7 @@ def game(com, backend):
                                                                        / 6):
                         p_name = p_name[:-1]
                         players_text[-1] = font.render(p_name, True, color)
-                    score = "".join(("Score: ", str(i[0])))
+                    score = "".join((_("Score: "), str(i[0])))
                     players_score.append(font.render(score, True, color))
                     players_pos[1] += int(height / 12)
                 rect_rect = pygame.Rect(w_offset, h_offset, int(width / 6),
@@ -748,7 +752,7 @@ def game(com, backend):
             breaker = False
             if (not leader) and com.got_ass:
                 choose_flg = True
-                header_text = "choose a card"
+                header_text = _("Choose a card")
                 header = h_font.render(header_text, True, h_color)
                 assoc_text = com.ass
                 a_font = pygame.font.Font(font_file, a_font_size)
@@ -1179,7 +1183,7 @@ def rule_menu(com, backend):
         CLOCK.tick(30)
 
 
-def play_menu_2(com, backend): #TODO
+def play_menu_2(com, backend):
     """DRAW NAME INSERTION INTERFACE"""
     def save_fun(*arg):
         """Save Name"""
