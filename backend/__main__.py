@@ -213,6 +213,7 @@ class Backend(Monitor):
         self.config = os.getenv("CONFIG", "config.json")
         self.names = {}
         self.leader = 0
+        self.updater = None
 
         try:
             with open(self.config, "r") as f:
