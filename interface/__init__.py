@@ -1,5 +1,7 @@
 import pygame
 import time
+import sys
+import os
 
 pygame.init()
 
@@ -21,6 +23,9 @@ TURN = True
 RESIZE = False
 font_file = "fonts/Chilanka-Custom.ttf"
 CLOCK = pygame.time.Clock()
+UPD = False
+PATH = os.path.dirname(sys.argv[0]) + "/../"
+print(PATH)
 
 
 def check_resize(event):
@@ -42,24 +47,27 @@ def check_resize(event):
 def result(com, backend):
     global EXIT, TURN, RESIZE
     RESIZE = True
+    nxttrn = False
     res = com.vote_results
     mode = com.mode
-    bg_img = pygame.image.load("interface/play_bg_1.png")
+    bg_file = PATH + "interface/play_bg_1.png"
+    bg_img = pygame.image.load(bg_file)
     cards = com.player.cards
     cards_img = []
     for i in res:
-        name = "".join(("resources/", mode, "/",  str(i[1]), ".png"))
+        name = "".join((PATH, "resources/", mode, "/",  str(i[1]), ".png"))
         cards_img.append(pygame.image.load(name))
     color_else = 0xFF, 0xFF, 0xFF
     color_leader = 0xFF, 0xFF, 0x00
-    red = 0xFF, 0x00, 0x00
+    blue = 0xAD, 0xE5, 0xF3
     card = False
     b_card = None
     key_pressed = [False for i in range(len(cards))]
     pressed = False
     pygame.time.set_timer(pygame.USEREVENT, 100)
     players = com.get_players_list()
-    ok_img = pygame.image.load("interface/ok.png")
+    ok_file = PATH + "interface/ok.png"
+    ok_img = pygame.image.load(ok_file)
     while True:
         if RESIZE:
             shift = int(height / 120)
@@ -104,9 +112,9 @@ def result(com, backend):
                     players_text[-1] = font.render(p_name, True, color)
                 score = "".join(("Score: ", str(i[0])))
                 players_score.append(font.render(score, True, color))
-                players_pos[1] += int(height / 8)
+                players_pos[1] += int(height / 12)
             rect_rect = pygame.Rect(w_offset, h_offset, int(width / 6),
-                                    int(height / 8) * len(players))
+                                    int(height / 12) * len(players))
             """Big card"""
             card_w = min(int(height / 3), int(width * 3 / 16))
             card_h = int(card_w * 3 / 2)
@@ -122,11 +130,15 @@ def result(com, backend):
                                        12) + w_offset, h_offset
             RESIZE = False
         """MAINLOOP"""
+        if com.finish_game:
+            TURN = False
+            return None
         for event in pygame.event.get():
             """EVENTS HANDLING"""
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if okrect.collidepoint(event.pos):
+                if okrect.collidepoint(event.pos) and not nxttrn:
+                    nxttrn = True
                     backend.next_turn()
             """USER EVENTS"""
             if event.type == pygame.USEREVENT and not pressed:
@@ -137,14 +149,14 @@ def result(com, backend):
                                                         card_size)
                         b_text = ["Owner:", res[i][0], "Voted:", *res[i][2]]
                         b_rend = []
-                        b_rend.append(font.render(b_text[0], True, red))
+                        b_rend.append(font.render(b_text[0], True, blue))
                         b_rend.append(font.render(b_text[1], True,
                                                   color_leader))
                         while b_rend[-1].get_size()[0] > int(width / 6):
                             b_text[1] = b_text[1][:-1]
                             b_rend[-1] = (font.render(b_text[1],
                                                       True, color_leader))
-                        b_rend.append(font.render(b_text[2], True, red))
+                        b_rend.append(font.render(b_text[2], True, blue))
                         for j in range(len(res[i][2])):
                             b_rend.append(font.render(b_text[3 + j],
                                                       True, color_else))
@@ -175,14 +187,14 @@ def result(com, backend):
                             b_text = ["Owner:", res[i][0],
                                       "Voted:", *res[i][2]]
                             b_rend = []
-                            b_rend.append(font.render(b_text[0], True, red))
+                            b_rend.append(font.render(b_text[0], True, blue))
                             b_rend.append(font.render(b_text[1],
                                           True, color_leader))
                             while b_rend[-1].get_size()[0] > int(width / 6):
                                 b_text[1] = b_text[1][:-1]
                                 b_rend[-1] = (font.render(b_text[1],
                                                           True, color_leader))
-                            b_rend.append(font.render(b_text[2], True, red))
+                            b_rend.append(font.render(b_text[2], True, blue))
                             for j in range(len(res[i][2])):
                                 b_rend.append(font.render(b_text[3 + j],
                                                           True, color_else))
@@ -252,6 +264,9 @@ def result(com, backend):
                 text_pos[1] += font_size + shift
         pygame.display.flip()
         CLOCK.tick(30)
+        if com.next_turn:
+            com.approved = True
+            return None
 
 
 def vote(com, backend):
@@ -260,13 +275,14 @@ def vote(com, backend):
     selected = False
     leader = com.turn
     mode = com.mode
-    bg_play = pygame.image.load("interface/play_bg.png")
+    bg_file = PATH + "interface/play_bg.png"
+    bg_play = pygame.image.load(bg_file)
     header_text = "Guess leader's card"
     h_color = 0xAD, 0xE5, 0xF3
     cards = com.vote_cards
     cards_row = []
     for i in cards:
-        name = pygame.image.load("".join(("resources/",
+        name = pygame.image.load("".join((PATH, "resources/",
                                           mode, "/", str(i), ".png")))
         cards_row.append(name)
     assoc_text = com.ass
@@ -280,8 +296,7 @@ def vote(com, backend):
     while True:
         if com.end_vote:
             result(com, backend)
-            if EXIT:
-                return None
+            return None
         if RESIZE:
             BG = pygame.transform.scale(bg_play, size)
             BGrect = BG.get_rect()
@@ -409,12 +424,13 @@ def game_wait(com, backend):
     """Wait when all players choose his card"""
     global EXIT, RESIZE
     RESIZE = True
-    bg_play = pygame.image.load("interface/play_bg.png")
+    bg_file = PATH + "interface/play_bg.png"
+    bg_play = pygame.image.load(bg_file)
     header_text = "Wait other players"
     h_color = 0xAD, 0xE5, 0xF3
-    players = com.get_vote_list()
     color_good = 0x00, 0xFF, 0x00
     color_bad = 0xFF, 0x00, 0x00
+    players = com.get_vote_list()
     while True:
         if RESIZE:
             BG = pygame.transform.scale(bg_play, size)
@@ -431,28 +447,29 @@ def game_wait(com, backend):
             players_pos = [w_offset, h_offset]
             font_size = int(height / 30)
             font = pygame.font.Font(font_file, font_size)
-            players_rect = []
-            players_size = (int(width / 6), int(height / 8))
-            players_text = []
-            players_score = []
-            for i in players:
-                players_rect.append(pygame.Rect(*players_pos, *players_size))
-                color = color_good if i[3] else color_bad
-                players_text.append(font.render(i[1], True, color))
-                text = i[1]
-                while players_text[-1].get_size()[0] > int(width / 6):
-                    text = text[:-1]
-                    players_text[-1] = font.render(text, True, color)
-                score = "".join(("Score: ", str(i[0])))
-                players_score.append(font.render(score, True, color))
-                players_pos[1] += int(height / 8)
-            rect_rect = pygame.Rect(w_offset, h_offset, int(width / 6),
-                                    int(height / 8) * len(players))
             RESIZE = False
+        players_rect = []
+        players_size = (int(width / 6), int(height / 8))
+        players_text = []
+        players_score = []
+        for i in players:
+            players_rect.append(pygame.Rect(*players_pos, *players_size))
+            color = color_good if i[3] else color_bad
+            players_text.append(font.render(i[1], True, color))
+            text = i[1]
+            while players_text[-1].get_size()[0] > int(width / 6):
+                text = text[:-1]
+                players_text[-1] = font.render(text, True, color)
+            score = "".join(("Score: ", str(i[0])))
+            players_score.append(font.render(score, True, color))
+            players_pos[1] += int(height / 12)
+        rect_rect = pygame.Rect(w_offset, h_offset, int(width / 6),
+                                int(height / 12) * len(players))
+
+        players = com.get_vote_list()
         if com.vote_time:
             vote(com, backend)
-            if EXIT:
-                return None
+            return None
         """MAINLOOP"""
         for event in pygame.event.get():
             """EVENTS HANDLING"""
@@ -501,55 +518,18 @@ def set_association(com, backend):
     mode = com.mode
     header_text = "Enter your association"
     h_color = 0xAD, 0xE5, 0xF3
-    name = "".join(("resources/", mode, "/", str(com.get_card()), ".png"))
+    name = "".join((PATH, "resources/", mode, "/",
+                    str(com.get_card()), ".png"))
     card_img = pygame.image.load(name)
     name_active = False
     name_text = ""
     inactive_color = 0xFF, 0xFF, 0xFF
     active_color = 0xAD, 0xE5, 0xF3
     name_color = inactive_color
-    ok_img = pygame.image.load("interface/ok.png")
-
-    """Background"""
-    BG = pygame.transform.scale(bg_play, size)
-    BGrect = BG.get_rect()
-    BGrect[0], BGrect[1] = w_offset, h_offset
-    """"Header"""
-    h_font_size = int(height / 8)
-    h_font = pygame.font.Font(font_file, h_font_size)
-    header = h_font.render(header_text, True, h_color)
-    header_rect = header.get_rect()
-    shift = int(height / 120)
-    header_rect[1] = shift + h_offset
-    w = header_rect[2]
-    header_rect[0] = int(width / 2 - w / 2) + w_offset
-    """Card"""
-    card_size = (int(height / 3), int(height / 2))
-    b_card = pygame.transform.scale(card_img, card_size)
-    card_rect = b_card.get_rect()
-    card_rect[0] = int(width / 2 - height / 6) + w_offset
-    card_rect[1] = int(height / 6) + h_offset
-    """Back button"""
-    back_scale = (int(height * 21 / 216), int(height * 21 / 216))
-    back_img = pygame.image.load("interface/back.png")
-    back = pygame.transform.scale(back_img, back_scale)
-    backrect = back.get_rect()
-    backrect[0] = w_offset
-    backrect[1] = int(height * 185 / 216) + h_offset
-    font_size = int(height / 30)
-    font = pygame.font.Font(font_file, font_size)
-    """Text box aka Entry"""
-    namebox_size = (int(width * 2 / 3), int(height * 3 / 60))
-    namebox_pos = (int(width / 6) + w_offset,
-                   int(height * 3 / 4 - height / 20) + h_offset)
-    namerect = pygame.Rect(namebox_pos[0], namebox_pos[1],
-                           namebox_size[0], namebox_size[1])
-    """OK button"""
-    ok_scale = (int(width / 3), int(height * 33 / 216))
-    ok = pygame.transform.scale(ok_img, ok_scale)
-    okrect = ok.get_rect()
-    okrect[0] = int(width / 3) + w_offset
-    okrect[1] = int(height * 170 / 216) + h_offset
+    ok_file = PATH + "interface/ok.png"
+    ok_img = pygame.image.load(ok_file)
+    back_file = PATH + "interface/back.png"
+    back_img = pygame.image.load(back_file)
 
     while True:
         if RESIZE:
@@ -574,7 +554,6 @@ def set_association(com, backend):
             card_rect[1] = int(height / 6) + h_offset
             """Back button"""
             back_scale = (int(height * 21 / 216), int(height * 21 / 216))
-            back_img = pygame.image.load("interface/back.png")
             back = pygame.transform.scale(back_img, back_scale)
             backrect = back.get_rect()
             backrect[0] = w_offset
@@ -606,9 +585,11 @@ def set_association(com, backend):
                 else:
                     name_active = False
                     if okrect.collidepoint(event.pos):
-                        backend.set_ass(name_text)
-                        game_wait(com, backend)
-                        return None
+                        if len(name_text) > 0:
+                            name_active = False
+                            backend.set_ass(name_text)
+                            game_wait(com, backend)
+                            return None
             """KEYBOARD EVENTS"""
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -618,10 +599,11 @@ def set_association(com, backend):
                     return None
                 if name_active:
                     if event.key == pygame.K_RETURN:
-                        name_active = False
-                        backend.set_ass(name_text)
-                        game_wait(com, backend)
-                        return None
+                        if len(name_text):
+                            name_active = False
+                            backend.set_ass(name_text)
+                            game_wait(com, backend)
+                            return None
                     elif event.key == pygame.K_BACKSPACE:
                         name_text = name_text[:-1]
                     elif len(name_text) < 68:
@@ -661,11 +643,12 @@ def game(com, backend):
         leader = com.turn
         choose_flg = leader
         mode = com.mode
-        bg_img = pygame.image.load("interface/play_bg_1.png")
+        bg_file = PATH + "interface/play_bg_1.png"
+        bg_img = pygame.image.load(bg_file)
         cards = com.player.cards
         cards_img = []
         for i in cards:
-            name = "".join(("resources/", mode, "/",  str(i), ".png"))
+            name = "".join((PATH, "resources/", mode, "/",  str(i), ".png"))
             cards_img.append(pygame.image.load(name))
         color_else = 0xFF, 0xFF, 0xFF
         color_leader = 0xFF, 0xFF, 0x00
@@ -729,9 +712,9 @@ def game(com, backend):
                         players_text[-1] = font.render(p_name, True, color)
                     score = "".join(("Score: ", str(i[0])))
                     players_score.append(font.render(score, True, color))
-                    players_pos[1] += int(height / 8)
+                    players_pos[1] += int(height / 12)
                 rect_rect = pygame.Rect(w_offset, h_offset, int(width / 6),
-                                        int(height / 8) * len(players))
+                                        int(height / 12) * len(players))
                 """Big card"""
                 card_w = min(int(height / 3), int(width * 3 / 16))
                 card_h = int(card_w * 3 / 2)
@@ -767,6 +750,8 @@ def game(com, backend):
                                 set_association(com, backend)
                                 if EXIT:
                                     return None
+                                else:
+                                    breaker = True
                             else:
                                 game_wait(com, backend)
                                 if EXIT:
@@ -860,10 +845,12 @@ def wait_menu(com, backend):
 
     bg_img = []
     for i in range(4):
-        bg_img.append(pygame.image.load("interface/wait_{}.png".
-                                        format(str(i))))
-    back_img = pygame.image.load("interface/back.png")
-    play_img = pygame.image.load("interface/play.png")
+        bg_file = PATH + "interface/wait_{}.png".format(str(i))
+        bg_img.append(pygame.image.load(bg_file))
+    back_file = PATH + "interface/back.png"
+    back_img = pygame.image.load(back_file)
+    play_file = PATH + "interface/play.png"
+    play_img = pygame.image.load(play_file)
     num = com.get_number()
     screen_iter, n = 0, 0
     pygame.time.set_timer(pygame.USEREVENT, 500)
@@ -988,7 +975,7 @@ def settings_menu(com, backend):
             global SETTINGS
             SETTINGS = True
             com.is_connected = False
-            bg_name = "interface/BG_settings_saved.png"
+            bg_name = PATH + "interface/BG_settings_saved.png"
             bg_img = pygame.image.load(bg_name)
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
@@ -996,7 +983,7 @@ def settings_menu(com, backend):
             ip_text = ""
             port_text = ""
         else:
-            bg_name = "interface/BG_settings_not_saved.png"
+            bg_name = PATH + "interface/BG_settings_not_saved.png"
             bg_img = pygame.image.load(bg_name)
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
@@ -1008,9 +995,12 @@ def settings_menu(com, backend):
     ip_text, port_text = "", ""
     inactive_color = 0xFF, 0xFF, 0xFF
     active_color = 0xAD, 0xE5, 0xF3
-    bg_img = pygame.image.load("interface/BG_settings.png")
-    back_img = pygame.image.load("interface/back.png")
-    save_img = pygame.image.load("interface/save.png")
+    bg_file = PATH + "interface/BG_settings.png"
+    bg_img = pygame.image.load(bg_file)
+    back_file = PATH + "interface/back.png"
+    back_img = pygame.image.load(back_file)
+    save_file = PATH + "interface/save.png"
+    save_img = pygame.image.load(save_file)
     while True:
         if RESIZE:
             shift = int(height / 120)
@@ -1121,8 +1111,10 @@ def rule_menu(com, backend):
     """DRAW RULE MENU INTERFACE"""
     global EXIT, RESIZE
     RESIZE = True
-    bg_img = pygame.image.load("interface/rule_menu.png")
-    back_img = pygame.image.load("interface/back.png")
+    bg_file = PATH + "interface/rule_menu.png"
+    bg_img = pygame.image.load(bg_file)
+    back_file = PATH + "interface/back.png"
+    back_img = pygame.image.load(back_file)
 
     while True:
         if RESIZE:
@@ -1182,7 +1174,8 @@ def play_menu_2(com, backend):
             backend.exit()
             return True
         else:
-            bg_img = pygame.image.load("interface/BG_name_bad.png")
+            bg_file = PATH + "interface/BG_name_bad.png"
+            bg_img = pygame.image.load(bg_file)
             BG = pygame.transform.scale(bg_img, size)
             BGrect = BG.get_rect()
             BGrect[0], BGrect[1] = w_offset, h_offset
@@ -1191,9 +1184,12 @@ def play_menu_2(com, backend):
     global EXIT, RESIZE
     RESIZE = True
 
-    bg_img = pygame.image.load("interface/BG_name.png")
-    back_img = pygame.image.load("interface/back.png")
-    ok_img = pygame.image.load("interface/ok.png")
+    bg_file = PATH + "interface/BG_name.png"
+    bg_img = pygame.image.load(bg_file)
+    back_file = PATH + "interface/back.png"
+    back_img = pygame.image.load(back_file)
+    ok_file = PATH + "interface/ok.png"
+    ok_img = pygame.image.load(ok_file)
     inactive_color = 0xFF, 0xFF, 0xFF
     active_color = 0xAD, 0xE5, 0xF3
     name_active = False
@@ -1302,8 +1298,10 @@ def disconnection(com, backend):
     global EXIT, RESIZE
     RESIZE = True
 
-    bg_img = pygame.image.load("interface/BG_disconnect.png")
-    ok_img = pygame.image.load("interface/ok.png")
+    bg_file = PATH + "interface/BG_disconnect.png"
+    bg_img = pygame.image.load(bg_file)
+    ok_file = PATH + "interface/ok.png"
+    ok_img = pygame.image.load(ok_file)
     while True:
         if RESIZE:
             """Background"""
@@ -1356,7 +1354,7 @@ def connection(com, backend):
 
     bg_img = []
     for i in range(4):
-        bg_name = "interface/BG_{}.png".format(str(i))
+        bg_name = PATH + "interface/BG_{}.png".format(str(i))
         bg_img.append(pygame.image.load(bg_name))
     n, count = 0, 0
     pygame.time.set_timer(pygame.USEREVENT, 500)
@@ -1425,15 +1423,23 @@ def play_menu(com, backend):
     num = com.get_number()
     if num == 0:
         """First player interface"""
-        bg_img = pygame.image.load("interface/BG_main.png")
-        back_img = pygame.image.load("interface/back.png")
+        bg_file = PATH + "interface/BG_main.png"
+        bg_img = pygame.image.load(bg_file)
+        back_file = PATH + "interface/back.png"
+        back_img = pygame.image.load(back_file)
         mode_img = []
-        mode_img.append(pygame.image.load("interface/classic.png"))
-        mode_img.append(pygame.image.load("interface/ariadna.png"))
-        mode_img.append(pygame.image.load("interface/himera.png"))
-        mode_img.append(pygame.image.load("interface/Odiseya.png"))
-        mode_img.append(pygame.image.load("interface/pandora.png"))
-        mode_img.append(pygame.image.load("interface/persefona.png"))
+        m_file = PATH + "interface/classic.png"
+        mode_img.append(pygame.image.load(m_file))
+        m_file = PATH + "interface/ariadna.png"
+        mode_img.append(pygame.image.load(m_file))
+        m_file = PATH + "interface/himera.png"
+        mode_img.append(pygame.image.load(m_file))
+        m_file = PATH + "interface/Odiseya.png"
+        mode_img.append(pygame.image.load(m_file))
+        m_file = PATH + "interface/pandora.png"
+        mode_img.append(pygame.image.load(m_file))
+        m_file = "interface/persefona.png"
+        mode_img.append(pygame.image.load(m_file))
         selected_mode = ["imaginarium", "ariadna", "himera",
                          "odissey", "pandora", "persephone"]
         RESIZE = True
@@ -1516,12 +1522,13 @@ def play_menu(com, backend):
         RESIZE = True
         bg_img = []
         for i in range(4):
-            bg_name = "interface/wait_{}.png".format(str(i))
+            bg_name = PATH + "interface/wait_{}.png".format(str(i))
             bg_img.append(pygame.image.load(bg_name))
         BG = pygame.transform.scale(pygame.image.load(bg_name), size)
         BGrect = BG.get_rect()
         BGrect[0], BGrect[1] = w_offset, h_offset
-        progress_img = pygame.image.load("interface/bar.png")
+        p_file = PATH + "interface/bar.png"
+        progress_img = pygame.image.load(p_file)
         progress = pygame.transform.scale(progress_img, (0, int(height / 6)))
         progress_rect = progress.get_rect()
         progress_rect[0] = w_offset
@@ -1559,10 +1566,10 @@ def play_menu(com, backend):
                     BGrect = BG.get_rect()
                     BGrect[0], BGrect[1] = w_offset, h_offset
                     mul = com.get_progress()
-                    p_size = (int(width * mul), int(height / 6))
+                    p_size = (int(width * mul / 3), int(height / 20))
                     progress = pygame.transform.scale(progress_img, p_size)
                     progress_rect = progress.get_rect()
-                    progress_rect[0] = w_offset
+                    progress_rect[0] = w_offset + int(width / 3)
                     progress_rect[1] = int(height * 2 / 3) + h_offset
                 """KEYBOARD EVENTS"""
                 if event.type == pygame.KEYDOWN:
@@ -1592,17 +1599,24 @@ def play_menu(com, backend):
             pygame.draw.rect(screen, color, rect_rect, 2)
             pygame.display.flip()
             CLOCK.tick(30)
+        global UPD
+        UPD = True
 
 
 def main_menu(com, backend):
     """DRAW MAIN MENU INTERFACE"""
     global EXIT, RESIZE
     RESIZE = True
-    bg_img = pygame.image.load("interface/BG.png")
-    play_img = pygame.image.load("interface/play.png")
-    exit_img = pygame.image.load("interface/exit.png")
-    settings_img = pygame.image.load("interface/settings.png")
-    rule_img = pygame.image.load("interface/rule.png")
+    bg_file = PATH + "interface/BG.png"
+    bg_img = pygame.image.load(bg_file)
+    play_file = PATH + "interface/play.png"
+    play_img = pygame.image.load(play_file)
+    exit_file = PATH + "interface/exit.png"
+    exit_img = pygame.image.load(exit_file)
+    settings_file = PATH + "interface/settings.png"
+    settings_img = pygame.image.load(settings_file)
+    rule_file = PATH + "interface/rule.png"
+    rule_img = pygame.image.load(rule_file)
     while True:
         if RESIZE:
             """Background"""
@@ -1659,7 +1673,11 @@ def main_menu(com, backend):
                     if EXIT:
                         return None
                 elif playrect.collidepoint(event.pos):
+                    global UPD
+                    UPD = False
                     play_menu(com, backend)
+                    if UPD:
+                        play_menu(com, backend)
                     RESIZE = True
                     if EXIT:
                         return None
@@ -1691,7 +1709,8 @@ def main_menu(com, backend):
 
 
 def init_interface(com, backend):
-    global SETTINGS
+    global SETTINGS, TURN
+    TURN = True
     SETTINGS = com.ip is not None
     main_menu(com, backend)
     return

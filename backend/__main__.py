@@ -13,6 +13,7 @@ import sys
 import shutil
 import wget
 import interface
+from zipfile import ZipFile
 from connection import connection as Conn
 from monitor import Monitor
 
@@ -56,6 +57,9 @@ class Common(Monitor):
         self.end_vote = False
         self.vote_results = []
         self.deltas = {}
+        self.next_turn = False
+        self.approved = False
+        self.finish_game = True
 
     def reset(self):
         """
@@ -64,6 +68,23 @@ class Common(Monitor):
         self.player = Player()
         self.players_list = []
         self.game_started = False
+
+    def new_turn(self):
+        """
+        Resets turn vars
+        """
+        self.turn = False
+        self.got_list = False
+        self.card = 0
+        self.ass = ""
+        self.got_ass = False
+        self.vote_list = []
+        self.vote_cards = []
+        self.vote_time = False
+        self.end_vote = False
+        self.vote_results = []
+        self.deltas = {}
+        self.next_turn = False
 
     def set_ip_port(self, ip, port):
         """
@@ -156,6 +177,14 @@ class Common(Monitor):
         """
         return self.vote_list
 
+    def get_progress(self):
+        """
+        Returns coef of downloaded archive
+        """
+        self.coef_mutex.acquire()
+        coef = self.coef
+        self.coef_mutex.release()
+        return coef
 
 def parse_message(message, sep):
     """
@@ -347,6 +376,7 @@ class Backend(Monitor):
         """
         Provides turn logic
         """
+        self.common.approved = False
         mes = self.conn.get()
         logging.debug(mes)
         if mes.startswith("TURN"):
@@ -357,6 +387,7 @@ class Backend(Monitor):
                 i.append(int(i[-1]) == self.leader)
                 logging.debug(i)
         else:
+            self.common.finish_game = True
             return False
         self.common.got_list = True
         mes = self.conn.get()
@@ -367,6 +398,7 @@ class Backend(Monitor):
         elif mes.startswith("TURN"):
             return True
         else:
+            self.common.finish_game = True
             return False
         mes = self.conn.get()
         logging.debug(mes)
@@ -381,6 +413,7 @@ class Backend(Monitor):
                     i[-1] = True
                     break
             else:
+                self.common.finish_game = True
                 return False
             mes = self.conn.get()
             logging.debug(mes)
@@ -413,12 +446,33 @@ class Backend(Monitor):
             for i in p_list:
                 self.common.players_list.append([i[1], self.names[i[0]], i[0], int(i[0]) == self.leader])
             self.common.end_vote = True
+            mes = self.conn.get()
+            logging.debug(mes)
+            if mes.startswith("CARDS"):
+                self.common.got_list = False
+                self.common.next_turn = True
+                while not self.common.approved:
+                    time.sleep(1)
+                self.new_turn();
+                parsed = parse_message(mes, " ")
+                self.common.player.cards = parse_message(parsed[1], ",")
+                return True
+            else:
+                self.common.finish_game = True
+                return False
         elif mes.startswith("TURN"):
             return True
         else:
+            self.common.finish_game = True
             return False
 
-        # TODO
+    def new_turn(self):
+        """
+        Resets turn vars
+        """
+        self.common.new_turn()
+        for i in self.common.players_list:
+            i.pop(-1)
 
     def get_players_list(self):
         """
@@ -453,6 +507,7 @@ class Backend(Monitor):
         """
         Starts the game
         """
+        self.common.finish_game = False
         try:
             self.connect()
         except Exception as ex:
@@ -556,8 +611,8 @@ class Backend(Monitor):
         """
         Send next turn message
         """
-        self.conn.send("NETX_TURN")
-        logging.debug("NETX_TURN")
+        self.conn.send("NEXT_TURN")
+        logging.debug("NEXT_TURN")
 
 
 class BackendInterface:
