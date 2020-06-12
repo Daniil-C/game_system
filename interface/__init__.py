@@ -59,7 +59,7 @@ def result(com, backend):
         cards_img.append(pygame.image.load(name))
     color_else = 0xFF, 0xFF, 0xFF
     color_leader = 0xFF, 0xFF, 0x00
-    blue = 0xAD, 0xE5, 0xF3
+    green = 0x00, 0xFF, 0x00
     card = False
     b_card = None
     key_pressed = [False for i in range(len(cards))]
@@ -149,14 +149,14 @@ def result(com, backend):
                                                         card_size)
                         b_text = ["Owner:", res[i][0], "Voted:", *res[i][2]]
                         b_rend = []
-                        b_rend.append(font.render(b_text[0], True, blue))
+                        b_rend.append(font.render(b_text[0], True, green))
                         b_rend.append(font.render(b_text[1], True,
                                                   color_leader))
                         while b_rend[-1].get_size()[0] > int(width / 6):
                             b_text[1] = b_text[1][:-1]
                             b_rend[-1] = (font.render(b_text[1],
                                                       True, color_leader))
-                        b_rend.append(font.render(b_text[2], True, blue))
+                        b_rend.append(font.render(b_text[2], True, green))
                         for j in range(len(res[i][2])):
                             b_rend.append(font.render(b_text[3 + j],
                                                       True, color_else))
@@ -187,14 +187,14 @@ def result(com, backend):
                             b_text = ["Owner:", res[i][0],
                                       "Voted:", *res[i][2]]
                             b_rend = []
-                            b_rend.append(font.render(b_text[0], True, blue))
+                            b_rend.append(font.render(b_text[0], True, green))
                             b_rend.append(font.render(b_text[1],
                                           True, color_leader))
                             while b_rend[-1].get_size()[0] > int(width / 6):
                                 b_text[1] = b_text[1][:-1]
                                 b_rend[-1] = (font.render(b_text[1],
                                                           True, color_leader))
-                            b_rend.append(font.render(b_text[2], True, blue))
+                            b_rend.append(font.render(b_text[2], True, green))
                             for j in range(len(res[i][2])):
                                 b_rend.append(font.render(b_text[3 + j],
                                                           True, color_else))
@@ -231,7 +231,8 @@ def result(com, backend):
         """RENDERING"""
         screen.fill(black)
         screen.blit(BG, BGrect)
-        screen.blit(ok, okrect)
+        if not nxttrn:
+            screen.blit(ok, okrect)
         for i in range(len(cards_row)):
             screen.blit(cards_row[i], cards_rect[i])
             color = color_leader if players[i][3] else color_else
@@ -278,7 +279,7 @@ def vote(com, backend):
     bg_file = PATH + "interface/play_bg.png"
     bg_play = pygame.image.load(bg_file)
     leader = com.turn
-    header_text = "Wait other players" if leader else "Guess leader's card"
+    header_text = "Wait for other players" if leader else "Guess leader's card"
     h_color = 0xAD, 0xE5, 0xF3
     cards = com.vote_cards
     cards_row = []
@@ -302,7 +303,7 @@ def vote(com, backend):
             BG = pygame.transform.scale(bg_play, size)
             BGrect = BG.get_rect()
             BGrect[0], BGrect[1] = w_offset, h_offset
-            h_font_size = int(height / 8)
+            h_font_size = int(height / 12)
             h_font = pygame.font.Font(font_file, h_font_size)
             header = h_font.render(header_text, True, h_color)
             header_rect = header.get_rect()
@@ -342,7 +343,14 @@ def vote(com, backend):
                 for i in range(1, len(cards)):
                     if cards_rect[i].collidepoint(event.pos):
                         backend.set_card(cards[i])
-                        header_text = "Wait other players"
+                        header_text = "Wait for other players"
+                        header = h_font.render(header_text, True, h_color)
+                        header_rect = header.get_rect()
+                        shift = int(height / 120)
+                        header_rect[1] = shift + h_offset
+                        w = header_rect[2]
+                        header_rect[0] = int(width / 2 - w / 2) + w_offset
+
                         selected = True
             """USER EVENTS"""
             if event.type == pygame.USEREVENT and not pressed:
@@ -412,10 +420,9 @@ def vote(com, backend):
         screen.blit(BG, BGrect)
         for i in range(len(cards_img)):
             screen.blit(cards_img[i], cards_rect[i])
-        screen.blit(header, (int(width / 6) + shift + w_offset,
-                    shift + h_offset))
+        screen.blit(header, header_rect)
         screen.blit(assoc, (int(width - a_rect[2]) / 2 + w_offset,
-                    int(height / 6 + 2 * shift) + h_offset))
+                    int(height / 12 + 2 * shift) + h_offset))
         if card:
             screen.blit(b_card, card_rect)
         pygame.display.flip()
@@ -428,7 +435,7 @@ def game_wait(com, backend):
     RESIZE = True
     bg_file = PATH + "interface/play_bg.png"
     bg_play = pygame.image.load(bg_file)
-    header_text = "Wait other players"
+    header_text = "Wait for other players"
     h_color = 0xAD, 0xE5, 0xF3
     color_good = 0x00, 0xFF, 0x00
     color_bad = 0xFF, 0x00, 0x00
@@ -438,7 +445,7 @@ def game_wait(com, backend):
             BG = pygame.transform.scale(bg_play, size)
             BGrect = BG.get_rect()
             BGrect[0], BGrect[1] = w_offset, h_offset
-            h_font_size = int(height / 8)
+            h_font_size = int(height / 12)
             h_font = pygame.font.Font(font_file, h_font_size)
             header = h_font.render(header_text, True, h_color)
             header_rect = header.get_rect()
@@ -506,8 +513,9 @@ def game_wait(com, backend):
                         players_rect[i][1] + shift * 6))
         color = 0xFF, 0xFF, 0xFF
         pygame.draw.rect(screen, color, rect_rect, 2)
-        screen.blit(header, (int(width / 6) + shift + w_offset,
-                             shift + h_offset))
+        #screen.blit(header, (int(width / 6) + shift + w_offset,
+        #                     shift + h_offset))
+        screen.blit(header, header_rect)
         pygame.display.flip()
         CLOCK.tick(30)
 
@@ -639,7 +647,7 @@ def game(com, backend):
     global EXIT, TURN, RESIZE
     while TURN:
         while not com.got_list:
-            time.sleep(1)
+            time.sleep(0.1)
         RESIZE = True
 
         leader = com.turn
@@ -1485,7 +1493,7 @@ def play_menu(com, backend):
                 screen.blit(back, backrect)
                 for i in range(len(mode)):
                     screen.blit(mode[i], mode_rect[i])
-                # pygame.display.flip()
+                pygame.display.flip()
 
                 RESIZE = False
 
