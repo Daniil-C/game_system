@@ -277,7 +277,8 @@ def vote(com, backend):
     mode = com.mode
     bg_file = PATH + "interface/play_bg.png"
     bg_play = pygame.image.load(bg_file)
-    header_text = "Guess leader's card"
+    leader = com.turn
+    header_text = "Wait other players" if leader else "Guess leader's card"
     h_color = 0xAD, 0xE5, 0xF3
     cards = com.vote_cards
     cards_row = []
@@ -341,6 +342,7 @@ def vote(com, backend):
                 for i in range(1, len(cards)):
                     if cards_rect[i].collidepoint(event.pos):
                         backend.set_card(cards[i])
+                        header_text = "Wait other players"
                         selected = True
             """USER EVENTS"""
             if event.type == pygame.USEREVENT and not pressed:
