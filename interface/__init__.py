@@ -48,7 +48,6 @@ def result(com, backend):
     global EXIT, TURN, RESIZE
     RESIZE = True
     nxttrn = False
-    appr_flg = True
     res = com.vote_results
     mode = com.mode
     bg_file = PATH + "interface/play_bg_1.png"
@@ -266,10 +265,8 @@ def result(com, backend):
                 text_pos[1] += font_size + shift
         pygame.display.flip()
         CLOCK.tick(30)
-        if com.next_turn and appr_flg:
-            appr_flg = False
+        if com.next_turn:
             com.approved = True
-        if com.got_list:
             return None
 
 
@@ -649,7 +646,15 @@ def set_association(com, backend):
 def game(com, backend):
     global EXIT, TURN, RESIZE
     while TURN:
+        bg_file = PATH + "interface/play_bg_1.png"
+        bg_img = pygame.image.load(bg_file)
         while not com.got_list:
+            BG = pygame.transform.scale(bg_img, size)
+            BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
+            screen.fill(black)
+            screen.blit(BG, BGrect)
+            pygame.display.flip()
             time.sleep(0.1)
         RESIZE = True
 
