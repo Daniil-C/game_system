@@ -1653,10 +1653,6 @@ def main_menu(com, backend):
             rulerect[1] = int(height * 185 / 216) + h_offset
 
             RESIZE = False
-        print(n%100)
-        n += 1
-        if n == 100:
-            n = 0
         """MAINLOOP"""
         for event in pygame.event.get():
             """EVENTS HANDLING"""
