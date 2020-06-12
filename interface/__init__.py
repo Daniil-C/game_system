@@ -48,6 +48,7 @@ def result(com, backend):
     global EXIT, TURN, RESIZE
     RESIZE = True
     nxttrn = False
+    appr_flg = True
     res = com.vote_results
     mode = com.mode
     bg_file = PATH + "interface/play_bg_1.png"
@@ -265,8 +266,10 @@ def result(com, backend):
                 text_pos[1] += font_size + shift
         pygame.display.flip()
         CLOCK.tick(30)
-        if com.next_turn:
+        if com.next_turn and appr_flg:
+            appr_flg = False
             com.approved = True
+        if com.got_list:
             return None
 
 
@@ -888,7 +891,7 @@ def wait_menu(com, backend):
                 playrect[1] = int(height * 150 / 216) + h_offset
             RESIZE = False
         """MAINLOOP"""
-        if com.game_started:
+        if com.game_started and com.got_list:
             game(com, backend)
             RESIZE = True
             return None
@@ -902,9 +905,6 @@ def wait_menu(com, backend):
                     return None
                 if num == 0 and playrect.collidepoint(event.pos):
                     backend.play()
-                    game(com, backend)
-                    RESIZE = True
-                    return None
             """USER EVENTS"""
             if event.type == pygame.USEREVENT:
                 n = screen_iter % 4
