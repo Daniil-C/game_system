@@ -1546,7 +1546,7 @@ def play_menu(com, backend):
         RESIZE = True
         bg_img = []
         for i in range(4):
-            bg_name = PATH + "wait_{}.png".format(str(i))
+            bg_name = PATH + "upd_{}.png".format(str(i))
             bg_img.append(pygame.image.load(bg_name))
         BG = pygame.transform.scale(pygame.image.load(bg_name), size)
         BGrect = BG.get_rect()
