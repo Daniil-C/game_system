@@ -513,8 +513,6 @@ def game_wait(com, backend):
                         players_rect[i][1] + shift * 6))
         color = 0xFF, 0xFF, 0xFF
         pygame.draw.rect(screen, color, rect_rect, 2)
-        #screen.blit(header, (int(width / 6) + shift + w_offset,
-        #                     shift + h_offset))
         screen.blit(header, header_rect)
         pygame.display.flip()
         CLOCK.tick(30)
@@ -648,13 +646,13 @@ def game(com, backend):
     while TURN:
         bg_file = PATH + "interface/play_bg_1.png"
         bg_img = pygame.image.load(bg_file)
+        BG = pygame.transform.scale(bg_img, size)
+        BGrect = BG.get_rect()
+        BGrect[0], BGrect[1] = w_offset, h_offset
+        screen.fill(black)
+        screen.blit(BG, BGrect)
+        pygame.display.flip()
         while not com.got_list:
-            BG = pygame.transform.scale(bg_img, size)
-            BGrect = BG.get_rect()
-            BGrect[0], BGrect[1] = w_offset, h_offset
-            screen.fill(black)
-            screen.blit(BG, BGrect)
-            pygame.display.flip()
             time.sleep(0.1)
         RESIZE = True
 
