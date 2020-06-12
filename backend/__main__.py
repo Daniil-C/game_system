@@ -580,8 +580,9 @@ class Backend(Monitor):
         """
         Restarts menu
         """
-        self.conn.send("SHUTDOWN")
-        self.conn.close()
+        if self.conn != None:
+            self.conn.send("SHUTDOWN")
+            self.conn.close()
         self.game_started = False
         try:
             self.updater.join()
