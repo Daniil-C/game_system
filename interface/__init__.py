@@ -53,6 +53,8 @@ def result(com, backend):
     nxttrn = False
     res = com.vote_results
     mode = com.mode
+    header_text = _("Wait for other players")
+    h_color = 0xAD, 0xE5, 0xF3
     bg_file = PATH + "play_bg_1.png"
     bg_img = pygame.image.load(bg_file)
     cards = com.player.cards
@@ -131,6 +133,17 @@ def result(com, backend):
             okrect = ok.get_rect()
             okrect[0], okrect[1] = int(width * 2 / 3 + width /
                                        12) + w_offset, h_offset
+            """Header"""
+            if nxttrn:
+                h_font_size = int(height / 12)
+                h_font = pygame.font.Font(font_file, h_font_size)
+                header = h_font.render(header_text, True, h_color)
+                header_rect = header.get_rect()
+                shift = int(height / 120)
+                header_rect[1] = shift + h_offset
+                w = header_rect[2]
+                header_rect[0] = int(width / 2 - w / 2) + w_offset
+
             RESIZE = False
         """MAINLOOP"""
         if com.finish_game:
@@ -267,6 +280,8 @@ def result(com, backend):
             for i in b_rend:
                 screen.blit(i, text_pos)
                 text_pos[1] += font_size + shift
+        ifnxttrn:
+            screen.blit(header, header_rect)
         pygame.display.flip()
         CLOCK.tick(30)
         if com.next_turn:
