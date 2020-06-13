@@ -19,7 +19,7 @@ class socket:
         """ init """
         pass
 
-    def settimeout(timeout=None):
+    def settimeout(self, timeout=None):
         """ settimeout """
         pass
 
@@ -31,13 +31,22 @@ class Conn:
     """ Mocking class for Conn """
     def __init__(self):
         self.__in_q = self.Get()
+        self.mes = ""
 
-    def send(message):
-        print(mes)
+    def send(self, mes):
+        self.mes = mes
 
     def Get(self):
         yield "VERSION 0 MASTER v0 http://pack.zip"
-        yield "PLAYER_LIST 0;qwer"
+        time.sleep(1)
+        yield "PLAYER_LIST 0;Player1"
+        time.sleep(1)
+        yield "PLAYER_LIST 0;Player1,1;Player2"
+        time.sleep(1)
+        yield "PLAYER_LIST 0;Player1,1;Player2,2;Player3"
+        while not self.mes.startswith("START_GAME"):
+            yield "PLAYER_LIST 0;Player1,1;Player2,2;Player3"
+        yield "BEGIN imaginarium 57,27,8,95,5,91 0;Player1,1;Player2,2;Player3"
 
     def get(self):
         try:
@@ -54,6 +63,7 @@ class Backend(Backend):
         """ Connect to the server """
         print(dir())
         self.conn = Conn()
+        self.sock = socket()
         self.common.is_connected = True
 
     def update(self, cwd, url):
