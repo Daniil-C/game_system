@@ -381,7 +381,9 @@ class Backend(Monitor):
         self.plist.sort(key=(lambda k: int(k[1])), reverse=True)
         maxpoint = self.plist[0][1]
         for i in self.plist:
+            n = i[0]
             i[0] = self.names[i[0]]
+            i.append(n)
             i.append(i[1] == maxpoint)
         self.common.game_results = self.plist
 
