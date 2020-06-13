@@ -52,7 +52,6 @@ def game_result(com, backend):
     """Show game results."""
     global EXIT, TURN, RESIZE
     RESIZE = True
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     players = com.game_results
     while len(players) == 0:
         players = com.game_results
@@ -110,9 +109,6 @@ def game_result(com, backend):
 
             RESIZE = False
         """MAINLOOP"""
-        if com.finish_game:
-            TURN = False
-            return None
         for event in pygame.event.get():
             """EVENTS HANDLING"""
             """MOUSE EVENTS"""
@@ -557,6 +553,7 @@ def game_wait(com, backend):
     players = com.get_vote_list()
     while len(players) == 0:
         players = com.get_vote_list()
+        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
         time.sleep(0.1)
     while True:
         if RESIZE:
@@ -625,9 +622,6 @@ def game_wait(com, backend):
         players = com.get_vote_list()
         players_pos = [w_offset, h_offset]
         for i in range(len(players)):
-            print("1:", i)
-            print("2:", players_text[i])
-            print("3:", players_rect[i][0])
             screen.blit(players_text[i], (players_rect[i][0] + shift,
                         players_rect[i][1] + shift))
             screen.blit(players_score[i], (players_rect[i][0] + shift,
