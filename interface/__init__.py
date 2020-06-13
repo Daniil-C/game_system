@@ -1736,6 +1736,7 @@ def play_menu(com, backend):
                 return None
             screen.blit(BG, BGrect)
             screen.blit(progress, progress_rect)
+            pygame.draw.rect(screen, color, rect_rect, 2)
             pygame.display.flip()
             CLOCK.tick(30)
         global UPD
