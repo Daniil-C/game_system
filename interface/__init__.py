@@ -553,7 +553,6 @@ def game_wait(com, backend):
     players = com.get_vote_list()
     while len(players) == 0:
         players = com.get_vote_list()
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
         time.sleep(0.1)
     while True:
         if RESIZE:
@@ -798,6 +797,7 @@ def game(com, backend):
         a_color = 0xAD, 0xE5, 0xF3
         pygame.time.set_timer(pygame.USEREVENT, 100)
         players = com.get_players_list()
+        sound = 0
 
         while True:
             if RESIZE:
@@ -865,6 +865,7 @@ def game(com, backend):
             breaker = False
             if (not leader) and com.got_ass:
                 choose_flg = True
+                sound += 1
                 header_text = _("Choose a card")
                 header = h_font.render(header_text, True, h_color)
                 assoc_text = com.ass
@@ -970,6 +971,9 @@ def game(com, backend):
             if card:
                 screen.blit(b_card, card_rect)
             pygame.display.flip()
+            if sound == 1:
+                s_file = pygame.mixer.music.load("interface/gong.mp3")
+                pygame.mixer.music.play(0)
             CLOCK.tick(30)
 
 
@@ -1072,6 +1076,9 @@ def wait_menu(com, backend):
         screen.blit(back, backrect)
         if num == 0:
             screen.blit(play, playrect)
+        if num == 30:
+            pygame.mixer.music.stop()
+            pygame.mixer.music.unload()
         pygame.display.flip()
         CLOCK.tick(30)
 
