@@ -544,6 +544,8 @@ def game_wait(com, backend):
     """Wait when all players choose their card."""
     global EXIT, RESIZE
     RESIZE = True
+    pygame.mixer.music.stop()
+    pygame.mixer.music.unload()
     bg_file = PATH + "play_bg.png"
     bg_play = pygame.image.load(bg_file)
     header_text = _("Wait for other players")
@@ -1076,9 +1078,6 @@ def wait_menu(com, backend):
         screen.blit(back, backrect)
         if num == 0:
             screen.blit(play, playrect)
-        if num == 30:
-            pygame.mixer.music.stop()
-            pygame.mixer.music.unload()
         pygame.display.flip()
         CLOCK.tick(30)
 
