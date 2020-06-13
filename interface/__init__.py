@@ -47,6 +47,94 @@ def check_resize(event):
     RESIZE = True
 
 
+def game_result(com, backend):
+    global EXIT, TURN, RESIZE
+    RESIZE = True
+    players = com.game_results
+    mode = com.mode
+    h_color = 0xAD, 0xE5, 0xF3
+    bg_file = PATH + "play_bg_1.png"
+    bg_img = pygame.image.load(bg_file)
+    color_else = 0xFF, 0xFF, 0xFF
+    color_leader = 0xFF, 0xFF, 0x00
+    green = 0x00, 0xFF, 0x00
+    ok_file = PATH + "ok.png"
+    ok_img = pygame.image.load(ok_file)
+    while True:
+        if RESIZE:
+            shift = int(height / 120)
+            """Background"""
+            BG = pygame.transform.scale(bg_img, size)
+            BGrect = BG.get_rect()
+            BGrect[0], BGrect[1] = w_offset, h_offset
+            """Players"""
+            players_pos = [w_offset + int(width / 4), h_offset + int(width / 12)]
+            font_size = int(height / 12)
+            font = pygame.font.Font(font_file, font_size)
+            players_rect = []
+            players_size = (int(width / 6), int(height / 8))
+            players_text = []
+            players_score = []
+            for i in players:
+                color = color_leader if i[3] else color_else
+                p_name = i[1]
+                players_text.append(font.render(p_name, True, color))
+                while players_text[-1].get_size()[0] > int(width / 4):
+                    p_name = p_name[:-1]
+                    players_text[-1] = font.render(p_name, True, color)
+                players_rect.append(players_text[-1].get_rect())
+                players_rect[-1][0], players_rect[-1][1] = players_pos[0], players_pos[1]
+                players_score.append(font.render(str(i[0]), True, color))
+                players_pos[1] += int(height / 12 + shift)
+            """OK button"""
+            ok_scale = (int(width / 3), int(height * 33 / 216))
+            ok = pygame.transform.scale(ok_img, ok_scale)
+            okrect = ok.get_rect()
+            okrect[0], okrect[1] = int(width * 2 / 3 + width /
+                                       12) + w_offset, h_offset
+            """RENDERING"""
+            screen.fill(black)
+            screen.blit(BG, BGrect)
+            screen.blit(ok, okrect)
+            for i in range(len(players)):
+                screen.blit(players_text[i], (players_rect[i][0],
+                                              players_rect[i][1]))
+                screen.blit(players_score[i], (players_rect[i][0] + shift \
+                                               + int(width / 4),
+                                               players_rect[i][1]))
+            pygame.display.flip()
+
+            RESIZE = False
+        """MAINLOOP"""
+        if com.finish_game:
+            TURN = False
+            return None
+        for event in pygame.event.get():
+            """EVENTS HANDLING"""
+            """MOUSE EVENTS"""
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if okrect.collidepoint(event.pos) and not nxttrn:
+                    TURN = False
+                    return None
+            """KEYBOARD EVENTS"""
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    backend.stop()
+                    pygame.quit()
+                    EXIT = True
+                    return None
+            """OTHER EVENTS"""
+            if event.type == pygame.QUIT:
+                backend.stop()
+                pygame.quit()
+                EXIT = True
+                return None
+            if event.type == pygame.VIDEORESIZE:
+                check_resize(event)
+
+        CLOCK.tick(30)
+
+
 def result(com, backend):
     global EXIT, TURN, RESIZE
     RESIZE = True
@@ -147,7 +235,7 @@ def result(com, backend):
             RESIZE = False
         """MAINLOOP"""
         if com.finish_game:
-            TURN = False
+            game_result(com, backend)
             return None
         for event in pygame.event.get():
             """EVENTS HANDLING"""
@@ -280,7 +368,7 @@ def result(com, backend):
             for i in b_rend:
                 screen.blit(i, text_pos)
                 text_pos[1] += font_size + shift
-        ifnxttrn:
+        if nxttrn:
             screen.blit(header, header_rect)
         pygame.display.flip()
         CLOCK.tick(30)
