@@ -32,6 +32,7 @@ PATH_R = os.path.dirname(sys.argv[0]) + "/../resources/"
 
 
 def check_resize(event):
+    """Check resize and prepare vars to new size of screen."""
     global size, size_orig
     global width, w_orig, w_offset
     global height, h_orig, h_offset
@@ -48,16 +49,14 @@ def check_resize(event):
 
 
 def game_result(com, backend):
+    """Show game results."""
     global EXIT, TURN, RESIZE
     RESIZE = True
     players = com.game_results
-    mode = com.mode
-    h_color = 0xAD, 0xE5, 0xF3
     bg_file = PATH + "play_bg_1.png"
     bg_img = pygame.image.load(bg_file)
     color_else = 0xFF, 0xFF, 0xFF
     color_leader = 0xFF, 0xFF, 0x00
-    green = 0x00, 0xFF, 0x00
     ok_file = PATH + "ok.png"
     ok_img = pygame.image.load(ok_file)
     while True:
@@ -68,11 +67,11 @@ def game_result(com, backend):
             BGrect = BG.get_rect()
             BGrect[0], BGrect[1] = w_offset, h_offset
             """Players"""
-            players_pos = [w_offset + int(width / 4), h_offset + int(width / 12)]
+            players_pos = [w_offset + int(width / 4),
+                           h_offset + int(width / 12)]
             font_size = int(height / 12)
             font = pygame.font.Font(font_file, font_size)
             players_rect = []
-            players_size = (int(width / 6), int(height / 8))
             players_text = []
             players_score = []
             for i in players:
@@ -83,7 +82,8 @@ def game_result(com, backend):
                     p_name = p_name[:-1]
                     players_text[-1] = font.render(p_name, True, color)
                 players_rect.append(players_text[-1].get_rect())
-                players_rect[-1][0], players_rect[-1][1] = players_pos[0], players_pos[1]
+                players_rect[-1][0] = players_pos[0]
+                players_rect[-1][1] = players_pos[1]
                 players_score.append(font.render(str(i[0]), True, color))
                 players_pos[1] += int(height / 12 + shift)
             """OK button"""
@@ -99,7 +99,7 @@ def game_result(com, backend):
             for i in range(len(players)):
                 screen.blit(players_text[i], (players_rect[i][0],
                                               players_rect[i][1]))
-                screen.blit(players_score[i], (players_rect[i][0] + shift \
+                screen.blit(players_score[i], (players_rect[i][0] + shift
                                                + int(width / 4),
                                                players_rect[i][1]))
             pygame.display.flip()
@@ -113,7 +113,7 @@ def game_result(com, backend):
             """EVENTS HANDLING"""
             """MOUSE EVENTS"""
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if okrect.collidepoint(event.pos) and not nxttrn:
+                if okrect.collidepoint(event.pos):
                     TURN = False
                     return None
             """KEYBOARD EVENTS"""
@@ -136,6 +136,7 @@ def game_result(com, backend):
 
 
 def result(com, backend):
+    """Show results of the turn."""
     global EXIT, TURN, RESIZE
     RESIZE = True
     nxttrn = False
@@ -378,6 +379,7 @@ def result(com, backend):
 
 
 def vote(com, backend):
+    """Interface for vote."""
     global EXIT, RESIZE
     RESIZE = True
     selected = False
@@ -538,7 +540,7 @@ def vote(com, backend):
 
 
 def game_wait(com, backend):
-    """Wait when all players choose his card"""
+    """Wait when all players choose their card."""
     global EXIT, RESIZE
     RESIZE = True
     bg_file = PATH + "play_bg.png"
@@ -627,6 +629,7 @@ def game_wait(com, backend):
 
 
 def set_association(com, backend):
+    """Interface for leader. Field for association."""
     global EXIT, RESIZE
     RESIZE = True
     bg_file = PATH + "play_bg.png"
@@ -750,6 +753,8 @@ def set_association(com, backend):
 
 
 def game(com, backend):
+    """Main field in game. Leader choose card, and other players do
+    the same."""
     global EXIT, TURN, RESIZE
     while TURN:
         bg_file = PATH + "play_bg_1.png"
@@ -964,7 +969,7 @@ def game(com, backend):
 
 
 def wait_menu(com, backend):
-    """Wait players"""
+    """Interface for waiting players."""
     global EXIT, RESIZE
     RESIZE = True
 
@@ -1067,9 +1072,9 @@ def wait_menu(com, backend):
 
 
 def settings_menu(com, backend):
-    """settings menu"""
+    """Inerface of settings menu."""
     def checker(IP, PORT):
-        """Check data in settings fields"""
+        """Check data in settings fields."""
         ip_pars = IP.split(".")
         ip_flg = False
         port_flg = False
@@ -1090,7 +1095,7 @@ def settings_menu(com, backend):
         return ip_flg and port_flg
 
     def save_fun(*arg):
-        """Save ip and port"""
+        """Save ip and port."""
         nonlocal BG, BGrect, ip_text, port_text, bg_img
         if checker(ip_text, port_text):
             backend.set_connection_params(ip_text, int(port_text))
@@ -1230,7 +1235,7 @@ def settings_menu(com, backend):
 
 
 def rule_menu(com, backend):
-    """DRAW RULE MENU INTERFACE"""
+    """Draw rule menu interface."""
     global EXIT, RESIZE
     RESIZE = True
     bg_file = PATH + "rule_menu.png"
@@ -1287,9 +1292,9 @@ def rule_menu(com, backend):
 
 
 def play_menu_2(com, backend):
-    """DRAW NAME INSERTION INTERFACE"""
+    """Draw name intersection interface."""
     def save_fun(*arg):
-        """Save Name"""
+        """Save Name."""
         nonlocal BG, BGrect, name_text
         if name_text.isalnum():
             backend.set_name(name_text)
@@ -1418,7 +1423,7 @@ def play_menu_2(com, backend):
 
 
 def disconnection(com, backend):
-    """Disdpaying if backend can't connect to server"""
+    """Disdpaying if backend can't connect to server."""
     global EXIT, RESIZE
     RESIZE = True
 
@@ -1474,7 +1479,7 @@ def disconnection(com, backend):
 
 
 def connection(com, backend):
-    """Wait to connection"""
+    """Wait to connection to server."""
     global EXIT, RESIZE
     RESIZE = True
 
@@ -1533,7 +1538,7 @@ def connection(com, backend):
 
 def play_menu(com, backend):
     """DRAW PLAY MENU INTERFACE FOR MASTER (FIRST) PLAYER OR DOWNLOADING
-    RESOURCES INTERFACE"""
+    RESOURCES INTERFACE."""
     global EXIT,  SETTINGS, RESIZE
     RESIZE = True
 
@@ -1583,8 +1588,6 @@ def play_menu(com, backend):
                 backrect[0], backrect[1] = w_offset, int(height * 185 /
                                                          216) + h_offset
                 """Mods buttons"""
-                #w, h = int(width / 5), int(height / 5)
-                #m = min(w, h)
                 m = int(width / 5)
                 mode_size = (m, m)
                 w_shift, h_shift = int((width - m * 3) /
@@ -1735,7 +1738,7 @@ def play_menu(com, backend):
 
 
 def main_menu(com, backend):
-    """DRAW MAIN MENU INTERFACE"""
+    """DRAW MAIN MENU INTERFACE."""
     global EXIT, RESIZE
     RESIZE = True
     bg_file = PATH + "BG.png"
@@ -1840,6 +1843,7 @@ def main_menu(com, backend):
 
 
 def init_interface(com, backend):
+    """Init all interfaces."""
     global SETTINGS, TURN
     TURN = True
     SETTINGS = com.ip is not None
