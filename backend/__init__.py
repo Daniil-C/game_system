@@ -214,6 +214,9 @@ class Backend(Monitor):
         self.names = {}
         self.leader = 0
         self.updater = None
+        self.sock = None
+        self.plist = []
+        self.game_results = []
 
         try:
             with open(self.config, "r") as f:
@@ -241,6 +244,9 @@ class Backend(Monitor):
         """
         Joining all threads
         """
+        self.end = True
+        if self.sock:
+            self.sock.close()
         if self.collector_thread is not None:
             self.collector_thread.join()
             self.collector_thread = None
@@ -253,13 +259,14 @@ class Backend(Monitor):
         Thread collector
         """
         while not self.end:
-            time.sleep(2)
+            time.sleep(1)
             for i in self.tasks:
                 if not i.is_alive():
                     i.join()
                     self.tasks.remove(i)
                     break
         for i in self.tasks:
+            print(i)
             i.join()
 
     def queue_request_wrapper(self, fun, args):
@@ -273,7 +280,7 @@ class Backend(Monitor):
         Reads queue
         """
         while not self.end:
-            data = in_q.get()
+            data = self.in_q.get()
             logging.debug(data)
             data = json.loads(data)
             if data["method"] == "stop":
@@ -371,7 +378,16 @@ class Backend(Monitor):
         # Waining TURN from server
         while self.turn():
             pass
-        # End game logic; no any connection left.
+        self.plist.sort(key=(lambda k: int(k[1])), reverse=True)
+        maxpoint = self.plist[0][1]
+        for i in self.plist:
+            n = i[0]
+            i[0] = self.names[i[0]]
+            i.append(n)
+            i.append(i[1] == maxpoint)
+        self.common.game_results = self.plist
+
+
 
     def turn(self):
         """
@@ -401,6 +417,7 @@ class Backend(Monitor):
         else:
             self.common.finish_game = True
             return False
+        self.common.got_list = False
         mes = self.conn.get()
         logging.debug(mes)
         self.common.vote_list = self.common.players_list
@@ -443,6 +460,7 @@ class Backend(Monitor):
             logging.debug(self.common.vote_results)
             p_list = parse_message(parsed[3], ",")
             p_list = [i.split(";") for i in p_list]
+            self.plist = p_list
             self.common.players_list = []
             for i in p_list:
                 self.common.players_list.append([i[1], self.names[i[0]], i[0], int(i[0]) == self.leader])
@@ -450,7 +468,6 @@ class Backend(Monitor):
             mes = self.conn.get()
             logging.debug(mes)
             if mes.startswith("CARDS"):
-                self.common.got_list = False
                 self.common.next_turn = True
                 while not self.common.approved:
                     time.sleep(1)
@@ -504,6 +521,32 @@ class Backend(Monitor):
         """
         self.common.mode = mode
 
+    def update(self, cwd, url, version):
+        """
+        Updates res
+        """
+        if "resources" in os.listdir(
+            os.path.join(os.path.dirname(cwd), "..")
+        ):
+            shutil.rmtree(os.path.join(
+        os.path.dirname(cwd), "../resources"))
+        os.mkdir(os.path.join(
+            os.path.dirname(cwd), "../resources"))
+        path = os.path.join(
+            os.path.dirname(cwd), "../resources")
+        filepath = os.path.join(path, "{}.zip".format(version))
+
+        def get_bar(curr, total, _):
+            self.common.coef_mutex.acquire()
+            self.common.coef = curr / total
+            self.common.coef_mutex.release()
+        filename = wget.download(url, out=filepath, bar=get_bar)
+        logging.debug(filename)
+        with ZipFile(filename, 'r') as zip_ref:
+            zip_ref.extractall(path)
+        os.remove(filename)
+        logging.debug("Download ended")
+
     def start_game(self):
         """
         Starts the game
@@ -528,27 +571,7 @@ class Backend(Monitor):
             url = parsed[4]
             if version != self.version:
                 logging.debug("Versions are different")
-                if "resources" in os.listdir(
-                        os.path.join(os.path.dirname(sys.argv[0]), "..")
-                ):
-                    shutil.rmtree(os.path.join(
-                        os.path.dirname(sys.argv[0]), "../resources"))
-                os.mkdir(os.path.join(
-                    os.path.dirname(sys.argv[0]), "../resources"))
-                path = os.path.join(
-                    os.path.dirname(sys.argv[0]), "../resources")
-                filepath = os.path.join(path, "{}.zip".format(version))
-
-                def get_bar(curr, total, _):
-                    self.common.coef_mutex.acquire()
-                    self.common.coef = curr / total
-                    self.common.coef_mutex.release()
-                filename = wget.download(url, out=filepath, bar=get_bar)
-                logging.debug(filename)
-                with ZipFile(filename, 'r') as zip_ref:
-                    zip_ref.extractall(path)
-                os.remove(filename)
-                logging.debug("Download ended")
+                self.update(sys.argv[0], url, version)
                 self.version = version
                 with open(self.config, "w") as f:
                     data = {
@@ -703,7 +726,7 @@ class BackendInterface:
         self.in_q.put(json.dumps(d))
 
 
-if __name__ == "__main__":
+def init_backend():
     logging.basicConfig(format=u'[LINE:%(lineno)d]# %(levelname)-8s '
                         '[%(asctime)s]  %(message)s', level=logging.DEBUG)
     com = Common()
