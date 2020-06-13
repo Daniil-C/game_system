@@ -555,6 +555,9 @@ def game_wait(com, backend):
     color_good = 0x00, 0xFF, 0x00
     color_bad = 0xFF, 0x00, 0x00
     players = com.get_vote_list()
+    while len(players) == 0:
+        players = com.get_vote_list()
+        time.sleep(0.1)
     while True:
         if RESIZE:
             BG = pygame.transform.scale(bg_play, size)
