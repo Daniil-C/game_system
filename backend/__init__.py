@@ -519,7 +519,7 @@ class Backend(Monitor):
             shutil.rmtree(os.path.join(
         os.path.dirname(cwd), "../resources"))
         os.mkdir(os.path.join(
-            os.path.dirname(scwd), "../resources"))
+            os.path.dirname(cwd), "../resources"))
         path = os.path.join(
             os.path.dirname(cwd), "../resources")
         filepath = os.path.join(path, "{}.zip".format(version))
