@@ -53,6 +53,9 @@ def game_result(com, backend):
     global EXIT, TURN, RESIZE
     RESIZE = True
     players = com.game_results
+    while len(players) == 0:
+        players = com.game_results
+        time.sleep(0.1)
     bg_file = PATH + "play_bg_1.png"
     bg_img = pygame.image.load(bg_file)
     color_else = 0xFF, 0xFF, 0xFF
@@ -1730,7 +1733,7 @@ def play_menu(com, backend):
                 disconnection(com, backend)
                 RESIZE = True
                 return None
-
+            screen.blit(BG, BGrect)
             screen.blit(progress, progress_rect)
             pygame.display.flip()
             CLOCK.tick(30)
