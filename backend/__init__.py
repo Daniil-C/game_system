@@ -509,7 +509,7 @@ class Backend(Monitor):
         """
         self.common.mode = mode
 
-    def update(self, cwd, url):
+    def update(self, cwd, url, version):
         """
         Updates res
         """
@@ -559,7 +559,7 @@ class Backend(Monitor):
             url = parsed[4]
             if version != self.version:
                 logging.debug("Versions are different")
-                self.update(sys.argv[0], url)
+                self.update(sys.argv[0], url, version)
                 self.version = version
                 with open(self.config, "w") as f:
                     data = {
