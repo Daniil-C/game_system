@@ -215,6 +215,8 @@ class Backend(Monitor):
         self.leader = 0
         self.updater = None
         self.sock = None
+        self.plist = []
+        self.game_results = []
 
         try:
             with open(self.config, "r") as f:
@@ -376,7 +378,14 @@ class Backend(Monitor):
         # Waining TURN from server
         while self.turn():
             pass
-        # End game logic; no any connection left.
+        self.plist.sort(key=(lambda k: int(k[1])), reverse=True)
+        maxpoint = self.plist[0][1]
+        for i in self.plist:
+            i[0] = self.names[i[0]]
+            i.append(i[1] == maxpoint)
+        self.common.game_results = self.plist
+
+
 
     def turn(self):
         """
@@ -406,6 +415,7 @@ class Backend(Monitor):
         else:
             self.common.finish_game = True
             return False
+        self.common.got_list = False
         mes = self.conn.get()
         logging.debug(mes)
         self.common.vote_list = self.common.players_list
@@ -448,6 +458,7 @@ class Backend(Monitor):
             logging.debug(self.common.vote_results)
             p_list = parse_message(parsed[3], ",")
             p_list = [i.split(";") for i in p_list]
+            self.plist = p_list
             self.common.players_list = []
             for i in p_list:
                 self.common.players_list.append([i[1], self.names[i[0]], i[0], int(i[0]) == self.leader])
@@ -455,7 +466,6 @@ class Backend(Monitor):
             mes = self.conn.get()
             logging.debug(mes)
             if mes.startswith("CARDS"):
-                self.common.got_list = False
                 self.common.next_turn = True
                 while not self.common.approved:
                     time.sleep(1)
