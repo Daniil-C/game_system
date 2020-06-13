@@ -140,6 +140,8 @@ def result(com, backend):
     global EXIT, TURN, RESIZE
     RESIZE = True
     nxttrn = False
+    header= ""
+    header_rect = 0
     res = com.vote_results
     mode = com.mode
     header_text = _("Wait for other players")
@@ -223,15 +225,14 @@ def result(com, backend):
             okrect[0], okrect[1] = int(width * 2 / 3 + width /
                                        12) + w_offset, h_offset
             """Header"""
-            if nxttrn:
-                h_font_size = int(height / 12)
-                h_font = pygame.font.Font(font_file, h_font_size)
-                header = h_font.render(header_text, True, h_color)
-                header_rect = header.get_rect()
-                shift = int(height / 120)
-                header_rect[1] = shift + h_offset
-                w = header_rect[2]
-                header_rect[0] = int(width / 2 - w / 2) + w_offset
+            h_font_size = int(height / 12)
+            h_font = pygame.font.Font(font_file, h_font_size)
+            header = h_font.render(header_text, True, h_color)
+            header_rect = header.get_rect()
+            shift = int(height / 120)
+            header_rect[1] = shift + h_offset
+            w = header_rect[2]
+            header_rect[0] = int(width / 2 - w / 2) + w_offset
 
             RESIZE = False
         """MAINLOOP"""
