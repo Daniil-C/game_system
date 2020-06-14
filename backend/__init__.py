@@ -65,9 +65,27 @@ class Common(Monitor):
         """
         Resets game
         """
+        self.is_connected = False
         self.player = Player()
         self.players_list = []
         self.game_started = False
+        self.mode = ""
+        self.turn = False
+        self.got_list = False
+        self.updated = False
+        self.card = 0
+        self.ass = ""
+        self.got_ass = False
+        self.vote_list = []
+        self.vote_cards = []
+        self.vote_time = False
+        self.coef = 0
+        self.end_vote = False
+        self.vote_results = []
+        self.deltas = {}
+        self.next_turn = False
+        self.approved = False
+        self.finish_game = True
 
     def new_turn(self):
         """
@@ -186,10 +204,16 @@ class Common(Monitor):
         self.coef_mutex.release()
         return coef
 
+class Empty:
+    def __getattr__(self, name):
+        return ""
+
 def parse_message(message, sep):
     """
     Parse mmessage by spaces
     """
+    if message == "":
+        return Empty()
     return message.split(sep)
 
 
@@ -228,6 +252,17 @@ class Backend(Monitor):
                 self.common.is_connected = False
         except Exception:
             pass
+
+    def reset(self):
+        """ Resets Backend data """
+        self.end = False
+        self.game_started = False
+        self.begin_message = ""
+        self.tasks = []
+        self.names = {}
+        self.leader = 0
+        self.plist = []
+        self.game_results = []
 
     def start(self):
         """
@@ -359,6 +394,7 @@ class Backend(Monitor):
         """
         Provides game logic
         """
+        logging.debug("New game started")
         self.game_started = True
         self.common.game_started = True
         mes = self.begin_message
@@ -386,6 +422,8 @@ class Backend(Monitor):
             i.append(n)
             i.append(i[1] == maxpoint)
         self.common.game_results = self.plist
+        self.reset()
+        self.common.reset()
 
 
 
