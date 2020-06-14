@@ -982,7 +982,7 @@ def game(com, backend):
                 screen.blit(b_card, card_rect)
             pygame.display.flip()
             if sound == 1:
-                s_f = PATH + "/../" + "gong.mp3"
+                s_f = PATH + "/../Sounds/" + "gong.mp3"
                 pygame.mixer.music.load(s_f)
                 pygame.mixer.music.play(0)
             CLOCK.tick(30)
