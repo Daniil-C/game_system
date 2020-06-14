@@ -24,7 +24,6 @@ RESOURCES_VERSION\nRESOURCEPACK\nLOG_FILE")
     LOGGER.info("Starting server. IP: %s Port: %s", IP_ADDRESS, str(PORT))
     print("IP =", IP_ADDRESS)
     print("Port =", PORT)
-    print("Resources =", env.get_res_name())
     print("Resources link =", env.get_res_link())
     if socket.inet_aton(IP_ADDRESS) == 0 or PORT < 1024:
         print("Wrong IP address or port")
