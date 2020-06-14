@@ -33,11 +33,17 @@ class Resources(Monitor):
         self.logger = logger
         self.configuration = None
         conf_path = os.path.dirname(sys.argv[0]) + "/resources/sets.json"
+        ver_path = os.path.dirname(sys.argv[0]) + "/resources/version.json"
         try:
             with open(conf_path) as conf:
                 self.configuration = json.load(conf)
         except Exception:
             self.logger.error("failed to load config file resources/sets.json.")
+        try:
+            with open(ver_path) as ver:
+                self.name = json.load(ver)
+        except Exception:
+            self.logger.error("failed to load file resources/version.json.")
 
 
 class HTTPHandler(SimpleHTTPRequestHandler):
@@ -356,9 +362,10 @@ class CLI(Monitor):
     """
     Game server command line interface.
     """
-    def __init__(self, players, game_st):
+    def __init__(self, players, server, game_st):
         Monitor.__init__(self)
         self.players = players
+        self.server = server
         self.game_st = game_st
         readline.set_completer(self.completer)
         readline.set_completer_delims("")
@@ -411,6 +418,8 @@ class CLI(Monitor):
                     self.comm_start(cmdline)
                 elif cmdline[0] == "stop":
                     self.comm_stop()
+                elif cmdline[0] == "end":
+                    self.comm_end()
                 else:
                     print("error: unknown command")
             except Exception as ex:
@@ -423,7 +432,13 @@ class CLI(Monitor):
         text (str): current input buffer.
         state (int): match number.
         """
-        commands = ["help", "players", "start ", "stop"]
+        commands = ["help", "players", "stop", "end"]
+        if (self.server.resources is not None and
+            self.server.resources.configuration is not None):
+            for i in self.server.resources.configuration:
+                commands.append("start %s" % i)
+        else:
+            commands.append("start ")
         for i in commands:
             if i.startswith(text):
                 if state == 0:
@@ -435,7 +450,7 @@ class CLI(Monitor):
         """
         Execute 'help' command.
         """
-        print(_("commands") + ":\n\nhelp\nplayers\nstart <card set>\nstop")
+        print(_("commands") + ":\n\nhelp\nplayers\nstart <card set>\nend\nstop")
 
     def comm_players(self):
         """
@@ -473,12 +488,24 @@ class CLI(Monitor):
         """
         Execute 'start' command.
         """
+        if self.game_st.state != "PLAYER_CONN":
+            return
         if len(cmdline) == 2:
             self.game_st.card_set = cmdline[1]
             self.game_st.state = "GAME"
             print(_("Starting game."))
         else:
             print(_("error: expected start <card set>"))
+
+    def comm_end(self):
+        if self.game_st.state == "GAME":
+            self.players.acquire()
+            for player in self.players:
+                player.cards.clear()
+            self.server.cards.clear()
+            self.players.release()
+        else:
+            print(_("error: game is not started"))
 
     def comm_stop(self):
         """
@@ -613,7 +640,7 @@ class GameServer:
         self.logger = logger
         self.game_state = None
         self.players = None
-        self.cards = None
+        self.cards = list()
         self.resource_server = None
         self.resources = None
         self.cli = None
@@ -625,7 +652,7 @@ class GameServer:
         Game server main function.
         """
         self.game_state = GameState("PLAYER_CONN")
-        self.cli = CLI(None, self.game_state)
+        self.cli = CLI(None, self, self.game_state)
         self.cli.start()
 
         while self.game_state.state != "SHUTDOWN":

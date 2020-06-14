@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-09 15:43+0300\n"
+"POT-Creation-Date: 2020-06-14 15:12+0300\n"
 "PO-Revision-Date: 2020-06-09 15:48+0300\n"
 "Last-Translator: Yaroslav <yaroslav.konst.kuzm@gmail.com>\n"
 "Language-Team: Russian <gnu@d07.ru>\n"
@@ -18,45 +18,49 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: server_main.py:417
+#: server_main.py:441
 msgid "commands"
 msgstr "команды"
 
-#: server_main.py:425
+#: server_main.py:449
 msgid "player"
 msgid_plural "players"
 msgstr[0] "игрок"
 msgstr[1] "игрока"
 msgstr[2] "игроков"
 
-#: server_main.py:428
+#: server_main.py:452
 msgid "number"
 msgstr "номер"
 
-#: server_main.py:428
+#: server_main.py:452
 msgid "name"
 msgstr "имя"
 
-#: server_main.py:428
+#: server_main.py:452
 msgid "score"
 msgstr "счёт"
 
-#: server_main.py:445
+#: server_main.py:469
 msgid "master"
 msgstr "ведущий"
 
-#: server_main.py:449
+#: server_main.py:473
 msgid "error: player list is not available"
 msgstr "ошибка: список игроков недоступен"
 
-#: server_main.py:458
+#: server_main.py:482
 msgid "Starting game."
 msgstr "Запуск игры."
 
-#: server_main.py:460
+#: server_main.py:484
 msgid "error: expected start <card set>"
 msgstr "ошибка: start <набор карт>"
 
-#: server_main.py:467
+#: server_main.py:494
+msgid "error: game is not started"
+msgstr "ошибка: игра не запущена"
+
+#: server_main.py:501
 msgid "exit"
 msgstr "выход"
