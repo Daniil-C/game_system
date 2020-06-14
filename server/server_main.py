@@ -433,7 +433,7 @@ class CLI(Monitor):
         state (int): match number.
         """
         commands = ["help", "players", "stop", "end", "start "]
-        if (text == "start " and self.server.resources is not None and
+        if (text.startswith("start ") and self.server.resources is not None and
             self.server.resources.configuration is not None):
             commands.clear()
             for i in self.server.resources.configuration:
