@@ -545,7 +545,6 @@ def game_wait(com, backend):
     global EXIT, RESIZE
     RESIZE = True
     pygame.mixer.music.stop()
-    pygame.mixer.music.unload()
     bg_file = PATH + "play_bg.png"
     bg_play = pygame.image.load(bg_file)
     header_text = _("Wait for other players")
