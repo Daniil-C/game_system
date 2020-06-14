@@ -11,9 +11,9 @@ import json
 import os
 import sys
 import shutil
+from zipfile import ZipFile
 import wget
 import interface
-from zipfile import ZipFile
 from connection import connection as Conn
 from monitor import Monitor
 
@@ -204,9 +204,12 @@ class Common(Monitor):
         self.coef_mutex.release()
         return coef
 
+
 class Empty:
+    """ Returns empty value when stopping game """
     def __getattr__(self, name):
         return ""
+
 
 def parse_message(message, sep):
     """
@@ -425,8 +428,6 @@ class Backend(Monitor):
         self.reset()
         self.common.reset()
 
-
-
     def turn(self):
         """
         Provides turn logic
@@ -463,7 +464,7 @@ class Backend(Monitor):
             i[-1] = False
         while not mes.startswith("VOTE") and mes:
             if mes.startswith("PLAYER"):
-                parsed = parse_message(mes," ")
+                parsed = parse_message(mes, " ")
             for i in self.common.vote_list:
                 if i[-2] == parsed[1]:
                     i[-1] = True
@@ -474,7 +475,7 @@ class Backend(Monitor):
             mes = self.conn.get()
             logging.debug(mes)
         else:
-            parsed = parse_message(parse_message(mes," ")[1], ",")
+            parsed = parse_message(parse_message(mes, " ")[1], ",")
             parsed.remove(str(self.common.card))
             self.common.vote_cards = [self.common.card]
             self.common.vote_cards.extend([int(i) for i in parsed])
@@ -494,14 +495,21 @@ class Backend(Monitor):
                 for j in results:
                     if j[2] == i[1]:
                         votes.append(self.names[j[0]])
-                self.common.vote_results.append([self.names[i[0]], int(i[1]), votes])
+                self.common.vote_results.append([self.names[i[0]], int(i[1]),
+                                                 votes])
             logging.debug(self.common.vote_results)
             p_list = parse_message(parsed[3], ",")
             p_list = [i.split(";") for i in p_list]
             self.plist = p_list
             self.common.players_list = []
             for i in p_list:
-                self.common.players_list.append([i[1], self.names[i[0]], i[0], int(i[0]) == self.leader])
+                self.common.players_list.append(
+                    [
+                        i[1],
+                        self.names[i[0]],
+                        i[0],
+                        int(i[0]) == self.leader
+                    ])
             self.common.end_vote = True
             mes = self.conn.get()
             logging.debug(mes)
@@ -509,7 +517,7 @@ class Backend(Monitor):
                 self.common.next_turn = True
                 while not self.common.approved:
                     time.sleep(1)
-                self.new_turn();
+                self.new_turn()
                 parsed = parse_message(mes, " ")
                 self.common.player.cards = parse_message(parsed[1], ",")
                 return True
@@ -563,10 +571,10 @@ class Backend(Monitor):
         Updates res
         """
         if "resources" in os.listdir(
-            os.path.join(os.path.dirname(cwd), "..")
+                os.path.join(os.path.dirname(cwd), "..")
         ):
             shutil.rmtree(os.path.join(
-        os.path.dirname(cwd), "../resources"))
+                os.path.dirname(cwd), "../resources"))
         os.mkdir(os.path.join(
             os.path.dirname(cwd), "../resources"))
         path = os.path.join(
@@ -640,7 +648,7 @@ class Backend(Monitor):
         """
         Restarts menu
         """
-        if self.conn != None:
+        if self.conn is not None:
             self.conn.send("SHUTDOWN")
             self.conn.close()
         self.game_started = False
@@ -764,6 +772,7 @@ class BackendInterface:
 
 
 def init_backend():
+    """ Inits backend """
     logging.basicConfig(format=u'[LINE:%(lineno)d]# %(levelname)-8s '
                         '[%(asctime)s]  %(message)s', level=logging.DEBUG)
     com = Common()
