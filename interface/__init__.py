@@ -980,7 +980,8 @@ def game(com, backend):
 
 def wait_menu(com, backend):
     """Interface for waiting players."""
-    global EXIT, RESIZE
+    global EXIT, RESIZE, TURN
+    TURN = True
     RESIZE = True
 
     bg_img = []
