@@ -432,13 +432,12 @@ class CLI(Monitor):
         text (str): current input buffer.
         state (int): match number.
         """
-        commands = ["help", "players", "stop", "end"]
-        if (self.server.resources is not None and
+        commands = ["help", "players", "stop", "end", "start "]
+        if (text == "start " and self.server.resources is not None and
             self.server.resources.configuration is not None):
+            commands.clear()
             for i in self.server.resources.configuration:
                 commands.append("start %s" % i)
-        else:
-            commands.append("start ")
         for i in commands:
             if i.startswith(text):
                 if state == 0:
