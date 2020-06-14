@@ -214,6 +214,28 @@ class Empty:
         return ""
 
 
+class Delay:
+    """ Call func after time """
+    def __init__(self, fun, delay, *args):
+        """ init """
+        self.delay = delay
+        self.fun = fun
+        self.thread = threading.Thread(target=self.action, args=(self,))
+        self.args = args
+
+    def action(self):
+        time.sleep(self.delay)
+        self.fun(self.args)
+
+    def start(self):
+        """ Start timer """
+        self.thread.start()
+
+    def join(self):
+        """ Join thread """
+        self.thread.join()
+
+
 def parse_message(message, sep):
     """
     Parse mmessage by spaces
@@ -693,85 +715,23 @@ class BackendInterface:
     This class provides interface between frondtend and backend
     """
     def __init__(self, inp_q):
-        threading.Thread.__init__(self)
+        """ Init """
         self.in_q = inp_q
 
-    def set_connection_params(self, ip, port):
-        """
-        Set connections params to connect to game server
-        """
-        d = {"method": "set_connection_params", "args": [ip, port]}
-        self.in_q.put(json.dumps(d))
+    def __getattr__(self, name):
+        """ Send call of any function to backend """
+        class Wrapper:
+            """ Wraps any call """
+            def __init__(self, method, queue):
+                """ Inits  params """
+                self.method = method
+                self.queue = queue
 
-    def connect(self):
-        """
-        Connect to the server
-        """
-        d = {"method": "connect", "args": []}
-        self.in_q.put(json.dumps(d))
-
-    def set_name(self, name):
-        """
-        Sets player`s name
-        """
-        d = {"method": "set_name", "args": [name]}
-        self.in_q.put(json.dumps(d))
-
-    def set_mode(self, mode):
-        """
-        Sets game mode
-        """
-        d = {"method": "set_mode", "args": [str(mode)]}
-        self.in_q.put(json.dumps(d))
-
-    def start_game(self):
-        """
-        Starts the game
-        """
-        d = {"method": "start_game", "args": []}
-        self.in_q.put(json.dumps(d))
-
-    def stop(self):
-        """
-        Stops the game
-        """
-        d = {"method": "stop", "args": []}
-        self.in_q.put(json.dumps(d))
-
-    def play(self):
-        """
-        Starts playing
-        """
-        d = {"method": "play", "args": []}
-        self.in_q.put(json.dumps(d))
-
-    def exit(self):
-        """
-        Restarts menu
-        """
-        d = {"method": "exit", "args": []}
-        self.in_q.put(json.dumps(d))
-
-    def set_card(self, card_num):
-        """
-        Select card
-        """
-        d = {"method": "set_card", "args": [card_num]}
-        self.in_q.put(json.dumps(d))
-
-    def set_ass(self, ass):
-        """
-        Select association
-        """
-        d = {"method": "set_ass", "args": [ass]}
-        self.in_q.put(json.dumps(d))
-
-    def next_turn(self):
-        """
-        Select association
-        """
-        d = {"method": "next_turn", "args": []}
-        self.in_q.put(json.dumps(d))
+            def __call__(self, *args):
+                """ Calls backend function """
+                send_mes = {"method": self.method, "args": args}
+                self.queue.put(json.dumps(send_mes))
+        return Wrapper(name, self.in_q)
 
 
 def init_backend():
