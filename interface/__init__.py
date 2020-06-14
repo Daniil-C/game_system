@@ -645,7 +645,7 @@ def set_association(com, backend):
     name = "".join((PATH_R, mode, "/",
                     str(com.get_card()), ".png"))
     card_img = pygame.image.load(name)
-    name_active = False
+    name_active = True
     name_text = ""
     inactive_color = 0xFF, 0xFF, 0xFF
     active_color = 0xAD, 0xE5, 0xF3
