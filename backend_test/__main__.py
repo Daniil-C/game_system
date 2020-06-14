@@ -35,21 +35,42 @@ class Conn:
 
     def send(self, mes):
         self.mes = mes
+        print(mes)
 
     def Get(self):
         yield "VERSION 0 MASTER v0 http://pack.zip"
-        time.sleep(1)
         yield "PLAYER_LIST 0;Player1"
-        time.sleep(1)
         yield "PLAYER_LIST 0;Player1,1;Player2"
-        time.sleep(1)
         yield "PLAYER_LIST 0;Player1,1;Player2,2;Player3"
         while not self.mes.startswith("START_GAME"):
             yield "PLAYER_LIST 0;Player1,1;Player2,2;Player3"
-        yield "BEGIN imaginarium 57,27,8,95,5,91 0;Player1,1;Player2,2;Player3"
+        yield "BEGIN imaginarium 1,13,4,7,5,2 0;Player1,1;Player2,2;Player3"
+        while not self.mes.startswith("READY"):
+            pass
+        yield "TURN 0"
+        while not self.mes.startswith("TURN"):
+            pass
+        else:
+            time.sleep(2)
+        yield "ASSOC Association1"
+        yield "PLAYER 1"
+        yield "PLAYER 2"
+        yield "PLAYER 0"
+        yield "VOTE 10,7,0"
+        yield "STATUS 7 0;10;7,1;7;-1,2;0;7 0;3,1;0,2;3"
+        yield "CARDS 1,13,4,5,2"
+        yield "TURN 1"
+        yield "ASSOC Association2"
+        yield "PLAYER 2"
+        yield "PLAYER 1"
+        yield "PLAYER 0"
+        yield "VOTE 12,14,5"
+        yield "STATUS 12 0;14;12,1;5;12,2;12;-1 0;6,1;3,2;3"
+        yield "END_GAME"
 
     def get(self):
         try:
+            time.sleep(1)
             return next(self.__in_q)
         except:
             return ""
@@ -66,7 +87,7 @@ class Backend(Backend):
         self.sock = socket()
         self.common.is_connected = True
 
-    def update(self, cwd, url):
+    def update(self, cwd, url, version):
         """
         Updates res
         """

@@ -508,7 +508,6 @@ class Backend(Monitor):
                     self.begin_message = mes
                     break
                 parsed = parse_message(parse_message(mes, " ")[1], ",")
-                logging.debug(parsed[0])
                 self.common.players_list = [i.split(";") for i in parsed]
                 time.sleep(1)
             except Exception as ex:
