@@ -209,6 +209,8 @@ class Empty:
     """ Returns empty value when stopping game """
     def __getattr__(self, name):
         return ""
+    def __getitem__(self, index):
+        return ""
 
 
 def parse_message(message, sep):
