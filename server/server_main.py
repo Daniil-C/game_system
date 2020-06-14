@@ -38,7 +38,7 @@ class Resources(Monitor):
             with open(conf_path) as conf:
                 self.configuration = json.load(conf)
         except Exception:
-            self.logger.error("failed to load config file resources/sets.json.")
+            self.logger.error("failed to load file resources/sets.json.")
         try:
             with open(ver_path) as ver:
                 self.name = json.load(ver)
@@ -434,7 +434,7 @@ class CLI(Monitor):
         """
         commands = ["help", "players", "stop", "end", "start "]
         if (text.startswith("start ") and self.server.resources is not None and
-            self.server.resources.configuration is not None):
+                self.server.resources.configuration is not None):
             commands.clear()
             for i in self.server.resources.configuration:
                 commands.append("start %s" % i)
@@ -449,7 +449,8 @@ class CLI(Monitor):
         """
         Execute 'help' command.
         """
-        print(_("commands") + ":\n\nhelp\nplayers\nstart <card set>\nend\nstop")
+        print(_("commands") +
+              ":\n\nhelp\nplayers\nstart <card set>\nend\nstop")
 
     def comm_players(self):
         """
@@ -872,7 +873,6 @@ class GameServer:
                 self.players.broadcast("END_GAME")
                 for player in self.players:
                     player.valid = False
-                #self.game_state.state = "END"
 
     def check_resource_server(self):
         """
