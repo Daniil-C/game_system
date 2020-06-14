@@ -60,6 +60,7 @@ class Common(Monitor):
         self.next_turn = False
         self.approved = False
         self.finish_game = True
+        self.stop_time = False
 
     def reset(self):
         """
@@ -224,6 +225,7 @@ class Delay:
         self.args = args
 
     def action(self):
+        """ Action to do """
         time.sleep(self.delay)
         self.fun(self.args)
 
@@ -302,6 +304,17 @@ class Backend(Monitor):
                 args=(self,)
             )
             self.collector_thread.start()
+
+    def stop_timer(self):
+        """ Stops timer """
+        self.common.stop_time = True
+
+    def set_timer(self, delay):
+        """ Sets timer to delay """
+        self.common.stop_time = False
+        defer = Delay(self.stop_timer, delay, self)
+        defer.start()
+        defer.join()
 
     def join(self):
         """
