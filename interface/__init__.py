@@ -789,8 +789,6 @@ def game(com, backend):
     """Main field in game. Leader choose card, and other players do
     the same."""
     global EXIT, TURN, RESIZE
-    long_wait = True
-    backend.set_timer(40)
     pygame.mixer.music.load(PATH + "../Sounds/welcome.mp3")
     pygame.mixer.music.play()
     while TURN:
@@ -808,6 +806,9 @@ def game(com, backend):
 
         leader = com.turn
         choose_flg = leader
+        long_wait = True
+        if leader:
+            backend.set_timer(40)
         mode = com.mode
         bg_file = PATH + "play_bg_1.png"
         bg_img = pygame.image.load(bg_file)
