@@ -806,9 +806,6 @@ def game(com, backend):
 
         leader = com.turn
         choose_flg = leader
-        long_wait = True
-        if leader:
-            backend.set_timer(40)
         mode = com.mode
         bg_file = PATH + "play_bg_1.png"
         bg_img = pygame.image.load(bg_file)
@@ -1014,10 +1011,6 @@ def game(com, backend):
                 pygame.mixer.music.load(s_f)
                 pygame.mixer.music.play(0)
             CLOCK.tick(30)
-            if com.stop_time and long_wait and leader:
-                pygame.mixer.music.load(PATH + "../Sounds/faster.mp3")
-                pygame.mixer.music.play()
-                long_wait = False
 
 
 def wait_menu(com, backend):
