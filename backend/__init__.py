@@ -221,13 +221,13 @@ class Delay:
         """ init """
         self.delay = delay
         self.fun = fun
-        self.thread = threading.Thread(target=self.action, args=(self,))
+        self.thread = threading.Thread(target=self.action)
         self.args = args
 
     def action(self):
         """ Action to do """
         time.sleep(self.delay)
-        self.fun(self.args)
+        self.fun(*self.args)
 
     def start(self):
         """ Start timer """
@@ -312,7 +312,7 @@ class Backend(Monitor):
     def set_timer(self, delay):
         """ Sets timer to delay """
         self.common.stop_time = False
-        defer = Delay(self.stop_timer, delay, self)
+        defer = Delay(self.stop_timer, delay)
         defer.start()
         defer.join()
 
