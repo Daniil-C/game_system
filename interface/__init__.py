@@ -1014,7 +1014,7 @@ def game(com, backend):
                 pygame.mixer.music.load(s_f)
                 pygame.mixer.music.play(0)
             CLOCK.tick(30)
-            if com.stop_time and long_wait:
+            if com.stop_time and long_wait and leader:
                 pygame.mixer.music.load(PATH + "../Sounds/faster.mp3")
                 pygame.mixer.music.play()
                 long_wait = False
