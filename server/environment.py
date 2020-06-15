@@ -3,7 +3,6 @@ Environment variables handling.
 """
 
 import os
-import sys
 
 
 def get_ip():
@@ -51,4 +50,4 @@ def get_log_file():
     log_file = os.getenv("LOG_FILE", "")
     if log_file != "":
         return log_file
-    return os.path.dirname(sys.argv[0]) + "/server.log"
+    return os.path.dirname(os.path.abspath(__file__)) + "/server.log"

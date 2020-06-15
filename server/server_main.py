@@ -9,12 +9,11 @@ import socket
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from random import shuffle, randrange
 import os
-import sys
 import gettext
 import json
-from monitor import Monitor
-from connection import connection
-import server.environment as env
+from .monitor import Monitor
+from .connection import connection
+from . import environment as env
 
 
 class Resources(Monitor):
@@ -32,8 +31,9 @@ class Resources(Monitor):
         self.link = res_link
         self.logger = logger
         self.configuration = None
-        conf_path = os.path.dirname(sys.argv[0]) + "/resources/sets.json"
-        ver_path = os.path.dirname(sys.argv[0]) + "/resources/version.json"
+        path_prefix = os.path.dirname(os.path.abspath(__file__))
+        conf_path = path_prefix + "/resources/sets.json"
+        ver_path = path_prefix + "/resources/version.json"
         try:
             with open(conf_path) as conf:
                 self.configuration = json.load(conf)
@@ -93,7 +93,8 @@ class ResourceServer(Monitor):
 
         handler = HTTPHandler
         handler.logger = self.logger
-        file_path = os.path.dirname(sys.argv[0]) + "/resources/cards"
+        file_path = os.path.dirname(os.path.abspath(__file__)) +\
+            "/resources/cards"
         self.server = ThreadingHTTPServer((ip_addr, port),
                                           (lambda *args, **kwargs:
                                            handler(*args,
@@ -369,7 +370,7 @@ class CLI(Monitor):
         self.game_st = game_st
         readline.set_completer(self.completer)
         readline.set_completer_delims("")
-        gettext.install("server", os.path.dirname(sys.argv[0]),
+        gettext.install("server", os.path.dirname(os.path.abspath(__file__)),
                         names=("ngettext",))
         readline.parse_and_bind("tab: complete")
         self.thread = None

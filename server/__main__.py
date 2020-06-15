@@ -4,8 +4,8 @@ Server for Imaginarium game
 import socket
 import logging
 import sys
-import server.environment as env
-from server.server_main import GameServer
+from . import environment as env
+from .server_main import GameServer
 
 
 if __name__ == "__main__":
