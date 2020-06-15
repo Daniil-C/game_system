@@ -3,6 +3,7 @@ import time
 import sys
 import os
 import gettext
+import random
 import pygame
 
 pygame.init()
@@ -30,6 +31,7 @@ CLOCK = pygame.time.Clock()
 UPD = False
 PATH = os.path.dirname(sys.argv[0]) + _("/../interface/en/")  # noqa: F821
 PATH_R = os.path.dirname(sys.argv[0]) + "/../resources/"
+FIRST_TURN = True
 
 
 def check_resize(event):
@@ -142,6 +144,7 @@ def result(com, backend):
     RESIZE = True
     nxttrn = False
     header = ""
+    leader = com.turn
     header_rect = 0
     res = com.vote_results
     mode = com.mode
@@ -163,6 +166,26 @@ def result(com, backend):
     pressed = False
     pygame.time.set_timer(pygame.USEREVENT, 100)
     players = com.get_players_list()
+    leader_name = ""
+    if leader:
+        for i in players:
+            if i[3]:
+                leader_name = i[1]
+                break
+        for i in res:
+            if i[0] == leader_name:
+                if len(i[2]) == 0:
+                    n = random.randint(0, 4)
+                    s = "bad_" + str(n) + ".mp3"
+                    pygame.mixer.music.load(PATH + "/../Sounds/" + s)
+                    pygame.mixer.music.play()
+                    break
+                elif len(i[2]) == len(res) - 1:
+                    n = random.randint(0, 4)
+                    s = "good_" + str(n) + ".mp3"
+                    pygame.mixer.music.load(PATH + "/../Sounds/" + s)
+                    pygame.mixer.music.play()
+                    break
     ok_file = PATH + "ok.png"
     ok_img = pygame.image.load(ok_file)
     while True:
@@ -766,6 +789,8 @@ def game(com, backend):
     """Main field in game. Leader choose card, and other players do
     the same."""
     global EXIT, TURN, RESIZE
+    pygame.mixer.music.load(PATH + "/../Sounds/welcome.mp3")
+    pygame.mixer.music.play()
     while TURN:
         bg_file = PATH + "play_bg_1.png"
         bg_img = pygame.image.load(bg_file)
@@ -1672,6 +1697,7 @@ def play_menu(com, backend):
     else:
         # Download interface
         RESIZE = True
+        sound = True
         bg_img = []
         for i in range(4):
             bg_name = PATH + "upd_{}.png".format(str(i))
@@ -1725,6 +1751,10 @@ def play_menu(com, backend):
                     bgrect = bg.get_rect()
                     bgrect[0], bgrect[1] = w_offset, h_offset
                     mul = com.get_progress()
+                    if mul > 0.5 and sound:
+                        sound = False
+                        pygame.mixer.music.load(PATH + "/../Sounds/load.mp3")
+                        pygame.mixer.music.play()
                     p_size = (int(width * mul / 3), int(height / 20))
                     progress = pygame.transform.scale(progress_img, p_size)
                     progress_rect = progress.get_rect()
