@@ -209,12 +209,12 @@ class Common(Monitor):
 class Empty:
     """ Returns empty value when stopping game """
     def __getattr__(self, name):
-        class Empty_wrapper:
+        class EmptyWrapper:
             """ Wraps any call """
             def __call__(self, *args):
                 """ Calls backend function """
                 return ""
-        return Empty_wrapper()
+        return EmptyWrapper()
 
     def __getitem__(self, index):
         return ""
