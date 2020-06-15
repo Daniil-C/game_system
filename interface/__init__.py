@@ -177,13 +177,13 @@ def result(com, backend):
                 if len(i[2]) == 0:
                     n = random.randint(0, 4)
                     s = "bad_" + str(n) + ".mp3"
-                    pygame.mixer.music.load(PATH + "/../Sounds/" + s)
+                    pygame.mixer.music.load(PATH + "../Sounds/" + s)
                     pygame.mixer.music.play()
                     break
                 elif len(i[2]) == len(res) - 1:
                     n = random.randint(0, 4)
                     s = "good_" + str(n) + ".mp3"
-                    pygame.mixer.music.load(PATH + "/../Sounds/" + s)
+                    pygame.mixer.music.load(PATH + "../Sounds/" + s)
                     pygame.mixer.music.play()
                     break
     ok_file = PATH + "ok.png"
@@ -789,7 +789,9 @@ def game(com, backend):
     """Main field in game. Leader choose card, and other players do
     the same."""
     global EXIT, TURN, RESIZE
-    pygame.mixer.music.load(PATH + "/../Sounds/welcome.mp3")
+    long_wait = True
+    backend.set_timer(40)
+    pygame.mixer.music.load(PATH + "../Sounds/welcome.mp3")
     pygame.mixer.music.play()
     while TURN:
         bg_file = PATH + "play_bg_1.png"
@@ -1011,6 +1013,10 @@ def game(com, backend):
                 pygame.mixer.music.load(s_f)
                 pygame.mixer.music.play(0)
             CLOCK.tick(30)
+            if com.stop_time and long_wait:
+                pygame.mixer.music.load(PATH + "../Sounds/faster.mp3")
+                pygame.mixer.music.play()
+                long_wait = False
 
 
 def wait_menu(com, backend):
