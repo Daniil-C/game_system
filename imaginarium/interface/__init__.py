@@ -1583,8 +1583,8 @@ def connection(com, backend):
 
 
 def play_menu(com, backend):
-    """DRAW PLAY MENU INTERFACE FOR MASTER (FIRST) PLAYER OR DOWNLOADING
-    RESOURCES INTERFACE."""
+    """Draw play menu interface for master (first) player or downloading
+    resources interface."""
     global EXIT, SETTINGS, RESIZE
     RESIZE = True
 
@@ -1791,7 +1791,7 @@ def play_menu(com, backend):
 
 
 def main_menu(com, backend):
-    """DRAW MAIN MENU INTERFACE."""
+    """Draw main menu interface."""
     global EXIT, RESIZE
     RESIZE = True
     bg_file = PATH + "BG.png"
