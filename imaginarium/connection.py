@@ -1,21 +1,26 @@
-"""
+"""connection module.
+
 This module allows to send python strings over the network.
 """
 import socket
 
 
 class connection:
-    """
-    Class connection allows to send python strings over the network.
+    """Class connection allows to send python strings over the network.
+
+    Arguments:
+        * connection_socket (socket): socket, handled by this object.
+
+    Object attributes:
+        * connection_socket (socket): socket, handled by this object.
+        * status (bool): True if connection is active.
     """
     def __init__(self, connection_socket):
         self.connection_socket = connection_socket
         self.status = True
 
     def close(self):
-        """
-        Close connection.
-        """
+        """Close connection."""
         try:
             self.connection_socket.shutdown(socket.SHUT_RDWR)
         except Exception:
@@ -24,8 +29,9 @@ class connection:
         self.status = False
 
     def get(self):
-        """
-        Get string.
+        """Get string.
+
+        This funclion will block until a string is received.
         """
         buff = bytes()
         try:
@@ -43,8 +49,10 @@ class connection:
         return buff.decode("utf8")
 
     def send(self, data: str):
-        """
-        Send string
+        """Send string.
+
+        Arguments:
+            * data (str): message.
         """
         data = bytes(data.encode("utf8")) + bytes((0,))
         not_sent = len(data)
