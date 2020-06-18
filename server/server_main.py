@@ -1,5 +1,17 @@
-"""
-Imaginarium game server.
+"""server_main module.
+
+This module contains classes, containing server code.
+
+Classes and their functions:
+    * GameServer - main loop, listening socket event handler, synchronization
+      event handlers.
+    * Resources - information about game resource pack.
+    * ResourceServer - HTTP server, used for resources downloading.
+    * HTTPHandler - HTTP request handler, used by ResourceServer.
+    * Player - information about player, player socket event handlers.
+    * PlayerList - Player objects storage, player state check.
+    * CLI - command line interface.
+    * GameState - global server state.
 """
 
 import threading
@@ -17,13 +29,17 @@ from . import environment as env
 
 
 class Resources(Monitor):
-    """
-    Information about game resources.
+    """Information about game resources.
 
-    Attributes:
-    name (str): resources version name.
-    link (str): new resources version address.
-    configuration(dict): number if cards in each set.
+    Arguments:
+        * res_name (str): resources version.
+        * res_link (str): link for resources downloading.
+        * logger (logging.Logger): Logger object.
+
+    Object attributes:
+        * name (str): resources version name.
+        * link (str): resources version address.
+        * configuration(dict): number of cards in each card set.
     """
     def __init__(self, res_name, res_link, logger):
         Monitor.__init__(self)
@@ -47,18 +63,16 @@ class Resources(Monitor):
 
 
 class HTTPHandler(SimpleHTTPRequestHandler):
-    """
-    Handler for HTTP requests.
-    """
+    """Handler for HTTP requests."""
     def __init__(self, *args, **kwargs):
         SimpleHTTPRequestHandler.__init__(self, *args, **kwargs)
 
     def log_message(self, format, *args):
-        """
-        Log message from request handler.
+        """Log message from request handler.
 
-        format (str): format string.
-        args (list): arguments for format string.
+        Arguments:
+            * format (str): format string.
+            * args (list): arguments for format string.
         """
         self.logger.info("HTTP: " + (format % args))
 
@@ -66,14 +80,16 @@ class HTTPHandler(SimpleHTTPRequestHandler):
 
 
 class ResourceServer(Monitor):
-    """
-    Server for resource pack downloading.
+    """Server for resource pack downloading.
 
-    Attributes:
-    logger (Logger): logger for handling log messages.
-    server (HTTPServer): server object.
-    thread (Thread): thread for main server function.
-    active (bool): server state.
+    Arguments:
+        * logger (Logger): logging.Logger object.
+
+    Object attributes:
+        * logger (Logger): logger for handling log messages.
+        * server (ThreadingHTTPServer): server object.
+        * thread (Thread): thread for main server function.
+        * active (bool): server state.
     """
     def __init__(self, logger):
         Monitor.__init__(self)
@@ -83,10 +99,9 @@ class ResourceServer(Monitor):
         self.active = False
 
     def main(self):
-        """
-        Main server function.
-        It should be started using start function.
-        Executed in separate thread.
+        """Main server function.
+
+        Server initialization and start.
         """
         ip_addr = env.get_ip()
         port = env.get_res_port()
@@ -104,30 +119,28 @@ class ResourceServer(Monitor):
         self.server.server_close()
 
     def start(self):
-        """
-        Start main server function in new thread.
-        """
+        """Start main server function in new thread."""
         self.thread = threading.Thread(target=ResourceServer.main,
                                        args=(self,))
         self.thread.start()
         self.active = True
 
     def stop(self):
-        """
-        Stop server thread.
-        """
+        """Stop server thread."""
         self.server.shutdown()
         self.thread.join()
         self.active = False
 
 
 class GameState(Monitor):
-    """
-    Information about game state.
+    """Information about global server state.
 
-    Attributes:
-    state (str): current game state.
-    card_set (str): current card set number.
+    Arguments:
+        * initial_state (str): state for object initialization.
+
+    Object attributes:
+        * state (str): current server state.
+        * card_set (str): current card set name.
     """
     def __init__(self, initial_state):
         Monitor.__init__(self)
@@ -136,31 +149,39 @@ class GameState(Monitor):
 
 
 class Player(Monitor):
-    """
-    Player class is used for player information handling.
+    """Player class is used for player information handling.
 
-    Attributes:
-    player_socket (socket): socket, connected to player.
-    status (str): player status: MASTER or PLAYER.
-    state (str): current player state.
-    conn (connection): connection object, containing player_socket.
-    valid (bool): error indicator.
-    name (str): player name.
-    res (Resources): resource pack container.
-    game_st (GameState): game state container.
-    score (int): current player score.
-    plist (PlayerList): PlayerList object, containing this Player object.
-    get_broadcast (bool): will this player receive broadcast messages.
-    cards (list(int)): list of player's cards.
-    number (int): player number.
-    current_card (int): current player card.
-    selected_card (int): current selected card.
-    buffer (list(str)): list of messages waiting to be sent.
-    has_buffer (bool): is True if buffer is not empty.
-    has_turn (bool): is True if player is leader now.
+    Arguments:
+        * sock (socket): player socket.
+        * status (str): player status (MASTER or PLAYER).
+        * res (Resources): game resource pack information.
+        * game_st (GameState): global server state.
+        * plist (PlayerList): player list.
+        * number (int): player number.
+        * logger (logging.Logger): Logger object.
+
+    Object attributes:
+        * player_socket (socket): socket, connected to player.
+        * status (str): player status: MASTER or PLAYER.
+        * state (str): current player state.
+        * conn (connection): connection object, containing player_socket.
+        * valid (bool): error indicator.
+        * name (str): player name.
+        * res (Resources): resource pack information.
+        * game_st (GameState): server state.
+        * score (int): current player score.
+        * plist (PlayerList): PlayerList object.
+        * get_broadcast (bool): indicates, will this player receive broadcast
+          messages or not.
+        * cards (list): list of player's cards.
+        * number (int): player's number.
+        * current_card (int): current player card.
+        * selected_card (int): current selected card.
+        * buffer (list): list of messages waiting to be sent.
+        * has_buffer (bool): is True if buffer is not empty.
+        * has_turn (bool): is True if player is leader now.
     """
-    def __init__(self, sock, status, res, game_st, plist, number,
-                 logger):
+    def __init__(self, sock, status, res, game_st, plist, number, logger):
         Monitor.__init__(self)
         self.player_socket = sock
         self.status = status
@@ -186,33 +207,27 @@ class Player(Monitor):
         return self.number
 
     def stop(self):
-        """
-        Disconnect player.
-        """
+        """Disconnect player."""
         self.valid = False
         if self.conn is not None:
             self.conn.close()
             self.conn = None
 
     def verify(self):
-        """
-        Check if there is no errors in Player object.
-        """
+        """Check if there is no errors in Player object."""
         return self.valid and self.conn.status
 
     def send_message(self, data):
-        """
-        Put message into send buffer.
+        """Put message into output buffer.
 
-        data (str): message.
+        Arguments:
+            * data (str): message.
         """
         self.buffer.append(data)
         self.has_buffer = True
 
     def push_buffer(self):
-        """
-        Send all queued messages.
-        """
+        """Send all queued messages."""
         while len(self.buffer) > 0:
             self.conn.send(self.buffer.pop(0))
         self.has_buffer = False
@@ -251,8 +266,9 @@ class Player(Monitor):
     #    v
 
     def handle_message(self):
-        """
-        Receive and handle a message.
+        """Receive and handle a message.
+
+        Performs player state changes.
         """
         res = self.conn.get().split()
         if self.state == "VER_WAIT":
@@ -332,8 +348,9 @@ class Player(Monitor):
             self.valid = False
 
     def handle_state(self):
-        """
-        Check and do state transition.
+        """Player state handling.
+
+        Check player and server states and change player state if necessary.
         """
         if self.state == "VER_CHECK":
             self.send_message("VERSION %s %s %s %s" % (str(self.number),
@@ -350,17 +367,30 @@ class Player(Monitor):
             self.state = "VOTE_SYNC"
 
     def log_message(self, message):
-        """
-        Print message into log file.
+        """Print message into log file.
 
-        message (str): printed message.
+        Arguments:
+            * message (str): logged message.
         """
         self.logger.info("Player %d,%s: %s.", self.number, self.name, message)
 
 
 class CLI(Monitor):
-    """
-    Game server command line interface.
+    """Game server command line interface.
+
+    Arguments:
+        * players (PlayerList): player list.
+        * server (GameServer): server object.
+        * game_st (GameState): server state.
+
+    Object attributes:
+        * players (PlayerList): player list.
+        * server (GameServer): server object.
+        * game_st (GameState): server state.
+        * thread (Thread): Thread object, containing information about
+          command line interface thread.
+        * work (bool): flag, indicating operation of command line interface
+          main loop.
     """
     def __init__(self, players, server, game_st):
         Monitor.__init__(self)
@@ -376,23 +406,17 @@ class CLI(Monitor):
         self.work = False
 
     def start(self):
-        """
-        Start thread for command line interface.
-        """
+        """Start thread for command line interface."""
         self.thread = threading.Thread(target=CLI.main, args=(self,))
         self.thread.start()
 
     def stop(self):
-        """
-        Stop command line interface thread.
-        """
+        """Stop command line interface thread."""
         self.work = False
         self.thread.join()
 
     def main(self):
-        """
-        Main command line interface function.
-        """
+        """Main command line interface function."""
         self.work = True
         print("CLI started")
         while self.work:
@@ -426,11 +450,11 @@ class CLI(Monitor):
                 print("error: " + str(ex))
 
     def completer(self, text, state):
-        """
-        Function for command completion.
+        """Function for command completion.
 
-        text (str): current input buffer.
-        state (int): match number.
+        Arguments:
+            * text (str): current input buffer.
+            * state (int): match number.
         """
         commands = ["help", "players", "stop", "end", "start "]
         if text.startswith("start "):
@@ -447,16 +471,12 @@ class CLI(Monitor):
         return None
 
     def comm_help(self):
-        """
-        Execute 'help' command.
-        """
+        """Execute 'help' command."""
         print("%s:\n\nhelp\nplayers\nstart <card set>\nend\nstop" %
               _("commands"))
 
     def comm_players(self):
-        """
-        Execute 'players' command.
-        """
+        """Execute 'players' command."""
         if self.players is not None:
             self.players.acquire()
             print(len(self.players), ngettext("player", "players",
@@ -486,8 +506,10 @@ class CLI(Monitor):
             print(_("error: player list is not available"))
 
     def comm_start(self, cmdline):
-        """
-        Execute 'start' command.
+        """Execute 'start' command.
+
+        Arguments:
+            * cmdline (list): split command line.
         """
         if self.game_st.state != "PLAYER_CONN":
             return
@@ -499,6 +521,7 @@ class CLI(Monitor):
             print(_("error: expected start <card set>"))
 
     def comm_end(self):
+        """Execute 'end' command."""
         if self.game_st.state == "GAME":
             self.players.acquire()
             for player in self.players:
@@ -509,17 +532,27 @@ class CLI(Monitor):
             print(_("error: game is not started"))
 
     def comm_stop(self):
-        """
-        Execute 'stop' command.
-        """
+        """Execute 'stop' command."""
         self.game_st.state = "SHUTDOWN"
         print(_("exit"))
         self.work = False
 
 
 class PlayerList(Monitor):
-    """
-    Player objects container.
+    """Player objects container.
+
+    Arguments:
+        * logger (logging.Logger): Logger object.
+        * game_st (GameState): server state.
+
+    Object attributes:
+        * players (list): Player objects list.
+        * sockets (dict): association between sockets and their players.
+        * game_st (GameState): server state.
+        * sem (Semaphore): semaphore for operations on this object.
+        * seq_number (int): number for new player.
+        * have_master (bool): is True if there is MASTER player in the list.
+        * logger (logging.Logger): Logger object.
     """
     def __init__(self, logger, game_st):
         Monitor.__init__(self)
@@ -540,21 +573,15 @@ class PlayerList(Monitor):
         return len(tuple(iter(self)))
 
     def acquire(self):
-        """
-        Acquire semaphore.
-        """
+        """Acquire semaphore."""
         self.sem.acquire()
 
     def release(self):
-        """
-        Release semaphore.
-        """
+        """Release semaphore."""
         self.sem.release()
 
     def check(self):
-        """
-        Check for Player objects to be removed.
-        """
+        """Check for Player objects to be removed."""
         for player in self.players:
             if not player.verify():
                 player.push_buffer()
@@ -569,10 +596,10 @@ class PlayerList(Monitor):
                 break
 
     def next_player(self, player):
-        """
-        Get next player in player sequence.
+        """Get next player in player sequence.
 
-        player (Player): current player.
+        Arguments:
+            * player (Player): current player.
         """
         p_idx = 0
         for i in range(len(self.players)):
@@ -590,9 +617,7 @@ class PlayerList(Monitor):
         return None
 
     def stop(self):
-        """
-        Disconnect all players and delete all Player objects.
-        """
+        """Disconnect all players and delete all Player objects."""
         for i in range(len(self.players)):
             self.players[i].push_buffer()
             self.players[i].stop()
@@ -600,11 +625,11 @@ class PlayerList(Monitor):
         self.sockets.clear()
 
     def add_player(self, res, sock):
-        """
-        Add player to PlayerList.
+        """Add new player to PlayerList.
 
-        res (Resources): resource pack information.
-        sock (socket): player socket.
+        Arguments:
+            * res (Resources): resource pack information.
+            * sock (socket): player socket.
         """
         new_player = Player(sock, "PLAYER" if self.have_master else "MASTER",
                             res, self.game_st, self,
@@ -615,11 +640,11 @@ class PlayerList(Monitor):
         self.seq_number += 1
 
     def broadcast(self, data, info=None):
-        """
-        Send broadcast message.
+        """Send broadcast message.
 
-        data (str): message text.
-        info (Player): additional info for #SELF message.
+        Arguments:
+            * data (str): message text.
+            * info (Player): additional info for message.
         """
         if data == "#PLAYER_LIST":
             data = "PLAYER_LIST " + ",".join([str(i.number) + ";" + i.name
@@ -633,8 +658,22 @@ class PlayerList(Monitor):
 
 
 class GameServer:
-    """
-    Main game server class.
+    """Main game server class.
+
+    Arguments:
+        * listening_socket (socket): listening socket, that will be used
+          by server.
+        * logger (logging.Logger): Logger object.
+
+    Object attributes:
+        * logger (logging.Logger): Logger object.
+        * game_state (GameState): server state.
+        * players (PlayerList): player list.
+        * cards (list): current list of cards.
+        * resource_server (ResourceServer): HTTP server for resources
+          downloading.
+        * resources (Resources): resource pack information.
+        * cli (CLI): command line interface object.
     """
     def __init__(self, listening_socket, logger):
         self.listening_socket = listening_socket
@@ -649,8 +688,9 @@ class GameServer:
         self.session_id = 0
 
     def main(self):
-        """
-        Game server main function.
+        """Game server main function.
+
+        Contains main loop and handlers' calls.
         """
         self.game_state = GameState("PLAYER_CONN")
         self.cli = CLI(None, self, self.game_state)
@@ -712,9 +752,7 @@ class GameServer:
         self.cli.stop()
 
     def get_sync_state(self):
-        """
-        Check if all players have the same state.
-        """
+        """Check if all players have the same state."""
         st = None
         for player in self.players:
             if st is None:
@@ -725,9 +763,7 @@ class GameServer:
         return st
 
     def prepare(self):
-        """
-        Create components before players connection.
-        """
+        """Initialize components before players' connection."""
         self.game_state.state = "PLAYER_CONN"
         self.players = PlayerList(self.logger, self.game_state)
         self.resources = Resources(env.get_res_name(), env.get_res_link(),
@@ -737,8 +773,10 @@ class GameServer:
         self.current_player = None
 
     def accept_connection(self):
-        """
-        Accept a new connection and create Player object.
+        """Accept a new connection.
+
+        Accepts a new connection and checks if the player can be added
+        to the game.
         """
         new_conn = self.listening_socket.accept()
         if self.game_state.state == "PLAYER_CONN":
@@ -750,9 +788,7 @@ class GameServer:
         new_conn[0].close()
 
     def begin_game(self):
-        """
-        Setup before game start.
-        """
+        """Setup before game start."""
         try:
             card_num = self.resources.configuration[self.game_state.card_set]
         except Exception:
@@ -775,9 +811,7 @@ class GameServer:
             self.cards = self.cards[6:]
 
     def calculate_result(self):
-        """
-        Update players' score.
-        """
+        """Update players' score."""
         current_card = self.current_player.current_card
         result = {p: 0 for p in self.players}
         for i in self.players:
@@ -800,9 +834,7 @@ class GameServer:
                 i.score += result[i]
 
     def global_operations(self):
-        """
-        Check state transitions in player synchronization points.
-        """
+        """Check player state changes in synchronization points."""
         if self.current_player is not None:
             if not self.current_player.verify():
                 for player in self.players:
@@ -876,9 +908,7 @@ class GameServer:
                     player.valid = False
 
     def check_resource_server(self):
-        """
-        Check game state and start or stop resource server if necessary.
-        """
+        """Check game state and start or stop resource server if necessary."""
         if self.game_state.state == "PLAYER_CONN" and\
                 not self.resource_server.active:
             self.logger.info("Start resource server.")

@@ -1,13 +1,12 @@
-"""
+"""monitor module.
+
 Module, containing Monitor class.
 """
 import threading
 
 
 class Monitor:
-    """
-    Base class for objects, accessable from multiple threads.
-    """
+    """Base class for objects, accessable from multiple threads."""
     def __init__(self):
         object.__setattr__(self, "_Monitor_sem", threading.Semaphore(1))
 

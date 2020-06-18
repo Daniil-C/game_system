@@ -1,6 +1,4 @@
-"""
-Server for Imaginarium game
-"""
+"""Imaginarium game server start script."""
 import socket
 import logging
 import sys
