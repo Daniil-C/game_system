@@ -12,12 +12,12 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../..'))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'Imaginarium\\'
+project = 'Imaginarium'
 copyright = '2020, Evgeny Emets, Yaroslav Kuzmin, Daniil Chaychits'
 author = 'Evgeny Emets, Yaroslav Kuzmin, Daniil Chaychits'
 
