@@ -218,6 +218,9 @@ class Empty:
     def __getitem__(self, index):
         return ""
 
+    def __len__(self):
+        return 0
+
 
 class Delay:
     """ Call func after time """
@@ -520,6 +523,8 @@ class Backend(Monitor):
         else:
             parsed = parse_message(parse_message(mes, " ")[1], ",")
             parsed.remove(str(self.common.card))
+            if not len(parsed):
+                return False
             self.common.vote_cards = [self.common.card]
             self.common.vote_cards.extend([int(i) for i in parsed])
             logging.debug(self.common.vote_cards)
