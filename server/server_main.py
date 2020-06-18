@@ -336,9 +336,8 @@ class Player(Monitor):
         Check and do state transition.
         """
         if self.state == "VER_CHECK":
-            self.send_message("VERSION " + str(self.number) + " " +
-                              self.status + " " + self.res.name + " " +
-                              self.res.link)
+            self.send_message("VERSION %s %s %s %s" % (str(self.number),
+                              self.status, self.res.name, self.res.link))
             self.state = "VER_WAIT"
         if self.state == "START_WAIT" and self.game_st.state == "GAME":
             self.state = "BEGIN_SYNC"
@@ -434,11 +433,12 @@ class CLI(Monitor):
         state (int): match number.
         """
         commands = ["help", "players", "stop", "end", "start "]
-        if (text.startswith("start ") and self.server.resources is not None and
-                self.server.resources.configuration is not None):
-            commands.clear()
-            for i in self.server.resources.configuration:
-                commands.append("start %s" % i)
+        if text.startswith("start "):
+            if self.server.resources is not None and\
+                    self.server.resources.configuration is not None:
+                commands.clear()
+                for i in self.server.resources.configuration:
+                    commands.append("start %s" % i)
         for i in commands:
             if i.startswith(text):
                 if state == 0:
@@ -450,8 +450,8 @@ class CLI(Monitor):
         """
         Execute 'help' command.
         """
-        print(_("commands") +
-              ":\n\nhelp\nplayers\nstart <card set>\nend\nstop")
+        print("%s:\n\nhelp\nplayers\nstart <card set>\nend\nstop" %
+              _("commands"))
 
     def comm_players(self):
         """
@@ -471,13 +471,13 @@ class CLI(Monitor):
                          max(m_len[1], len(i.name)),
                          max(m_len[2], len(str(i.score)))]
             if len(out) > 0:
-                print(str_num + " "*(m_len[0] - len(str_num)),
-                      str_name + " "*(m_len[1] - len(str_name)),
-                      str_score + " "*(m_len[2] - len(str_score)))
+                print(str_num + " " * (m_len[0] - len(str_num)),
+                      str_name + " " * (m_len[1] - len(str_name)),
+                      str_score + " " * (m_len[2] - len(str_score)))
                 for i in out:
                     string = ""
                     for idx in range(3):
-                        string += i[idx] + " "*(m_len[idx] - len(i[idx]) + 1)
+                        string += i[idx] + " " * (m_len[idx] - len(i[idx]) + 1)
                     if i[3]:
                         string += _("master")
                     print(string.strip())
@@ -560,8 +560,8 @@ class PlayerList(Monitor):
                 player.push_buffer()
                 player.stop()
                 self.sockets.pop(player.player_socket)
-                if (player.status == "MASTER" and
-                        self.game_st.state == "PLAYER_CONN"):
+                if player.status == "MASTER" and\
+                        self.game_st.state == "PLAYER_CONN":
                     self.game_st.state = "ERROR"
                 self.players.remove(player)
                 if self.game_st.state == "PLAYER_CONN":
@@ -662,15 +662,15 @@ class GameServer:
             self.logger.info("Starting session %d." % self.session_id)
             while work:
                 self.check_resource_server()
-                if (self.game_state.state != "PLAYER_CONN" and
-                        self.game_state.state != "GAME"):
+                if self.game_state.state != "PLAYER_CONN" and\
+                        self.game_state.state != "GAME":
                     self.logger.info("Detected state %s, exit.",
                                      self.game_state.state)
                     work = False
                     continue
 
-                if (len(self.players) == 0 and
-                        self.game_state.state != "PLAYER_CONN"):
+                if len(self.players) == 0 and\
+                        self.game_state.state != "PLAYER_CONN":
                     self.logger.info("No players left in game, exit.")
                     work = False
                     continue
@@ -816,10 +816,10 @@ class GameServer:
                                        if i.get_broadcast])
                 for player in self.players:
                     player.state = "READY_WAIT"
-                    player.send_message("BEGIN " +
-                                        self.game_state.card_set + " " +
-                                        ",".join(map(str, player.cards)) +
-                                        " " + player_lst)
+                    player.send_message("BEGIN %s %s %s" %
+                                        (self.game_state.card_set,
+                                         ",".join(map(str, player.cards)),
+                                         player_lst))
                 self.current_player = self.players.next_player(
                     self.players.players[randrange(len(
                         self.players.players))])
@@ -831,29 +831,29 @@ class GameServer:
             for player in self.players:
                 player.has_turn = player is self.current_player
                 player.state = "WAIT_ASSOC"
-            self.players.broadcast("TURN " +
+            self.players.broadcast("TURN %s" %
                                    str(self.current_player.number))
         elif cond == "SELF_SYNC":
             card_list = [player.current_card
                          for player in self.players]
             shuffle(card_list)
-            self.players.broadcast("VOTE " +
+            self.players.broadcast("VOTE %s" %
                                    ",".join(map(str, card_list)))
             for player in self.players:
                 player.state = "WAIT_VOTE"
         elif cond == "VOTE_SYNC":
             self.calculate_result()
-            card_list = [str(player.number) + ";" +
-                         str(player.current_card) + ";" +
-                         str(player.selected_card)
+            card_list = ["%s;%s;%s" % (str(player.number),
+                                       str(player.current_card),
+                                       str(player.selected_card))
                          for player in self.players]
-            score_list = [str(player.number) + ";" +
-                          str(player.score)
+            score_list = ["%s;%s" % (str(player.number),
+                                     str(player.score))
                           for player in self.players]
-            self.players.broadcast("STATUS " +
-                                   str(self.current_player.current_card) +
-                                   " " + ",".join(card_list) + " " +
-                                   ",".join(score_list))
+            self.players.broadcast("STATUS %s %s %s" %
+                                   (str(self.current_player.current_card),
+                                    ",".join(card_list),
+                                    ",".join(score_list)))
             for player in self.players:
                 player.state = "WAIT_NEXT_TURN"
         elif cond == "SYNC_NEXT_TURN":
@@ -867,7 +867,7 @@ class GameServer:
                     player.cards.append(self.cards.pop(0))
             if len(tuple(self.players)[0].cards) > 0:
                 for player in self.players:
-                    player.send_message("CARDS " +
+                    player.send_message("CARDS %s" %
                                         ",".join(map(str, player.cards)))
                     player.state = "TURN_SYNC"
             else:
@@ -879,11 +879,11 @@ class GameServer:
         """
         Check game state and start or stop resource server if necessary.
         """
-        if (self.game_state.state == "PLAYER_CONN" and
-                not self.resource_server.active):
+        if self.game_state.state == "PLAYER_CONN" and\
+                not self.resource_server.active:
             self.logger.info("Start resource server.")
             self.resource_server.start()
-        if (self.game_state.state != "PLAYER_CONN" and
-                self.resource_server.active):
+        if self.game_state.state != "PLAYER_CONN" and\
+                self.resource_server.active:
             self.logger.info("Stop resource server.")
             self.resource_server.stop()
