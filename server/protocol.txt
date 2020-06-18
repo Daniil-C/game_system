@@ -8,7 +8,7 @@ PLAYER_LIST := PLAYER_LIST <list: num;name>
 
 2. Start:
 Client0  ---(START_GAME <set number>)-->  Server
-Server  ---(BEGIN <set number> <list: card>)-->  All
+Server  ---(BEGIN <set number> <list: card> <list: num;name>)-->  All
 All  ---(READY)-->  Server
 
 3. Turn:
