@@ -3,6 +3,7 @@ Module, containing Monitor class.
 """
 import threading
 
+
 class Monitor:
     """
     Base class for objects, accessable from multiple threads.
