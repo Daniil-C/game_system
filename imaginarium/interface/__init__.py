@@ -1818,7 +1818,7 @@ def main_menu(com, backend):
             playrect[1] = int(height * 64 / 216) + h_offset
             # Exit button
             exit_scale = (int(width / 3), int(height * 33 / 216))
-            exit_img = pygame.transform.scale(exit_img, exit_scale)
+            exit_img_s = pygame.transform.scale(exit_img, exit_scale)
             exitrect = exit_img.get_rect()
             exitrect[0] = int(width / 3) + w_offset
             exitrect[1] = int(height * 115 / 216) + h_offset
@@ -1841,7 +1841,7 @@ def main_menu(com, backend):
             screen.fill(black)
             screen.blit(bg, bgrect)
             screen.blit(play, playrect)
-            screen.blit(exit_img, exitrect)
+            screen.blit(exit_img_s, exitrect)
             screen.blit(settings, settingsrect)
             screen.blit(rule, rulerect)
             pygame.display.flip()
