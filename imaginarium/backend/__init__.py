@@ -9,13 +9,12 @@ import time
 from multiprocessing import Queue
 import json
 import os
-import sys
 import shutil
 from zipfile import ZipFile
 import wget
-import interface
-from connection import connection as Conn
-from monitor import Monitor
+from .. import interface
+from ..connection import connection as Conn
+from ..monitor import Monitor
 
 
 class Player:
@@ -269,7 +268,9 @@ class Backend(Monitor):
         self.collector_thread = None
         self.tasks = []
         self.conn = None
-        self.config = os.getenv("CONFIG", "config.json")
+        self.config = os.getenv("CONFIG",
+                                os.path.dirname(os.path.abspath(__file__)) +
+                                "/config.json")
         self.names = {}
         self.leader = 0
         self.updater = None
@@ -426,7 +427,6 @@ class Backend(Monitor):
         """
         Sets player`s name
         """
-        logging.info("Hi, {}".format(name))
         self.common.set_name(name)
         self.conn.send("OK {}".format(self.common.get_name()))
         self.updater = threading.Thread(target=Backend.get_players_list,
@@ -646,7 +646,7 @@ class Backend(Monitor):
             logging.error(ex)
             self.common.is_connected = False
             return
-        logging.info("Game started")
+        logging.debug("Game started")
         mes = self.conn.get()
         logging.debug(mes)
         if len(mes) == 0:
@@ -659,7 +659,7 @@ class Backend(Monitor):
             url = parsed[4]
             if version != self.version:
                 logging.debug("Versions are different")
-                self.update(sys.argv[0], url, version)
+                self.update(os.path.abspath(__file__), url, version)
                 self.version = version
                 with open(self.config, "w") as f:
                     data = {
@@ -755,7 +755,7 @@ class BackendInterface:
 def init_backend():
     """ Inits backend """
     logging.basicConfig(format=u'[LINE:%(lineno)d]# %(levelname)-8s '
-                        '[%(asctime)s]  %(message)s', level=logging.DEBUG)
+                        '[%(asctime)s]  %(message)s', level=logging.ERROR)
     com = Common()
     in_q = Queue()
     back = Backend(com, in_q)

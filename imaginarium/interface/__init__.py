@@ -1,6 +1,5 @@
 """Interface module"""
 import time
-import sys
 import os
 import gettext
 import random
@@ -15,7 +14,7 @@ info = pygame.display.Info()
 size = width, height = info.current_w, info.current_h
 print(size)
 
-gettext.install("client", os.path.dirname(sys.argv[0]) + "/../interface")
+gettext.install("client", os.path.dirname(os.path.abspath(__file__)))
 
 size_orig = size
 w_orig = width
@@ -26,11 +25,12 @@ SETTINGS = False
 EXIT = False
 TURN = True
 RESIZE = False
-font_file = "fonts/Chilanka-Custom.ttf"
+font_file = os.path.dirname(os.path.abspath(__file__)) +\
+    "/../fonts/Chilanka-Custom.ttf"
 CLOCK = pygame.time.Clock()
 UPD = False
-PATH = os.path.dirname(sys.argv[0]) + _("/../interface/en/")  # noqa: F821
-PATH_R = os.path.dirname(sys.argv[0]) + "/../resources/"
+PATH = os.path.dirname(os.path.abspath(__file__)) + _("/en/")  # noqa: F821
+PATH_R = os.path.dirname(os.path.abspath(__file__)) + "/../resources/"
 FIRST_TURN = True
 
 
@@ -1592,7 +1592,9 @@ def play_menu(com, backend):
         # If the player hasn't specified connection parameters
         settings_menu(com, backend)
         return None
-    backend.start_game()
+    global UPD
+    if not UPD:
+        backend.start_game()
     if not connection(com, backend):
         return None
 
@@ -1785,7 +1787,6 @@ def play_menu(com, backend):
             pygame.draw.rect(screen, color, rect_rect, 2)
             pygame.display.flip()
             CLOCK.tick(30)
-        global UPD
         UPD = True
 
 

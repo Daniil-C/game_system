@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Sem 6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-12 18:24+0300\n"
-"PO-Revision-Date: 2020-06-12 18:25+0300\n"
+"POT-Creation-Date: 2020-06-16 17:02+0300\n"
+"PO-Revision-Date: 2020-06-16 17:02+0300\n"
 "Last-Translator: Evgeny <e-evgeny99@ya.ru>\n"
 "Language-Team: Russian\n"
 "Language: ru\n"
@@ -19,38 +19,38 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: __init__.py:30
-msgid "/../interface/en/"
-msgstr "/../interface/ru/"
+#: __init__.py:32
+msgid "/en/"
+msgstr "/ru/"
 
-#: __init__.py:116 __init__.py:477 __init__.py:734
-msgid "Score: "
-msgstr "Счёт: "
-
-#: __init__.py:153 __init__.py:191
-msgid "Owner:"
-msgstr "Владелец карты:"
-
-#: __init__.py:153 __init__.py:192
-msgid "Voted:"
-msgstr "Проголосовали:"
-
-#: __init__.py:286 __init__.py:351 __init__.py:443
+#: __init__.py:151 __init__.py:419 __init__.py:485 __init__.py:578
 msgid "Wait for other players"
 msgstr "Ждём других игроков"
 
-#: __init__.py:287
+#: __init__.py:233 __init__.py:615 __init__.py:882
+msgid "Score: "
+msgstr "Счёт: "
+
+#: __init__.py:280 __init__.py:319
+msgid "Owner:"
+msgstr "Владелец карты:"
+
+#: __init__.py:281 __init__.py:320
+msgid "Voted:"
+msgstr "Проголосовали:"
+
+#: __init__.py:421
 msgid "Guess leader's card"
 msgstr "Выберите карту ведущего"
 
-#: __init__.py:532
+#: __init__.py:671
 msgid "Enter your association"
 msgstr "Введите ассоциацию"
 
-#: __init__.py:680
+#: __init__.py:825 __init__.py:904
 msgid "Choose a card"
 msgstr "Выберите карту"
 
-#: __init__.py:680
+#: __init__.py:827
 msgid "Wait for your turn"
 msgstr "Ждём ведущего"
