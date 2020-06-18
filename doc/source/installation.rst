@@ -2,7 +2,7 @@ Installation
 ============
 
 Project is packed into two wheel packages.
-One package contains client, another one contains server.
+Package 'imaginarium' contains client, 'imaginarium_server' contains server.
 
 Requirements
 ------------
@@ -14,13 +14,3 @@ Client:
         wget.
 Server:
         Python version 3.7 or higher.
-
-Client installation
--------------------
-
-pip install imaginarium
-
-Server installation
--------------------
-
-pip install imaginarium_server

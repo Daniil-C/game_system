@@ -6,12 +6,17 @@
 Welcome to Imaginarium\'s documentation!
 ========================================
 
+Imaginarium is a card game, where leader selects a card and comes up with an
+association for it, other players choose the most suitable card for this
+association. Then players guess which card belongs to leader.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    installation
    start
+   code
 
 
 
