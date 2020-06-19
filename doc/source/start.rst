@@ -1,7 +1,7 @@
 Start
 =====
 
-Client and server are started as modules using python -m module_name
+Client and server are started as modules using python -m 'module_name'
 
 Environment variables
 ---------------------
@@ -32,4 +32,4 @@ python -m imaginarium
 Server start command
 --------------------
 
-python -m server
+python -m imaginarium_server
