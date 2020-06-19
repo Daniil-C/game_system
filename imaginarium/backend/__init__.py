@@ -9,6 +9,7 @@ import time
 from multiprocessing import Queue
 import json
 import os
+import sys
 import shutil
 from zipfile import ZipFile
 import wget
@@ -463,15 +464,14 @@ class Backend(Monitor):
         # Waining TURN from server
         while self.turn():
             pass
-        if len(self.plist) == 0:
-            return
-        self.plist.sort(key=(lambda k: int(k[1])), reverse=True)
-        maxpoint = self.plist[0][1]
-        for i in self.plist:
-            n = i[0]
-            i[0] = self.names[i[0]]
-            i.append(n)
-            i.append(i[1] == maxpoint)
+        if len(self.plist) > 0:
+            self.plist.sort(key=(lambda k: int(k[1])), reverse=True)
+            maxpoint = self.plist[0][1]
+            for i in self.plist:
+                n = i[0]
+                i[0] = self.names[i[0]]
+                i.append(n)
+                i.append(i[1] == maxpoint)
         self.common.game_results = self.plist
         self.reset()
         self.common.reset()
@@ -524,9 +524,9 @@ class Backend(Monitor):
             logging.debug(mes)
         else:
             parsed = parse_message(parse_message(mes, " ")[1], ",")
-            parsed.remove(str(self.common.card))
-            if not len(parsed):
+            if type(parsed) == Empty:
                 return False
+            parsed.remove(str(self.common.card))
             self.common.vote_cards = [self.common.card]
             self.common.vote_cards.extend([int(i) for i in parsed])
             logging.debug(self.common.vote_cards)
@@ -761,8 +761,11 @@ class BackendInterface:
 
 def init_backend():
     """ Inits backend """
+    log_level = logging.ERROR
+    if len(sys.argv) >= 2 and sys.argv[1] == "-debug":
+        log_level = logging.DEBUG
     logging.basicConfig(format=u'[LINE:%(lineno)d]# %(levelname)-8s '
-                        '[%(asctime)s]  %(message)s', level=logging.ERROR)
+                        '[%(asctime)s]  %(message)s', level=log_level)
     com = Common()
     in_q = Queue()
     back = Backend(com, in_q)
