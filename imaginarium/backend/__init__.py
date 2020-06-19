@@ -272,8 +272,8 @@ class Backend(Monitor):
         self.tasks = []
         self.conn = None
         self.config = os.getenv("CONFIG",
-                                os.path.dirname(os.path.abspath(__file__)) +
-                                "/config.json")
+                                "%s/config.json" %
+                                os.path.dirname(os.path.abspath(__file__)))
         self.names = {}
         self.leader = 0
         self.updater = None

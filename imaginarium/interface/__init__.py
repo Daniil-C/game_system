@@ -99,8 +99,8 @@ def game_result(com, backend):
             ok_scale = (int(width / 3), int(height * 33 / 216))
             ok = pygame.transform.scale(ok_img, ok_scale)
             okrect = ok.get_rect()
-            okrect[0], okrect[1] = int(width * 2 / 3 + width /
-                                       12) + w_offset, h_offset
+            okrect[0] = int(width * 2 / 3 + width / 12) + w_offset
+            okrect[1] = h_offset
             # RENDERING
             screen.fill(black)
             screen.blit(bg, bgrect)
@@ -108,9 +108,9 @@ def game_result(com, backend):
             for i in range(len(players)):
                 screen.blit(players_text[i], (players_rect[i][0],
                                               players_rect[i][1]))
-                screen.blit(players_score[i], (players_rect[i][0] + shift
-                                               + int(width / 4),
-                                               players_rect[i][1]))
+                screen.blit(players_score[i],
+                            (players_rect[i][0] + shift + int(width / 4),
+                            players_rect[i][1]))
             pygame.display.flip()
 
             RESIZE = False
@@ -215,8 +215,8 @@ def result(com, backend):
                 cards_rect.append(cards_row[-1].get_rect())
                 cards_rect[-1][0] = card_pos[0]
                 cards_rect[-1][1] = card_pos[1]
-                card_pos[0] += int((width - cards_w * len(res)) /
-                                   (len(res) + 1) + cards_w)
+                nom = width - cards_w * len(res)
+                card_pos[0] += int(nom / (len(res) + 1) + cards_w)
             # Players
             players_pos = [w_offset, h_offset]
             font_size = int(height / 30)
@@ -249,8 +249,8 @@ def result(com, backend):
             ok_scale = (int(width / 3), int(height * 33 / 216))
             ok = pygame.transform.scale(ok_img, ok_scale)
             okrect = ok.get_rect()
-            okrect[0], okrect[1] = int(width * 2 / 3 + width /
-                                       12) + w_offset, h_offset
+            okrect[0] = int(width * 2 / 3 + width / 12) + w_offset
+            okrect[1] = h_offset
             # Header
             h_font_size = int(height / 12)
             h_font = pygame.font.Font(font_file, h_font_size)
@@ -333,8 +333,8 @@ def result(com, backend):
                             for j in range(len(res[i][2])):
                                 b_rend.append(font.render(b_text[3 + j],
                                                           True, color_else))
-                                while b_rend[-1].get_size()[0] > int(width
-                                                                     / 6):
+                                while b_rend[-1].get_size()[0] >\
+                                        int(width / 6):
                                     b_text[3 + j] = b_text[3 + j][:-1]
                                     b_rend[-1] = (font.render(b_text[3 + j],
                                                               True,
@@ -379,8 +379,8 @@ def result(com, backend):
             color = black
             num_t = str(len(res[i][2]))
             num_img = font.render(num_t, True, color)
-            num_w = int((cards_rect[i][2] - num_img.get_size()[0]) /
-                        2) + cards_rect[i][0]
+            num_w = int((cards_rect[i][2] - num_img.get_size()[0]) / 2) +\
+                cards_rect[i][0]
             num_h = cards_rect[i][1] + cards_rect[i][3] + shift
             screen.blit(num_img, (num_w, num_h))
             screen.blit(text_img, (cards_rect[i][0],
@@ -453,8 +453,8 @@ def vote(com, backend):
             header_rect[1] = shift + h_offset
             w = header_rect[2]
             header_rect[0] = int(width / 2 - w / 2) + w_offset
-            card_pos = [int((width - height * len(cards) / 6) /
-                            (len(cards) + 1)) + w_offset,
+            nom = width - height * len(cards) / 6
+            card_pos = [int(nom / (len(cards) + 1)) + w_offset,
                         int(height * 0.7) + h_offset]
             cards_img = []
             cards_rect = []
@@ -465,8 +465,9 @@ def vote(com, backend):
                 cards_rect.append(cards_img[-1].get_rect())
                 cards_rect[-1][0] = card_pos[0]
                 cards_rect[-1][1] = card_pos[1]
-                card_pos[0] += int((width - height * len(cards) / 6) /
-                                   (len(cards) + 1) + height / 6)
+                nom = width - height * len(cards) / 6
+                denom = len(cards) + 1
+                card_pos[0] += int(nom / denom + height / 6)
             a_font_size = int(height / 30)
             a_font = pygame.font.Font(font_file, a_font_size)
             assoc = a_font.render(assoc_text, True, a_color)
@@ -526,8 +527,8 @@ def vote(com, backend):
                             b_card = pygame.transform.scale(cards_row[i],
                                                             card_size)
                             card_rect = b_card.get_rect()
-                            card_rect[0] = int(width / 2 - height /
-                                               6) + w_offset
+                            card_rect[0] = int(width / 2 - height / 6) +\
+                                w_offset
                             card_rect[1] = int(height / 6) + h_offset
                             break
                     else:
@@ -862,8 +863,9 @@ def game(com, backend):
                     cards_rect.append(cards_row[-1].get_rect())
                     cards_rect[-1][0] = card_pos[0]
                     cards_rect[-1][1] = card_pos[1]
-                    card_pos[0] += int((width - cards_w * len(cards)) /
-                                       (len(cards) + 1) + cards_w)
+                    nom = width - cards_w * len(cards)
+                    denom = len(cards) + 1
+                    card_pos[0] += int(nom / denom + cards_w)
                 # Players
                 players_pos = [w_offset, h_offset]
                 font_size = int(height / 30)
@@ -878,8 +880,8 @@ def game(com, backend):
                                                     *players_size))
                     p_name = i[1]
                     players_text.append(font.render(p_name, True, color))
-                    while players_text[-1].get_size()[0] + shift > int(width
-                                                                       / 6):
+                    while players_text[-1].get_size()[0] + shift >\
+                            int(width / 6):
                         p_name = p_name[:-1]
                         players_text[-1] = font.render(p_name, True, color)
                     score = "".join((_("Score: "), str(i[0])))  # noqa: F821
@@ -1047,8 +1049,8 @@ def wait_menu(com, backend):
             back_scale = (icon_size, icon_size)
             back = pygame.transform.scale(back_img, back_scale)
             backrect = back.get_rect()
-            backrect[0], backrect[1] = w_offset, int(height * 185 /
-                                                     216) + h_offset
+            backrect[0] = w_offset
+            backrect[1] = int(height * 185 / 216) + h_offset
             if num == 0:
                 play_scale = (int(width / 3), int(height * 33 / 216))
                 play = pygame.transform.scale(play_img, play_scale)
@@ -1206,8 +1208,8 @@ def settings_menu(com, backend):
             back_scale = (icon_size, icon_size)
             back = pygame.transform.scale(back_img, back_scale)
             backrect = back.get_rect()
-            backrect[0], backrect[1] = w_offset, int(height * 185
-                                                     / 216) + h_offset
+            backrect[0] = w_offset
+            backrect[1] = int(height * 185 / 216) + h_offset
             # Save buton
             save_scale = (int(width * 7 / 128), int(height * 12 / 216))
             save = pygame.transform.scale(save_img, save_scale)
@@ -1303,8 +1305,8 @@ def rule_menu(com, backend):
             back_scale = (icon_size, icon_size)
             back = pygame.transform.scale(back_img, back_scale)
             backrect = back.get_rect()
-            backrect[0], backrect[1] = w_offset, int(height * 185 /
-                                                     216) + h_offset
+            backrect[0] = w_offset
+            backrect[1] = int(height * 185 / 216) + h_offset
 
             # RENDERING
             screen.fill(black)
@@ -1387,8 +1389,8 @@ def play_menu_2(com, backend):
             back_scale = (icon_size, icon_size)
             back = pygame.transform.scale(back_img, back_scale)
             backrect = back.get_rect()
-            backrect[0], backrect[1] = w_offset, int(height * 185
-                                                     / 216) + h_offset
+            backrect[0] = w_offset
+            backrect[1] = int(height * 185 / 216) + h_offset
             # Text
             font_size = int(height / 30)
             font = pygame.font.Font(font_file, font_size)
@@ -1636,13 +1638,13 @@ def play_menu(com, backend):
                 back_scale = (icon_size, icon_size)
                 back = pygame.transform.scale(back_img, back_scale)
                 backrect = back.get_rect()
-                backrect[0], backrect[1] = w_offset, int(height * 185 /
-                                                         216) + h_offset
+                backrect[0] = w_offset
+                backrect[1] = int(height * 185 / 216) + h_offset
                 # Mods buttons
                 m = int(width / 5)
                 mode_size = (m, m)
-                w_shift, h_shift = int((width - m * 3) /
-                                       4), int((height - m * 2) / 3)
+                w_shift = int((width - m * 3) / 4)
+                h_shift = int((height - m * 2) / 3)
                 w_pos, h_pos = w_shift, h_shift
                 mode, mode_rect = [], []
                 for i in range(len(mode_img)):
