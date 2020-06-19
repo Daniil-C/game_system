@@ -684,8 +684,8 @@ class Backend(Monitor):
                 self.common.set_player()
             self.common.set_number(player_num)
         else:
-            raise Exception("Unexpected keyword. "
-                            "Expected: VERSION, real: {}".format(parsed[0]))
+            logging.error("Unexpected keyword. "
+                          "Expected: VERSION, real: {}".format(parsed[0]))
 
     def play(self):
         """
