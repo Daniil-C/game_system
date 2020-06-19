@@ -18,7 +18,7 @@
 ## Подготовка
 
 Перед сборкой пакетов необходимо загрузить [набор карточек](https://yadi.sk/d/QLdLEHC0HBYeZA)
-и поместить его в distribution.
+и поместить его в папку distribution/.
 
 ## Сборка пакетов wheel:
 
@@ -27,9 +27,10 @@
 Сборка:
 
 cd distribution
+
 make build
 
-Собранные пакеты находятся в distribution/dist.
+Собранные пакеты находятся в папке distribution/dist/.
 
 # Документация
 
