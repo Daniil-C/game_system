@@ -6,7 +6,7 @@ import random
 import pygame
 
 pygame.init()
-pygame.display.set_caption("IMAGINARIUM")
+pygame.display.set_caption("Imaginarium")
 
 screen = pygame.display.set_mode((0, 0), pygame.RESIZABLE)
 black = 0, 0, 0
