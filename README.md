@@ -28,11 +28,10 @@
 
 Сборка:
 
-'''
-cd distribution
-
-make build
-'''
+```
+cd distribution  
+make build  
+```
 
 Собранные пакеты находятся в папке distribution/dist/.
 
