@@ -20,8 +20,8 @@ Server:
 * LOG_FILE - path  to file, used for logging (default: package_path/server.log),
 * RESOURCES_VERSION - set resource pack version. This value is overriden by
   value in version.json,
-* RESOURCEPACK - set link for resource pack downloading. Not necessary if no
-  NAT, proxy or port forwarding is used.
+* RESOURCEPACK - set link for resource pack downloading. If not set,
+  server will use link to its resource server.
 
 
 Client start command
@@ -32,4 +32,4 @@ python -m imaginarium
 Server start command
 --------------------
 
-python -m imaginarium_server
+python -m server
