@@ -6,6 +6,7 @@ import random
 import pygame
 
 pygame.init()
+pygame.display.set_caption("IMAGINARIUM")
 
 screen = pygame.display.set_mode((0, 0), pygame.RESIZABLE)
 black = 0, 0, 0
@@ -32,6 +33,8 @@ UPD = False
 PATH = os.path.dirname(os.path.abspath(__file__)) + _("/en/")  # noqa: F821
 PATH_R = os.path.dirname(os.path.abspath(__file__)) + "/../resources/"
 FIRST_TURN = True
+icon = pygame.image.load(PATH + "icon.png")
+pygame.display.set_icon(icon)
 
 
 def check_resize(event):
