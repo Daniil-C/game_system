@@ -463,6 +463,8 @@ class Backend(Monitor):
         # Waining TURN from server
         while self.turn():
             pass
+        if len(self.plist) == 0:
+            return
         self.plist.sort(key=(lambda k: int(k[1])), reverse=True)
         maxpoint = self.plist[0][1]
         for i in self.plist:
