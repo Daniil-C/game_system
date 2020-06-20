@@ -42,7 +42,7 @@ make build
 
 В папке doc/ находятся файлы документации. Для сборки требуется sphinx.
 
-# Описание проекта:
+# Описание проекта
 Сервер и клиент для многопользовательской игры "Imaginarium".
 [Правила игры](https://cdn.mosigra.ru/mosigra.product.other/545/481/imadzhinarium.pdf).
 
