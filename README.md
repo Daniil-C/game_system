@@ -42,14 +42,16 @@ make build
 
 В папке doc/ находятся файлы документации. Для сборки требуется sphinx.
 
-# Project description:
-Server and client for multiplayer game Imaginarium.
-[Game rules](https://cdn.mosigra.ru/mosigra.product.other/545/481/imadzhinarium.pdf)
+# Описание проекта:
+Сервер и клиент для многопользовательской игры "Imaginarium".
+[Правила игры](https://cdn.mosigra.ru/mosigra.product.other/545/481/imadzhinarium.pdf).
+
+Проверка кода проводилась с помощью flake8.
   
-Interface scetch:
+Макет интерфейса:
 <img src="imaginarium_layout.png" width="1400" height="350" />
 
-Interface example
+Пример интерфейса:
 <img src="main_menu.png" width="960" height="540" />
 
 <img src="settings_menu.png" width="960" height="540" />
