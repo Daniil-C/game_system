@@ -44,6 +44,9 @@ class connection:
         while elem != bytes((0,)) and elem != bytes():
             buff = buff + elem
             elem = bytes(self.connection_socket.recv(1))
+            if len(buff) > 1000000:
+                self.close()
+                return ""
         if elem == bytes():
             self.status = False
         return buff.decode("utf8")
